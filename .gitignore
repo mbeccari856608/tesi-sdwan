@@ -1,0 +1,9 @@
+tesi-sdwan/**/*.log
+tesi-sdwan/**/*.aux
+tesi-sdwan/**/*.synctex.gz
+tesi-sdwan/**/*.out
+
+code/build
+code/**/cmake-cache
+code/**/CMakeFiles
+code/**/build

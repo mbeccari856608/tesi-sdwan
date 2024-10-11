@@ -1,0 +1,16 @@
+{
+    "configurations": [
+        {
+            "name": "MySys2",
+            "includePath": [
+                "${default}",
+                ""
+            ],
+            "defines": [],
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "windows-gcc-x64"
+        }
+    ],
+    "version": 4
+}
