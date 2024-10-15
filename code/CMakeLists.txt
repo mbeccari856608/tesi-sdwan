@@ -1,11 +1,19 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.13..3.13)
+
+# minimum compiler versions
+set(AppleClang_MinVersion 11.0.0)
+set(Clang_MinVersion 10.0.0)
+set(GNU_MinVersion 9.1.0)
 
 # set the project name and version
 project(Simulator VERSION 1.0)
 
-
-include_directories("./external/ns-allinone-3.42/ns-3.42/src/core/model")
-include_directories("./external/ns-allinone-3.42/ns-3.42/build/include")
+add_subdirectory(${CMAKE_SOURCE_DIR}/external/ns-allinone-3.42/ns-3.42/)
 
 add_executable(Simulator main.cpp)
+include_directories(${CMAKE_SOURCE_DIR}/external/ns-allinone-3.42/ns-3.42/build/include/)
+
+
+set_target_properties(Simulator PROPERTIES
+            CXX_STANDARD 20)
 

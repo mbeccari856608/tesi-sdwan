@@ -7,7 +7,7 @@
         "program": "${fileDirname}/build/Simulator.exe",
         "args": [],
         "preLaunchTask": "build",
-        "stopAtEntry": true,
+        "stopAtEntry": false,
         "cwd": "${fileDirname}",
         "environment": [],
         "externalConsole": false,

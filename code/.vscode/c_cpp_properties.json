@@ -4,7 +4,7 @@
             "name": "MySys2",
             "includePath": [
                 "${default}",
-                ""
+                "${workspaceFolder}/**"
             ],
             "defines": [],
             "cStandard": "c17",
