@@ -11,9 +11,9 @@ project(Simulator VERSION 1.0)
 add_subdirectory(${CMAKE_SOURCE_DIR}/external/ns-allinone-3.42/ns-3.42/)
 
 add_executable(Simulator main.cpp)
-include_directories(${CMAKE_SOURCE_DIR}/external/ns-allinone-3.42/ns-3.42/build/include/)
+
+
 target_link_libraries(Simulator 
-    ${libcore}
     ${libcore}
     ${libpoint-to-point}
     ${libcsma}
