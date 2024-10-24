@@ -1,7 +1,7 @@
 {
     "configurations": [
         {
-            "name": "MySys2",
+            "name": "GCC",
             "includePath": [
                 "${default}",
                 "${workspaceFolder}/**"
@@ -9,7 +9,7 @@
             "defines": [],
             "cStandard": "c17",
             "cppStandard": "c++17",
-            "intelliSenseMode": "windows-gcc-x64"
+            "intelliSenseMode": "linux-gcc-x64"
         }
     ],
     "version": 4

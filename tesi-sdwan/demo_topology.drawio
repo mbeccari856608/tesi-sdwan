@@ -1,0 +1,35 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36" version="24.8.0">
+  <diagram name="Pagina-1" id="sJdGso_o_oSKOoNAaLra">
+    <mxGraphModel dx="880" dy="471" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="6Nl4HK4vlLqBsYV-QB0l-3" value="Controller 1" style="shape=mxgraph.cisco.routers.router;sketch=0;html=1;pointerEvents=1;dashed=0;fillColor=#036897;strokeColor=#ffffff;strokeWidth=2;verticalLabelPosition=bottom;verticalAlign=top;align=center;outlineConnect=0;" vertex="1" parent="1">
+          <mxGeometry x="350" y="210" width="78" height="53" as="geometry" />
+        </mxCell>
+        <mxCell id="6Nl4HK4vlLqBsYV-QB0l-5" value="DataRate:&amp;nbsp; 256 b/s&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;" edge="1" parent="1" source="6Nl4HK4vlLqBsYV-QB0l-4" target="6Nl4HK4vlLqBsYV-QB0l-3">
+          <mxGeometry x="0.1841" y="-3" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="6Nl4HK4vlLqBsYV-QB0l-4" value="Terminal 1" style="shape=mxgraph.cisco.computers_and_peripherals.terminal;sketch=0;html=1;pointerEvents=1;dashed=0;fillColor=#036897;strokeColor=#ffffff;strokeWidth=2;verticalLabelPosition=bottom;verticalAlign=top;align=center;outlineConnect=0;" vertex="1" parent="1">
+          <mxGeometry x="200" y="110" width="61" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="6Nl4HK4vlLqBsYV-QB0l-7" value="Controller 2" style="shape=mxgraph.cisco.routers.router;sketch=0;html=1;pointerEvents=1;dashed=0;fillColor=#036897;strokeColor=#ffffff;strokeWidth=2;verticalLabelPosition=bottom;verticalAlign=top;align=center;outlineConnect=0;" vertex="1" parent="1">
+          <mxGeometry x="560" y="210" width="78" height="53" as="geometry" />
+        </mxCell>
+        <mxCell id="6Nl4HK4vlLqBsYV-QB0l-9" value="DataRate:&amp;nbsp; 256 b/s&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="6Nl4HK4vlLqBsYV-QB0l-8" target="6Nl4HK4vlLqBsYV-QB0l-3">
+          <mxGeometry x="0.0164" y="-13" relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="230" y="237" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="6Nl4HK4vlLqBsYV-QB0l-8" value="Terminal 1" style="shape=mxgraph.cisco.computers_and_peripherals.terminal;sketch=0;html=1;pointerEvents=1;dashed=0;fillColor=#036897;strokeColor=#ffffff;strokeWidth=2;verticalLabelPosition=bottom;verticalAlign=top;align=center;outlineConnect=0;" vertex="1" parent="1">
+          <mxGeometry x="190" y="300" width="61" height="54" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
