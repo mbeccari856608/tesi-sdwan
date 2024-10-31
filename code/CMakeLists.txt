@@ -11,13 +11,21 @@ project(Simulator VERSION 1.0)
 add_subdirectory(${CMAKE_SOURCE_DIR}/external/ns-allinone-3.42/ns-3.42/)
 include_directories(/home/michele/Scrivania/tesi-sdwan/openflowlib/openflow/include)
 
-add_executable(Simulator main.cpp)
 
 
-target_link_libraries(Simulator 
+add_executable(Simulator 
+    main.cpp
+    DeviceApplication.h
+    DeviceApplication.cpp)
+
+
+target_link_libraries(Simulator
+    ${libpoint-to-point}
     ${libopenflow}
     ${libinternet}
     ${libcsma}
+    ${libapplications}
+    ${libcore}
     ${libapplications})
 
 

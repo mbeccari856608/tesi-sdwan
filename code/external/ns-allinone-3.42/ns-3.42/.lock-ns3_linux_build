@@ -18,14 +18,14 @@ ENABLE_SUDO = False
 ENABLE_PYTHON_BINDINGS = False
 EXAMPLE_DIRECTORIES = []
 APPNAME = 'ns'
-BUILD_PROFILE = 'default'
+BUILD_PROFILE = 'debug'
 VERSION = '3.42' 
 BUILD_VERSION_STRING = '' 
 PYTHON = ['/usr/bin/python3']
 VALGRIND_FOUND = True 
 
 
-ns3_runnable_programs = ['/home/michele/Scrivania/tesi-sdwan/code/external/ns-allinone-3.42/ns-3.42/build/utils/perf/ns3.42-perf-io-default', '/home/michele/Scrivania/tesi-sdwan/code/external/ns-allinone-3.42/ns-3.42/build/utils/ns3.42-print-introspected-doxygen-default', '/home/michele/Scrivania/tesi-sdwan/code/external/ns-allinone-3.42/ns-3.42/build/utils/ns3.42-bench-packets-default', '/home/michele/Scrivania/tesi-sdwan/code/external/ns-allinone-3.42/ns-3.42/build/utils/ns3.42-bench-scheduler-default', '/home/michele/Scrivania/tesi-sdwan/code/external/ns-allinone-3.42/ns-3.42/build/scratch/subdir/ns3.42-scratch-subdir-default', '/home/michele/Scrivania/tesi-sdwan/code/external/ns-allinone-3.42/ns-3.42/build/scratch/nested-subdir/ns3.42-scratch-nested-subdir-executable-default', '/home/michele/Scrivania/tesi-sdwan/code/external/ns-allinone-3.42/ns-3.42/build/scratch/ns3.42-scratch-simulator-default', '/home/michele/Scrivania/tesi-sdwan/code/external/ns-allinone-3.42/ns-3.42/build/src/tap-bridge/ns3.42-tap-creator-default', '/home/michele/Scrivania/tesi-sdwan/code/external/ns-allinone-3.42/ns-3.42/build/src/fd-net-device/ns3.42-tap-device-creator-default', '/home/michele/Scrivania/tesi-sdwan/code/external/ns-allinone-3.42/ns-3.42/build/src/fd-net-device/ns3.42-raw-sock-creator-default', '/home/michele/Scrivania/tesi-sdwan/code/build/ns3.42-stdlib_pch_exec-default', ]
+ns3_runnable_programs = ['/home/michele/Scrivania/tesi-sdwan/code/external/ns-allinone-3.42/ns-3.42/build/utils/perf/ns3.42-perf-io-debug', '/home/michele/Scrivania/tesi-sdwan/code/external/ns-allinone-3.42/ns-3.42/build/utils/ns3.42-print-introspected-doxygen-debug', '/home/michele/Scrivania/tesi-sdwan/code/external/ns-allinone-3.42/ns-3.42/build/utils/ns3.42-bench-packets-debug', '/home/michele/Scrivania/tesi-sdwan/code/external/ns-allinone-3.42/ns-3.42/build/utils/ns3.42-bench-scheduler-debug', '/home/michele/Scrivania/tesi-sdwan/code/external/ns-allinone-3.42/ns-3.42/build/scratch/subdir/ns3.42-scratch-subdir-debug', '/home/michele/Scrivania/tesi-sdwan/code/external/ns-allinone-3.42/ns-3.42/build/scratch/nested-subdir/ns3.42-scratch-nested-subdir-executable-debug', '/home/michele/Scrivania/tesi-sdwan/code/external/ns-allinone-3.42/ns-3.42/build/scratch/ns3.42-scratch-simulator-debug', '/home/michele/Scrivania/tesi-sdwan/code/external/ns-allinone-3.42/ns-3.42/build/src/tap-bridge/ns3.42-tap-creator-debug', '/home/michele/Scrivania/tesi-sdwan/code/external/ns-allinone-3.42/ns-3.42/build/src/fd-net-device/ns3.42-tap-device-creator-debug', '/home/michele/Scrivania/tesi-sdwan/code/external/ns-allinone-3.42/ns-3.42/build/src/fd-net-device/ns3.42-raw-sock-creator-debug', '/home/michele/Scrivania/tesi-sdwan/code/build/ns3.42-stdlib_pch_exec-debug', ]
 
 ns3_runnable_scripts = []
 

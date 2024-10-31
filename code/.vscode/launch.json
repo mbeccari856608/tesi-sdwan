@@ -4,7 +4,7 @@
         "name": "Launch and debug simulator",
         "type": "cppdbg",
         "request": "launch",
-        "program": "${fileDirname}/build/Simulator.exe",
+        "program": "${fileDirname}/build/Simulator",
         "args": [],
         "preLaunchTask": "build",
         "stopAtEntry": false,
@@ -12,7 +12,7 @@
         "environment": [],
         "externalConsole": false,
         "MIMode": "gdb",
-        "miDebuggerPath": "C:\\msys64\\usr\\bin\\gdb.exe",
+        "miDebuggerPath": "/usr/bin/gdb",
         "setupCommands": [
             {
                 "description": "Enable pretty-printing for gdb",
