@@ -35,200 +35,194 @@
 namespace ns3
 {
 
-NS_LOG_COMPONENT_DEFINE("SenderApplication");
+    NS_LOG_COMPONENT_DEFINE("SenderApplication");
 
-NS_OBJECT_ENSURE_REGISTERED(SenderApplication);
+    NS_OBJECT_ENSURE_REGISTERED(SenderApplication);
 
-TypeId
-SenderApplication::GetTypeId()
-{
-    static TypeId tid =
-        TypeId("SenderApplication")
-            .SetParent<Application>()
-            .SetGroupName("Applications")
-            .AddConstructor<SenderApplication>()
-            .AddAttribute("SendSize",
-                          "The amount of data to send each time.",
-                          UintegerValue(512),
-                          MakeUintegerAccessor(&SenderApplication::m_sendSize),
-                          MakeUintegerChecker<uint32_t>(1))
-            .AddAttribute("Remote",
-                          "The address of the destination",
-                          AddressValue(),
-                          MakeAddressAccessor(&SenderApplication::m_peer),
-                          MakeAddressChecker())
-            .AddAttribute("Local",
-                          "The Address on which to bind the socket. If not set, it is generated "
-                          "automatically.",
-                          AddressValue(),
-                          MakeAddressAccessor(&SenderApplication::m_local),
-                          MakeAddressChecker())
-            .AddAttribute("Tos",
-                          "The Type of Service used to send IPv4 packets. "
-                          "All 8 bits of the TOS byte are set (including ECN bits).",
-                          UintegerValue(0),
-                          MakeUintegerAccessor(&SenderApplication::m_tos),
-                          MakeUintegerChecker<uint8_t>())
-            .AddAttribute("MaxBytes",
-                          "The total number of bytes to send. "
-                          "Once these bytes are sent, "
-                          "no data  is sent again. The value zero means "
-                          "that there is no limit.",
-                          UintegerValue(0),
-                          MakeUintegerAccessor(&SenderApplication::m_maxBytes),
-                          MakeUintegerChecker<uint64_t>())
-            .AddAttribute("Protocol",
-                          "The type of protocol to use.",
-                          TypeIdValue(TcpSocketFactory::GetTypeId()),
-                          MakeTypeIdAccessor(&SenderApplication::m_tid),
-                          MakeTypeIdChecker())
-            .AddAttribute("EnableSeqTsSizeHeader",
-                          "Add SeqTsSizeHeader to each packet",
-                          BooleanValue(false),
-                          MakeBooleanAccessor(&SenderApplication::m_enableSeqTsSizeHeader),
-                          MakeBooleanChecker())
-            .AddTraceSource("Tx",
-                            "A new packet is sent",
-                            MakeTraceSourceAccessor(&SenderApplication::m_txTrace),
-                            "ns3::Packet::TracedCallback")
-            .AddTraceSource("TxWithSeqTsSize",
-                            "A new packet is created with SeqTsSizeHeader",
-                            MakeTraceSourceAccessor(&SenderApplication::m_txTraceWithSeqTsSize),
-                            "ns3::PacketSink::SeqTsSizeCallback");
-    return tid;
-}
-
-SenderApplication::SenderApplication()
-    : m_socket(nullptr),
-      m_connected(false),
-      m_totBytes(0),
-      m_unsentPacket(nullptr)
-{
-    NS_LOG_FUNCTION(this);
-}
-
-SenderApplication::~SenderApplication()
-{
-    NS_LOG_FUNCTION(this);
-}
-
-void
-SenderApplication::SetMaxBytes(uint64_t maxBytes)
-{
-    NS_LOG_FUNCTION(this << maxBytes);
-    m_maxBytes = maxBytes;
-}
-
-Ptr<Socket>
-SenderApplication::GetSocket() const
-{
-    NS_LOG_FUNCTION(this);
-    return m_socket;
-}
-
-void
-SenderApplication::DoDispose()
-{
-    NS_LOG_FUNCTION(this);
-
-    m_socket = nullptr;
-    m_unsentPacket = nullptr;
-    // chain up
-    Application::DoDispose();
-}
-
-// Application Methods
-void
-SenderApplication::StartApplication() // Called at time specified by Start
-{
-    NS_LOG_FUNCTION(this);
-    Address from;
-
-    // Create the socket if not already
-    if (!m_socket)
+    TypeId
+    SenderApplication::GetTypeId()
     {
-        m_socket = Socket::CreateSocket(GetNode(), m_tid);
-        int ret = -1;
+        static TypeId tid =
+            TypeId("SenderApplication")
+                .SetParent<Application>()
+                .SetGroupName("Applications")
+                .AddConstructor<SenderApplication>()
+                .AddAttribute("SendSize",
+                              "The amount of data to send each time.",
+                              UintegerValue(512),
+                              MakeUintegerAccessor(&SenderApplication::m_sendSize),
+                              MakeUintegerChecker<uint32_t>(1))
+                .AddAttribute("Remote",
+                              "The address of the destination",
+                              AddressValue(),
+                              MakeAddressAccessor(&SenderApplication::m_peer),
+                              MakeAddressChecker())
+                .AddAttribute("Local",
+                              "The Address on which to bind the socket. If not set, it is generated "
+                              "automatically.",
+                              AddressValue(),
+                              MakeAddressAccessor(&SenderApplication::m_local),
+                              MakeAddressChecker())
+                .AddAttribute("Tos",
+                              "The Type of Service used to send IPv4 packets. "
+                              "All 8 bits of the TOS byte are set (including ECN bits).",
+                              UintegerValue(0),
+                              MakeUintegerAccessor(&SenderApplication::m_tos),
+                              MakeUintegerChecker<uint8_t>())
+                .AddAttribute("MaxBytes",
+                              "The total number of bytes to send. "
+                              "Once these bytes are sent, "
+                              "no data  is sent again. The value zero means "
+                              "that there is no limit.",
+                              UintegerValue(128),
+                              MakeUintegerAccessor(&SenderApplication::m_maxBytes),
+                              MakeUintegerChecker<uint64_t>())
+                .AddAttribute("EnableSeqTsSizeHeader",
+                              "Add SeqTsSizeHeader to each packet",
+                              BooleanValue(false),
+                              MakeBooleanAccessor(&SenderApplication::m_enableSeqTsSizeHeader),
+                              MakeBooleanChecker())
+                .AddTraceSource("Tx",
+                                "A new packet is sent",
+                                MakeTraceSourceAccessor(&SenderApplication::m_txTrace),
+                                "ns3::Packet::TracedCallback")
+                .AddTraceSource("TxWithSeqTsSize",
+                                "A new packet is created with SeqTsSizeHeader",
+                                MakeTraceSourceAccessor(&SenderApplication::m_txTraceWithSeqTsSize),
+                                "ns3::PacketSink::SeqTsSizeCallback");
+        return tid;
+    }
 
-        // Fatal error if socket type is not NS3_SOCK_STREAM or NS3_SOCK_SEQPACKET
-        if (m_socket->GetSocketType() != Socket::NS3_SOCK_STREAM &&
-            m_socket->GetSocketType() != Socket::NS3_SOCK_SEQPACKET)
+    SenderApplication::SenderApplication()
+        : m_socket(nullptr),
+          m_connected(false),
+          m_totBytes(0),
+          m_unsentPacket(nullptr)
+    {
+        NS_LOG_FUNCTION(this);
+    }
+
+    SenderApplication::~SenderApplication()
+    {
+        NS_LOG_FUNCTION(this);
+    }
+
+    void
+    SenderApplication::SetMaxBytes(uint64_t maxBytes)
+    {
+        NS_LOG_FUNCTION(this << maxBytes);
+        m_maxBytes = maxBytes;
+    }
+
+    Ptr<Socket>
+    SenderApplication::GetSocket() const
+    {
+        NS_LOG_FUNCTION(this);
+        return m_socket;
+    }
+
+    void
+    SenderApplication::DoDispose()
+    {
+        NS_LOG_FUNCTION(this);
+
+        m_socket = nullptr;
+        m_unsentPacket = nullptr;
+        // chain up
+        Application::DoDispose();
+    }
+
+    // Application Methods
+    void
+    SenderApplication::StartApplication() // Called at time specified by Start
+    {
+        NS_LOG_FUNCTION(this);
+        Address from;
+
+        // Create the socket if not already
+        if (!m_socket)
         {
-            NS_FATAL_ERROR("Using BulkSend with an incompatible socket type. "
-                           "BulkSend requires SOCK_STREAM or SOCK_SEQPACKET. "
-                           "In other words, use TCP instead of UDP.");
+            m_socket = Socket::CreateSocket(GetNode(), TcpSocketFactory::GetTypeId());
+            int ret = -1;
+
+            // Fatal error if socket type is not NS3_SOCK_STREAM or NS3_SOCK_SEQPACKET
+            if (m_socket->GetSocketType() != Socket::NS3_SOCK_STREAM &&
+                m_socket->GetSocketType() != Socket::NS3_SOCK_SEQPACKET)
+            {
+                NS_FATAL_ERROR("Using BulkSend with an incompatible socket type. "
+                               "BulkSend requires SOCK_STREAM or SOCK_SEQPACKET. "
+                               "In other words, use TCP instead of UDP.");
+            }
+
+            NS_ABORT_MSG_IF(m_peer.IsInvalid(), "'Remote' attribute not properly set");
+
+            if (!m_local.IsInvalid())
+            {
+                NS_ABORT_MSG_IF((Inet6SocketAddress::IsMatchingType(m_peer) &&
+                                 InetSocketAddress::IsMatchingType(m_local)) ||
+                                    (InetSocketAddress::IsMatchingType(m_peer) &&
+                                     Inet6SocketAddress::IsMatchingType(m_local)),
+                                "Incompatible peer and local address IP version");
+                ret = m_socket->Bind(m_local);
+            }
+            else
+            {
+                if (Inet6SocketAddress::IsMatchingType(m_peer))
+                {
+                    ret = m_socket->Bind6();
+                }
+                else if (InetSocketAddress::IsMatchingType(m_peer))
+                {
+                    ret = m_socket->Bind();
+                }
+            }
+
+            if (ret == -1)
+            {
+                NS_FATAL_ERROR("Failed to bind socket");
+            }
+
+            if (InetSocketAddress::IsMatchingType(m_peer))
+            {
+                m_socket->SetIpTos(m_tos); // Affects only IPv4 sockets.
+            }
+            m_socket->Connect(m_peer);
+            m_socket->ShutdownRecv();
+            m_socket->SetConnectCallback(MakeCallback(&SenderApplication::ConnectionSucceeded, this),
+                                         MakeCallback(&SenderApplication::ConnectionFailed, this));
+            m_socket->SetSendCallback(MakeCallback(&SenderApplication::DataSend, this));
         }
-
-        NS_ABORT_MSG_IF(m_peer.IsInvalid(), "'Remote' attribute not properly set");
-
-        if (!m_local.IsInvalid())
+        if (m_connected)
         {
-            NS_ABORT_MSG_IF((Inet6SocketAddress::IsMatchingType(m_peer) &&
-                             InetSocketAddress::IsMatchingType(m_local)) ||
-                                (InetSocketAddress::IsMatchingType(m_peer) &&
-                                 Inet6SocketAddress::IsMatchingType(m_local)),
-                            "Incompatible peer and local address IP version");
-            ret = m_socket->Bind(m_local);
+            m_socket->GetSockName(from);
+            SendData(from, m_peer);
+        }
+    }
+
+    void
+    SenderApplication::StopApplication() // Called at time specified by Stop
+    {
+        NS_LOG_FUNCTION(this);
+
+        if (m_socket)
+        {
+            m_socket->Close();
+            m_connected = false;
         }
         else
         {
-            if (Inet6SocketAddress::IsMatchingType(m_peer))
-            {
-                ret = m_socket->Bind6();
-            }
-            else if (InetSocketAddress::IsMatchingType(m_peer))
-            {
-                ret = m_socket->Bind();
-            }
+            NS_LOG_WARN("SenderApplication found null socket to close in StopApplication");
         }
-
-        if (ret == -1)
-        {
-            NS_FATAL_ERROR("Failed to bind socket");
-        }
-
-        if (InetSocketAddress::IsMatchingType(m_peer))
-        {
-            m_socket->SetIpTos(m_tos); // Affects only IPv4 sockets.
-        }
-        m_socket->Connect(m_peer);
-        m_socket->ShutdownRecv();
-        m_socket->SetConnectCallback(MakeCallback(&SenderApplication::ConnectionSucceeded, this),
-                                     MakeCallback(&SenderApplication::ConnectionFailed, this));
-        m_socket->SetSendCallback(MakeCallback(&SenderApplication::DataSend, this));
     }
-    if (m_connected)
+
+    // Private helpers
+
+    void
+    SenderApplication::SendData(const Address &from, const Address &to)
     {
-        m_socket->GetSockName(from);
-        SendData(from, m_peer);
-    }
-}
+        NS_LOG_FUNCTION(this);
 
-void
-SenderApplication::StopApplication() // Called at time specified by Stop
-{
-    NS_LOG_FUNCTION(this);
-
-    if (m_socket)
-    {
-        m_socket->Close();
-        m_connected = false;
-    }
-    else
-    {
-        NS_LOG_WARN("SenderApplication found null socket to close in StopApplication");
-    }
-}
-
-// Private helpers
-
-void
-SenderApplication::SendData(const Address& from, const Address& to)
-{
-    NS_LOG_FUNCTION(this);
-
-    while (m_maxBytes == 0 || m_totBytes < m_maxBytes)
-    { // Time to send more
+        // Time to send more
 
         // uint64_t to allow the comparison later.
         // the result is in a uint32_t range anyway, because
@@ -243,7 +237,7 @@ SenderApplication::SendData(const Address& from, const Address& to)
         NS_LOG_LOGIC("sending packet at " << Simulator::Now());
 
         Ptr<Packet> packet;
-        
+
         if (m_unsentPacket)
         {
             packet = m_unsentPacket;
@@ -279,7 +273,6 @@ SenderApplication::SendData(const Address& from, const Address& to)
             // some buffer space has freed up.
             NS_LOG_DEBUG("Unable to send packet; caching for later attempt");
             m_unsentPacket = packet;
-            break;
         }
         else if (actual > 0 && (unsigned)actual < toSend)
         {
@@ -293,54 +286,53 @@ SenderApplication::SendData(const Address& from, const Address& to)
             m_totBytes += actual;
             m_txTrace(sent);
             m_unsentPacket = unsent;
-            break;
         }
         else
         {
             NS_FATAL_ERROR("Unexpected return value from m_socket->Send ()");
         }
+
+        // Check if time to close (all sent)
+        if (m_totBytes == m_maxBytes && m_connected)
+        {
+            m_socket->Close();
+            m_connected = false;
+        }
     }
-    // Check if time to close (all sent)
-    if (m_totBytes == m_maxBytes && m_connected)
+
+    void
+    SenderApplication::ConnectionSucceeded(Ptr<Socket> socket)
     {
-        m_socket->Close();
-        m_connected = false;
-    }
-}
-
-void
-SenderApplication::ConnectionSucceeded(Ptr<Socket> socket)
-{
-    NS_LOG_FUNCTION(this << socket);
-    NS_LOG_LOGIC("SenderApplication Connection succeeded");
-    m_connected = true;
-    Address from;
-    Address to;
-    socket->GetSockName(from);
-    socket->GetPeerName(to);
-    SendData(from, to);
-}
-
-void
-SenderApplication::ConnectionFailed(Ptr<Socket> socket)
-{
-    NS_LOG_FUNCTION(this << socket);
-    NS_LOG_LOGIC("SenderApplication, Connection Failed");
-}
-
-void
-SenderApplication::DataSend(Ptr<Socket> socket, uint32_t)
-{
-    NS_LOG_FUNCTION(this);
-
-    if (m_connected)
-    { // Only send new data if the connection has completed
+        NS_LOG_FUNCTION(this << socket);
+        NS_LOG_LOGIC("SenderApplication Connection succeeded");
+        m_connected = true;
         Address from;
         Address to;
         socket->GetSockName(from);
         socket->GetPeerName(to);
         SendData(from, to);
     }
-}
+
+    void
+    SenderApplication::ConnectionFailed(Ptr<Socket> socket)
+    {
+        NS_LOG_FUNCTION(this << socket);
+        NS_LOG_LOGIC("SenderApplication, Connection Failed");
+    }
+
+    void
+    SenderApplication::DataSend(Ptr<Socket> socket, uint32_t)
+    {
+        NS_LOG_FUNCTION(this);
+
+        if (m_connected)
+        { // Only send new data if the connection has completed
+            Address from;
+            Address to;
+            socket->GetSockName(from);
+            socket->GetPeerName(to);
+            SendData(from, to);
+        }
+    }
 
 } // Namespace ns3

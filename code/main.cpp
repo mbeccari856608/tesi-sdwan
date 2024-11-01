@@ -75,8 +75,13 @@ int main(int argc, char *argv[])
     // Explicitly create the nodes required by the topology (shown above).
     //
     NS_LOG_INFO("Create nodes.");
+    ns3::Ptr<Node> cpe = CreateObject<Node>();
+
+    ns3::Ptr<Node> sinkNode = CreateObject<Node>();
+
     NodeContainer nodes;
-    nodes.Create(2);
+    nodes.Add(cpe);
+    nodes.Add(sinkNode);
 
     NS_LOG_INFO("Create channels.");
 
@@ -111,9 +116,8 @@ int main(int argc, char *argv[])
     //
     uint16_t port = 9; // well-known echo port number
 
-    ApplicationSenderHelper source("ns3::TcpSocketFactory", InetSocketAddress(i.GetAddress(1), port));
+    ApplicationSenderHelper source(InetSocketAddress(i.GetAddress(0), port), InetSocketAddress(i.GetAddress(1), port));
     // Set the amount of data to send in bytes.  Zero is unlimited.
-    
 
     ApplicationContainer sourceApps = source.Install(nodes.Get(0));
     sourceApps.Start(Seconds(0.0));
@@ -141,4 +145,3 @@ int main(int argc, char *argv[])
 
     return 0;
 }
-

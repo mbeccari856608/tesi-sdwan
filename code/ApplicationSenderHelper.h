@@ -13,14 +13,10 @@ class ApplicationSenderHelper : public ApplicationHelper
     /**
      * Create an ApplicationSenderHelper to make it easier to work with BulkSendApplications
      *
-     * \param protocol the name of the protocol to use to send traffic
-     *        by the applications. This string identifies the socket
-     *        factory type used to create sockets for the applications.
-     *        A typical value would be ns3::TcpSocketFactory.
      * \param address the address of the remote node to send traffic
      *        to.
      */
-    ApplicationSenderHelper(const std::string& protocol, const Address& address);
+    ApplicationSenderHelper(const Address& local, const Address& address, uint32_t amount);
 };
 
 } // namespace ns3
