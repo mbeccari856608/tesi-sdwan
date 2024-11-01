@@ -73,9 +73,9 @@ void DeviceApplication::Setup(ns3::Ptr<ns3::Socket> socket, ns3::Address address
         return;
     }
 
+
     transimissionSocket->SetSendCallback(ns3::MakeCallback(&OnSocketSend));
     transimissionSocket->SetDataSentCallback(ns3::MakeCallback(&OnSocketSend));
-    transimissionSocket->SetConnectCallback(ns3::MakeCallback(&OnConnectedSuccess), ns3::MakeCallback(&OnConnectedSuccess));
 
     auto bindResult = this->transimissionSocket->Bind();
     std::cout << "Risultato binding: " << bindResult << "\n";
@@ -88,13 +88,15 @@ void DeviceApplication::Setup(ns3::Ptr<ns3::Socket> socket, ns3::Address address
         ns3::Socket::SocketErrno err = this->transimissionSocket->GetErrno();
         std::cout << "Errore di connessione " << err << "\n";
     }
+        transimissionSocket->SetConnectCallback(ns3::MakeCallback(&OnConnectedSuccess), ns3::MakeCallback(&OnConnectedSuccess));
+
 
     ns3::Simulator::Schedule(ns3::Seconds(5.0), &DeviceApplication::SendPacket, this);
 }
 
 void DeviceApplication::SendPacket()
 {
-    ns3::Ptr<ns3::Packet> packet = ns3::Create<ns3::Packet>(100000);
+    ns3::Ptr<ns3::Packet> packet = ns3::Create<ns3::Packet>(128);
     auto result = transimissionSocket->Send(packet);
     std::cout << "Risultato " << result << " \n";
     std::cout << "Pacchetto mandato" << " \n";
