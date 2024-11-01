@@ -16,7 +16,11 @@ include_directories(/home/michele/Scrivania/tesi-sdwan/openflowlib/openflow/incl
 add_executable(Simulator 
     main.cpp
     DeviceApplication.h
-    DeviceApplication.cpp)
+    DeviceApplication.cpp
+    ApplicationSenderHelper.h
+    ApplicationSenderHelper.cpp
+    SenderApplication.h
+    SenderApplication.cpp)
 
 
 target_link_libraries(Simulator
