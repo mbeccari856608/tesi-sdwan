@@ -25,6 +25,31 @@ bool OnPacketReceived(ns3::Ptr<ns3::NetDevice> /* dev */,
     return true;
 }
 
+void OnSocketReceive(ns3::Ptr<ns3::Socket> socket)
+{
+    std::cout << "Yooo"  << "\n";
+}
+
+void OnConnectedSuccess2(ns3::Ptr<ns3::Socket> socket){
+        std::cout << "Yooo"  << "\n";
+
+}
+
+void OnConnectedFailure2(ns3::Ptr<ns3::Socket> socket){
+        std::cout << "Yooo"  << "\n";
+
+}
+
+bool OnConnectionCreated(ns3::Ptr<ns3::Socket>, const ns3::Address &newConnectionCreate){
+        std::cout << "Yooo"  << "\n";
+        return true;
+}
+
+void OnConnectionCreatedFail(ns3::Ptr<ns3::Socket>, const ns3::Address &newConnectionCreate){
+        std::cout << "Yooo"  << "\n";
+}
+
+
 
 int main(int argc, char *argv[])
 {
@@ -33,6 +58,10 @@ int main(int argc, char *argv[])
 
     DeviceApplication application;
     InternetStackHelper internet;
+    NetDeviceContainer devices;
+    ns3::Ptr<CsmaChannel> channel = CreateObject<CsmaChannel>();
+    Ipv4StaticRoutingHelper ipv4RoutingHelper;
+
 
     Ipv4AddressHelper ipv4;
     ipv4.SetBase("10.1.1.0", "255.255.255.0");
@@ -47,25 +76,27 @@ int main(int argc, char *argv[])
 
     sinkDevice->SetReceiveCallback(ns3::MakeCallback(&OnPacketReceived));
     sinkDevice->SetReceiveEnable(true);
+    std::cout << "Abilitato alla ricezione " << sinkDevice->IsReceiveEnabled() << std::endl;
+
     ns3::Ptr<DropTailQueue<ns3::Packet>> sinkQueue = CreateObject<DropTailQueue<ns3::Packet>>();
     sinkDevice->SetQueue(sinkQueue);
-    ns3::Ptr<CsmaChannel> sinkChannel = CreateObject<CsmaChannel>();
 
-    sinkDevice->Attach(sinkChannel);
+    sinkDevice->Attach(channel);
     sinkNode.Get(0)->AddDevice(sinkDevice);
 
     // Associa l'ip
     NetDeviceContainer sinkNetDeviceContainer(sinkDevice);
     Ipv4InterfaceContainer sinkInterfaceContainer = ipv4.Assign(sinkNetDeviceContainer);
     std::cout << "Indirizzo ip: " << sinkInterfaceContainer.GetAddress(0) << "\n";
-
-    // Aggiunge l'app
-    PacketSinkHelper sink("ns3::TcpSocketFactory", InetSocketAddress(sinkInterfaceContainer.GetAddress(0) , port));
-    ApplicationContainer sinkApps = sink.Install(sinkNode.Get(0));
     
-    sinkApps.Start(Seconds(0.0));
-    sinkApps.Stop(Seconds(10.0));
-
+    Ipv4GlobalRoutingHelper::PopulateRoutingTables();
+    
+    // Aggiunge l'app
+    ns3::Address sinkAddress = InetSocketAddress(sinkInterfaceContainer.GetAddress(0), port);
+    PacketSinkHelper packetSinkHelper("ns3::TcpSocketFactory", sinkAddress);
+    ApplicationContainer sinkApps = packetSinkHelper.Install(sinkNode.Get(0));
+    sinkApps.Start(Seconds(0.));
+    sinkApps.Stop(Seconds(20.));
 
 
     // Creo il nodo
@@ -75,9 +106,11 @@ int main(int argc, char *argv[])
     internet.Install(cpe);
     // Device e canale
     ns3::Ptr<CsmaNetDevice> cpeDevice = CreateObject<CsmaNetDevice>();
+    cpeDevice->SetSendEnable(true);
+    std::cout << "Abilitato all'invio " << cpeDevice->IsSendEnabled() << std::endl;
+
     ns3::Ptr<DropTailQueue<ns3::Packet>> cpeQueue = CreateObject<DropTailQueue<ns3::Packet>>();
     cpeDevice->SetQueue(cpeQueue);
-    ns3::Ptr<CsmaChannel> channel = CreateObject<CsmaChannel>();
 
     cpeDevice->Attach(channel);
     cpe.Get(0)->AddDevice(cpeDevice);
@@ -91,12 +124,21 @@ int main(int argc, char *argv[])
     // Aggiunge l'app
     ns3::Ptr<DeviceApplication> app = CreateObject<DeviceApplication>();
     ns3::Ptr<Socket> sourceSocket = Socket::CreateSocket(cpe.Get(0), TcpSocketFactory::GetTypeId());
+    sourceSocket->Bind( InetSocketAddress(cpeInterfaceContainer.GetAddress(0), port));
     cpe.Get(0)->AddApplication(app);
 
 
-    app->Setup(sourceSocket,  InetSocketAddress(sinkInterfaceContainer.GetAddress(0), port));
-    app->SetStartTime(Seconds(0.));
+    Ptr<Ipv4StaticRouting> staticRoutingB = ipv4RoutingHelper.GetStaticRouting(cpeInterfaceContainer.Get(0).first);
+    ns3::Ipv4Address sourceAddress = cpeInterfaceContainer.GetAddress(0);
+    ns3::Ipv4Address destinationAddress = sinkInterfaceContainer.GetAddress(0);
+
+    staticRoutingB->AddHostRouteTo(destinationAddress, 0);
+
+    app->Setup(sourceSocket,  sinkAddress);
+    app->SetStartTime(Seconds(1.));
     app->SetStopTime(Seconds(10.));
+
+
 
     //
     // Now, do the actual simulation.
@@ -109,16 +151,16 @@ int main(int argc, char *argv[])
 
 
 
-     Ptr<PacketSink> sink1 = DynamicCast<PacketSink>(sinkApps.Get(0));
-     if (sink1 == nullptr)
-     {
-         std::cout << "Sink non valido" << std::endl;
-     }
-     else
-     {
+       Ptr<PacketSink> sink1 = DynamicCast<PacketSink>(sinkApps.Get(0));
+       if (sink1 == nullptr)
+       {
+           std::cout << "Sink non valido" << std::endl;
+       }
+       else
+       {
 
-         std::cout << "Total Bytes Received: " << sink1->GetTotalRx() << std::endl;
-     }
+           std::cout << "Total Bytes Received: " << sink1->GetTotalRx() << std::endl;
+       }
 
     return 0;
 }

@@ -23,6 +23,7 @@ target_link_libraries(Simulator
     ${libpoint-to-point}
     ${libopenflow}
     ${libinternet}
+    ${libhelper}
     ${libcsma}
     ${libapplications}
     ${libcore}

@@ -1,6 +1,22 @@
 #include "DeviceApplication.h"
 #include "ns3/csma-helper.h"
 
+
+void OnSocketSend(ns3::Ptr<ns3::Socket> socket, uint32_t amount)
+{
+    std::cout << "Yooo"  << "\n";
+}
+
+void OnConnectedSuccess(ns3::Ptr<ns3::Socket> socket){
+        std::cout << "Yooo"  << "\n";
+
+}
+
+void OnConnectedFailure(ns3::Ptr<ns3::Socket> socket){
+        std::cout << "Yooo"  << "\n";
+
+}
+
 DeviceApplication::DeviceApplication() : transimissionSocket(nullptr),
                                          destinationAddress()
 {
@@ -49,27 +65,36 @@ void DeviceApplication::Setup(ns3::Ptr<ns3::Socket> socket, ns3::Address address
         std::cout << "Interfacce trovata" << "\n";
     }
 
-    auto bindResult = this->transimissionSocket->Bind();
-    std::cout << "Risultato binding: " << bindResult << "\n";
+    this->transimissionSocket->BindToNetDevice(csmaNetDevice);
 
     if (this->transimissionSocket == nullptr)
     {
-        std::cout << "Socket di destinazione non valida" << " \n";
+        std::cout << "Socket di origine non valida" << " \n";
         return;
     }
 
-    auto connectResult = this->transimissionSocket->Connect(this->destinationAddress);
-    std::cout << "Risultato connessione: " << connectResult << "\n";
-    ns3::Socket::SocketErrno err = this->transimissionSocket->GetErrno();
+    transimissionSocket->SetSendCallback(ns3::MakeCallback(&OnSocketSend));
+    transimissionSocket->SetDataSentCallback(ns3::MakeCallback(&OnSocketSend));
+    transimissionSocket->SetConnectCallback(ns3::MakeCallback(&OnConnectedSuccess), ns3::MakeCallback(&OnConnectedSuccess));
 
-    std::cout << "Errore: " << err << "\n";
+    auto bindResult = this->transimissionSocket->Bind();
+    std::cout << "Risultato binding: " << bindResult << "\n";
+    if (bindResult != 0){
+        std::cout << "Errore nel binding"  << "\n";
+    }
 
-    ns3::Simulator::Schedule(ns3::Seconds(2.0), &DeviceApplication::SendPacket, this);
+    auto connectionResult = this->transimissionSocket->Connect(destinationAddress);
+    if (connectionResult != 0){
+        ns3::Socket::SocketErrno err = this->transimissionSocket->GetErrno();
+        std::cout << "Errore di connessione " << err << "\n";
+    }
+
+    ns3::Simulator::Schedule(ns3::Seconds(5.0), &DeviceApplication::SendPacket, this);
 }
 
 void DeviceApplication::SendPacket()
 {
-    ns3::Ptr<ns3::Packet> packet = ns3::Create<ns3::Packet>(128);
+    ns3::Ptr<ns3::Packet> packet = ns3::Create<ns3::Packet>(100000);
     auto result = transimissionSocket->Send(packet);
     std::cout << "Risultato " << result << " \n";
     std::cout << "Pacchetto mandato" << " \n";
