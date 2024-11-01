@@ -18,8 +18,7 @@ public:
     DeviceApplication();
     virtual ~DeviceApplication();
     static ns3::TypeId GetTypeId();
-    void Setup(ns3::Ptr<ns3::Socket> socket,
-               ns3::Address address);
+    void Setup(ns3::Address address);
 
 private:
     void StartApplication() override;
@@ -27,7 +26,6 @@ private:
 
     void SendPacket();
 
-    ns3::Ptr<ns3::Socket> transimissionSocket;
     ns3::Address destinationAddress;
 };
 
