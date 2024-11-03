@@ -20,6 +20,7 @@
 #include "SenderApplication.h"
 
 #include "ns3/address.h"
+#include "ns3/ipv4.h"
 #include "ns3/boolean.h"
 #include "ns3/log.h"
 #include "ns3/node.h"
@@ -69,11 +70,8 @@ namespace ns3
                               UintegerValue(0),
                               MakeUintegerAccessor(&SenderApplication::m_tos),
                               MakeUintegerChecker<uint8_t>())
-                .AddAttribute("MaxBytes",
-                              "The total number of bytes to send. "
-                              "Once these bytes are sent, "
-                              "no data  is sent again. The value zero means "
-                              "that there is no limit.",
+                .AddAttribute("TotalAmount",
+                              "The total amount of bytes to send",
                               UintegerValue(128),
                               MakeUintegerAccessor(&SenderApplication::m_maxBytes),
                               MakeUintegerChecker<uint64_t>())
@@ -138,6 +136,20 @@ namespace ns3
     {
         NS_LOG_FUNCTION(this);
         Address from;
+
+        Ptr<Node> node = this->GetNode();
+        Ptr<Ipv4> ipv4Node = node->GetObject<ns3::Ipv4>();
+
+        // Saltiamo la prima interfaccia di rete perchè è quella di loopback
+
+        // for (uint32_t i = 1; i < ipv4Node->GetNInterfaces(); ++i)
+        // {
+        //     for (uint32_t j = 0; j < ipv4Node->GetNAddresses(i); ++j)
+        //     {
+        //         Ipv4Address addr = ipv4Node->GetAddress(i, j).GetLocal();
+        //         std::cout << "Interface " << i << " IP Address " << j << ": " << addr << std::endl;
+        //     }
+        // }
 
         // Create the socket if not already
         if (!m_socket)

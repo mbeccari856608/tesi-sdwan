@@ -76,7 +76,6 @@ int main(int argc, char *argv[])
     //
     NS_LOG_INFO("Create nodes.");
     ns3::Ptr<Node> cpe = CreateObject<Node>();
-
     ns3::Ptr<Node> sinkNode = CreateObject<Node>();
 
     NodeContainer nodes;
@@ -89,11 +88,10 @@ int main(int argc, char *argv[])
     // Explicitly create the point-to-point link required by the topology (shown above).
     //
 
-    CsmaHelper csma;
-    csma.SetChannelAttribute("DataRate", DataRateValue(DataRate(5000000)));
-    csma.SetChannelAttribute("Delay", TimeValue(MilliSeconds(2)));
-    csma.SetDeviceAttribute("Mtu", UintegerValue(1400));
-    NetDeviceContainer devices = csma.Install(nodes);
+    CsmaHelper slowInterfaceHelper;
+    slowInterfaceHelper.SetChannelAttribute("DataRate", DataRateValue(DataRate(5000000)));
+    slowInterfaceHelper.SetChannelAttribute("Delay", TimeValue(MilliSeconds(2)));
+    NetDeviceContainer devices = slowInterfaceHelper.Install(nodes);
 
     //
     // Install the internet stack on the nodes
@@ -116,7 +114,7 @@ int main(int argc, char *argv[])
     //
     uint16_t port = 9; // well-known echo port number
 
-    ApplicationSenderHelper source(InetSocketAddress(i.GetAddress(0), port), InetSocketAddress(i.GetAddress(1), port));
+    ApplicationSenderHelper source(InetSocketAddress(i.GetAddress(0), port), InetSocketAddress(i.GetAddress(1), port), 1280);
     // Set the amount of data to send in bytes.  Zero is unlimited.
 
     ApplicationContainer sourceApps = source.Install(nodes.Get(0));
