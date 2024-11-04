@@ -9,6 +9,7 @@
 #include "ns3/event-id.h"
 #include "ns3/ptr.h"
 #include "ns3/traced-callback.h"
+#include <map>
 
 namespace ns3
 {
@@ -16,45 +17,6 @@ namespace ns3
 class Address;
 class Socket;
 
-/**
- * \ingroup applications
- * \defgroup bulksend SenderApplication
- *
- * This traffic generator simply sends data
- * as fast as possible up to MaxBytes or until
- * the application is stopped (if MaxBytes is
- * zero). Once the lower layer send buffer is
- * filled, it waits until space is free to
- * send more data, essentially keeping a
- * constant flow of data. Only SOCK_STREAM
- * and SOCK_SEQPACKET sockets are supported.
- * For example, TCP sockets can be used, but
- * UDP sockets can not be used.
- */
-
-/**
- * \ingroup bulksend
- *
- * \brief Send as much traffic as possible, trying to fill the bandwidth.
- *
- * This traffic generator simply sends data
- * as fast as possible up to MaxBytes or until
- * the application is stopped (if MaxBytes is
- * zero). Once the lower layer send buffer is
- * filled, it waits until space is free to
- * send more data, essentially keeping a
- * constant flow of data. Only SOCK_STREAM
- * and SOCK_SEQPACKET sockets are supported.
- * For example, TCP sockets can be used, but
- * UDP sockets can not be used.
- *
- * If the attribute "EnableSeqTsSizeHeader" is enabled, the application will
- * use some bytes of the payload to store an header with a sequence number,
- * a timestamp, and the size of the packet sent. Support for extracting
- * statistics from this header have been added to \c ns3::PacketSink
- * (enable its "EnableSeqTsSizeHeader" attribute), or users may extract
- * the header via trace sources.
- */
 class SenderApplication : public Application
 {
   public:
@@ -103,10 +65,9 @@ class SenderApplication : public Application
      */
     void SendData(const Address& from, const Address& to);
 
-    Ptr<Socket> m_socket;                //!< Associated socket
+    std::map<Address, Ptr<Socket> > socketInfo;      //!< Map that keeps the association between the IP interfaces and their sockets.
+    std::map<Ptr<Socket>, bool> connectedInfo;       //!< Map that keeps the association between the sockets and whether or not they are connected,
     Address m_peer;                      //!< Peer address
-    Address m_local;                     //!< Local address to bind to
-    bool m_connected;                    //!< True if connected
     uint8_t m_tos;                       //!< The packets Type of Service
     uint32_t m_sendSize;                 //!< Size of data to send each time
     uint64_t m_maxBytes;                 //!< Limit total number of bytes sent
@@ -144,6 +105,9 @@ class SenderApplication : public Application
      * \param unused actually unused
      */
     void DataSend(Ptr<Socket> socket, uint32_t unused);
+
+    void InitSocket(Address &from);
+    void SendPacket(const Address &from, const Address &to);
 };
 
 } // namespace ns3

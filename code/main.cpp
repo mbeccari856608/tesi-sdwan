@@ -89,8 +89,8 @@ int main(int argc, char *argv[])
     //
 
     CsmaHelper slowInterfaceHelper;
-    slowInterfaceHelper.SetChannelAttribute("DataRate", DataRateValue(DataRate(5000000)));
-    slowInterfaceHelper.SetChannelAttribute("Delay", TimeValue(MilliSeconds(2)));
+    slowInterfaceHelper.SetChannelAttribute("DataRate", DataRateValue(DataRate(1280)));
+    //slowInterfaceHelper.SetChannelAttribute("Delay", TimeValue(MilliSeconds(2)));
     NetDeviceContainer devices = slowInterfaceHelper.Install(nodes);
 
     //
@@ -114,8 +114,7 @@ int main(int argc, char *argv[])
     //
     uint16_t port = 9; // well-known echo port number
 
-    ApplicationSenderHelper source(InetSocketAddress(i.GetAddress(0), port), InetSocketAddress(i.GetAddress(1), port), 1280);
-    // Set the amount of data to send in bytes.  Zero is unlimited.
+    ApplicationSenderHelper source(InetSocketAddress(i.GetAddress(1), port), 1280);
 
     ApplicationContainer sourceApps = source.Install(nodes.Get(0));
     sourceApps.Start(Seconds(0.0));
@@ -133,7 +132,6 @@ int main(int argc, char *argv[])
     // Now, do the actual simulation.
     //
     NS_LOG_INFO("Run Simulation.");
-    Simulator::Stop(Seconds(10.0));
     Simulator::Run();
     Simulator::Destroy();
     NS_LOG_INFO("Done.");

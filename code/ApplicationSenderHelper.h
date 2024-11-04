@@ -16,7 +16,7 @@ class ApplicationSenderHelper : public ApplicationHelper
      * \param address the address of the remote node to send traffic
      *        to.
      */
-    ApplicationSenderHelper(const Address& local, const Address& address, uint32_t amount);
+    ApplicationSenderHelper(const Address& address, uint32_t amount);
 };
 
 } // namespace ns3

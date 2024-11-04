@@ -50,19 +50,13 @@ namespace ns3
                 .AddConstructor<SenderApplication>()
                 .AddAttribute("SendSize",
                               "The amount of data to send each time.",
-                              UintegerValue(512),
+                              UintegerValue(128),
                               MakeUintegerAccessor(&SenderApplication::m_sendSize),
                               MakeUintegerChecker<uint32_t>(1))
                 .AddAttribute("Remote",
                               "The address of the destination",
                               AddressValue(),
                               MakeAddressAccessor(&SenderApplication::m_peer),
-                              MakeAddressChecker())
-                .AddAttribute("Local",
-                              "The Address on which to bind the socket. If not set, it is generated "
-                              "automatically.",
-                              AddressValue(),
-                              MakeAddressAccessor(&SenderApplication::m_local),
                               MakeAddressChecker())
                 .AddAttribute("Tos",
                               "The Type of Service used to send IPv4 packets. "
@@ -92,8 +86,7 @@ namespace ns3
     }
 
     SenderApplication::SenderApplication()
-        : m_socket(nullptr),
-          m_connected(false),
+        : socketInfo(),
           m_totBytes(0),
           m_unsentPacket(nullptr)
     {
@@ -112,19 +105,21 @@ namespace ns3
         m_maxBytes = maxBytes;
     }
 
-    Ptr<Socket>
-    SenderApplication::GetSocket() const
-    {
-        NS_LOG_FUNCTION(this);
-        return m_socket;
-    }
-
     void
     SenderApplication::DoDispose()
     {
         NS_LOG_FUNCTION(this);
 
-        m_socket = nullptr;
+        std::map<Address, Ptr<Socket>>::iterator keyValuePair;
+
+        for (keyValuePair = this->socketInfo.begin(); keyValuePair != this->socketInfo.end(); keyValuePair++)
+        {
+            Ptr<Socket> socket = keyValuePair->second;
+
+            socket = nullptr;
+        }
+
+        this->socketInfo.clear();
         m_unsentPacket = nullptr;
         // chain up
         Application::DoDispose();
@@ -142,24 +137,33 @@ namespace ns3
 
         // Saltiamo la prima interfaccia di rete perchè è quella di loopback
 
-        // for (uint32_t i = 1; i < ipv4Node->GetNInterfaces(); ++i)
-        // {
-        //     for (uint32_t j = 0; j < ipv4Node->GetNAddresses(i); ++j)
-        //     {
-        //         Ipv4Address addr = ipv4Node->GetAddress(i, j).GetLocal();
-        //         std::cout << "Interface " << i << " IP Address " << j << ": " << addr << std::endl;
-        //     }
-        // }
-
-        // Create the socket if not already
-        if (!m_socket)
+        uint32_t startingInterface = 1;
+        for (uint32_t i = startingInterface; i < ipv4Node->GetNInterfaces(); ++i)
         {
-            m_socket = Socket::CreateSocket(GetNode(), TcpSocketFactory::GetTypeId());
+            for (uint32_t j = 0; j < ipv4Node->GetNAddresses(i); ++j)
+            {
+                Ipv4Address addr = ipv4Node->GetAddress(i, j).GetLocal();
+                std::cout << "Interface " << i << " IP Address " << j << ": " << addr << std::endl;
+                Address address = InetSocketAddress(addr, 8080); 
+                InitSocket(address);
+            }
+        }
+    }
+
+    void SenderApplication::InitSocket(Address &from)
+    {
+      
+        // Create the socket if not already
+        if ((this->socketInfo.find(from) == this->socketInfo.end()))
+        {
+            Ptr<Socket> maybeSocket = Socket::CreateSocket(GetNode(), TcpSocketFactory::GetTypeId()); 
+            this->socketInfo.insert_or_assign(from, maybeSocket);
+            this->connectedInfo.insert_or_assign(maybeSocket, false);
             int ret = -1;
 
             // Fatal error if socket type is not NS3_SOCK_STREAM or NS3_SOCK_SEQPACKET
-            if (m_socket->GetSocketType() != Socket::NS3_SOCK_STREAM &&
-                m_socket->GetSocketType() != Socket::NS3_SOCK_SEQPACKET)
+            if (maybeSocket->GetSocketType() != Socket::NS3_SOCK_STREAM &&
+                maybeSocket->GetSocketType() != Socket::NS3_SOCK_SEQPACKET)
             {
                 NS_FATAL_ERROR("Using BulkSend with an incompatible socket type. "
                                "BulkSend requires SOCK_STREAM or SOCK_SEQPACKET. "
@@ -168,24 +172,24 @@ namespace ns3
 
             NS_ABORT_MSG_IF(m_peer.IsInvalid(), "'Remote' attribute not properly set");
 
-            if (!m_local.IsInvalid())
+            if (!from.IsInvalid())
             {
                 NS_ABORT_MSG_IF((Inet6SocketAddress::IsMatchingType(m_peer) &&
-                                 InetSocketAddress::IsMatchingType(m_local)) ||
+                                 InetSocketAddress::IsMatchingType(from)) ||
                                     (InetSocketAddress::IsMatchingType(m_peer) &&
-                                     Inet6SocketAddress::IsMatchingType(m_local)),
+                                     Inet6SocketAddress::IsMatchingType(from)),
                                 "Incompatible peer and local address IP version");
-                ret = m_socket->Bind(m_local);
+                ret = maybeSocket->Bind(from);
             }
             else
             {
                 if (Inet6SocketAddress::IsMatchingType(m_peer))
                 {
-                    ret = m_socket->Bind6();
+                    ret = maybeSocket->Bind6();
                 }
                 else if (InetSocketAddress::IsMatchingType(m_peer))
                 {
-                    ret = m_socket->Bind();
+                    ret = maybeSocket->Bind();
                 }
             }
 
@@ -196,19 +200,24 @@ namespace ns3
 
             if (InetSocketAddress::IsMatchingType(m_peer))
             {
-                m_socket->SetIpTos(m_tos); // Affects only IPv4 sockets.
+                maybeSocket->SetIpTos(m_tos); // Affects only IPv4 sockets.
             }
-            m_socket->Connect(m_peer);
-            m_socket->ShutdownRecv();
-            m_socket->SetConnectCallback(MakeCallback(&SenderApplication::ConnectionSucceeded, this),
-                                         MakeCallback(&SenderApplication::ConnectionFailed, this));
-            m_socket->SetSendCallback(MakeCallback(&SenderApplication::DataSend, this));
+            maybeSocket->Connect(m_peer);
+            maybeSocket->ShutdownRecv();
+            maybeSocket->SetConnectCallback(MakeCallback(&SenderApplication::ConnectionSucceeded, this),
+                                            MakeCallback(&SenderApplication::ConnectionFailed, this));
         }
-        if (m_connected)
+        
+          Ptr<Socket> socket = this->socketInfo[from];
+        if (this->connectedInfo[socket])
         {
-            m_socket->GetSockName(from);
-            SendData(from, m_peer);
+            socket->GetSockName(from);
         }
+    }
+
+    void SenderApplication::SendPacket(const Address &from, const Address &to)
+    {
+        this->SendData(from, to);
     }
 
     void
@@ -216,10 +225,18 @@ namespace ns3
     {
         NS_LOG_FUNCTION(this);
 
-        if (m_socket)
+        std::map<Address, Ptr<Socket>>::iterator keyValuePair;
+
+        if (keyValuePair != this->socketInfo.end())
         {
-            m_socket->Close();
-            m_connected = false;
+
+            for (keyValuePair = this->socketInfo.begin(); keyValuePair != this->socketInfo.end(); keyValuePair++)
+            {
+                Ptr<Socket> socket = keyValuePair->second;
+
+                socket->Close();
+                this->connectedInfo[socket] = false;
+            }
         }
         else
         {
@@ -232,6 +249,8 @@ namespace ns3
     void
     SenderApplication::SendData(const Address &from, const Address &to)
     {
+        auto m_socket = this->socketInfo[from];
+        auto m_connected = this->connectedInfo[m_socket];
         NS_LOG_FUNCTION(this);
 
         // Time to send more
@@ -317,12 +336,12 @@ namespace ns3
     {
         NS_LOG_FUNCTION(this << socket);
         NS_LOG_LOGIC("SenderApplication Connection succeeded");
-        m_connected = true;
+        this->connectedInfo.insert_or_assign(socket, true);
         Address from;
         Address to;
         socket->GetSockName(from);
         socket->GetPeerName(to);
-        SendData(from, to);
+        ns3::Simulator::Schedule(Seconds(2), &SenderApplication::SendPacket, this, from, m_peer);
     }
 
     void
@@ -337,7 +356,7 @@ namespace ns3
     {
         NS_LOG_FUNCTION(this);
 
-        if (m_connected)
+        if (this->connectedInfo[socket])
         { // Only send new data if the connection has completed
             Address from;
             Address to;
