@@ -62,19 +62,9 @@ int main(int argc, char *argv[])
     bool tracing = false;
     uint32_t maxBytes = 0;
 
-    //
-    // Allow the user to override any of the defaults at
-    // run-time, via command-line arguments
-    //
-    CommandLine cmd(__FILE__);
-    cmd.AddValue("tracing", "Flag to enable/disable tracing", tracing);
-    cmd.AddValue("maxBytes", "Total number of bytes for application to send", maxBytes);
-    cmd.Parse(argc, argv);
 
-    //
-    // Explicitly create the nodes required by the topology (shown above).
-    //
-    NS_LOG_INFO("Create nodes.");
+
+
     ns3::Ptr<Node> cpe = CreateObject<Node>();
     ns3::Ptr<Node> sinkNode = CreateObject<Node>();
 
@@ -82,59 +72,53 @@ int main(int argc, char *argv[])
     nodes.Add(cpe);
     nodes.Add(sinkNode);
 
-    NS_LOG_INFO("Create channels.");
 
-    //
-    // Explicitly create the point-to-point link required by the topology (shown above).
-    //
 
     CsmaHelper slowInterfaceHelper;
     slowInterfaceHelper.SetChannelAttribute("DataRate", DataRateValue(DataRate(1280)));
-    //slowInterfaceHelper.SetChannelAttribute("Delay", TimeValue(MilliSeconds(2)));
+    slowInterfaceHelper.SetChannelAttribute("Delay", TimeValue(MilliSeconds(200)));
     NetDeviceContainer devices = slowInterfaceHelper.Install(nodes);
 
-    //
-    // Install the internet stack on the nodes
-    //
+
+
+
     InternetStackHelper internet;
     internet.Install(nodes);
 
-    //
-    // We've got the "hardware" in place.  Now we need to add IP addresses.
-    //
-    NS_LOG_INFO("Assign IP Addresses.");
+
     Ipv4AddressHelper ipv4;
     ipv4.SetBase("10.1.1.0", "255.255.255.0");
     Ipv4InterfaceContainer i = ipv4.Assign(devices);
 
-    NS_LOG_INFO("Create Applications.");
 
-    //
-    // Create a BulkSendApplication and install it on node 0
-    //
+
     uint16_t port = 9; // well-known echo port number
-
-    ApplicationSenderHelper source(InetSocketAddress(i.GetAddress(1), port), 1280);
+    
+    auto sinkAddress = InetSocketAddress(i.GetAddress(1), port);
+    ApplicationSenderHelper source(sinkAddress, 1280);
 
     ApplicationContainer sourceApps = source.Install(nodes.Get(0));
     sourceApps.Start(Seconds(0.0));
-    sourceApps.Stop(Seconds(10.0));
 
     //
     // Create a PacketSinkApplication and install it on node 1
     //
-    PacketSinkHelper sink("ns3::TcpSocketFactory", InetSocketAddress(Ipv4Address::GetAny(), port));
+    PacketSinkHelper sink("ns3::TcpSocketFactory", sinkAddress);
     ApplicationContainer sinkApps = sink.Install(nodes.Get(1));
     sinkApps.Start(Seconds(0.0));
-    sinkApps.Stop(Seconds(10.0));
 
     //
     // Now, do the actual simulation.
     //
     NS_LOG_INFO("Run Simulation.");
     Simulator::Run();
+    auto finalTime = Simulator::Now().GetMinutes();
     Simulator::Destroy();
-    NS_LOG_INFO("Done.");
+
+    std::cout << "Finito " << Simulator::IsFinished() << std::endl;
+    
+
+    std::cout << "Durata totale " << finalTime << std::endl;
 
     Ptr<PacketSink> sink1 = DynamicCast<PacketSink>(sinkApps.Get(0));
     std::cout << "Total Bytes Received: " << sink1->GetTotalRx() << std::endl;

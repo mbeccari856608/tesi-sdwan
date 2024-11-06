@@ -6,6 +6,8 @@
 #include "ns3/core-module.h"
 #include "ns3/internet-module.h"
 #include "ns3/network-module.h"
+#include "ns3/csma-net-device.h"
+#include <vector>
 
 /**
  * @brief Classe utilizzata per rappresentare l'applicazione installata
@@ -25,7 +27,7 @@ private:
     void StopApplication() override;
 
     void SendPacket();
-
+    std::vector<ns3::CsmaNetDevice> GetAllDevices();
     ns3::Address destinationAddress;
 };
 

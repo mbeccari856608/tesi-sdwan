@@ -2,21 +2,6 @@
 #include "ns3/csma-helper.h"
 
 
-void OnSocketSend(ns3::Ptr<ns3::Socket> socket, uint32_t amount)
-{
-    std::cout << "Yooo"  << "\n";
-}
-
-void OnConnectedSuccess(ns3::Ptr<ns3::Socket> socket){
-        std::cout << "Yooo"  << "\n";
-
-}
-
-void OnConnectedFailure(ns3::Ptr<ns3::Socket> socket){
-        std::cout << "Yooo"  << "\n";
-
-}
-
 DeviceApplication::DeviceApplication() :
                                          destinationAddress()
 {
