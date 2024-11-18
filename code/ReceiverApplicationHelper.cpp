@@ -5,10 +5,10 @@
 namespace ns3
 {
 
-ReceiverApplicationHelper::ReceiverApplicationHelper(const std::string& protocol, const Address& address)
+ReceiverApplicationHelper::ReceiverApplicationHelper(const Address& address)
     : ApplicationHelper("ReceiverApplication")
 {
-    m_factory.Set("Protocol", StringValue(protocol));
+    
     m_factory.Set("Local", AddressValue(address));
 }
 

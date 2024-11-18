@@ -19,7 +19,13 @@ add_executable(Simulator
     ApplicationSenderHelper.h
     ApplicationSenderHelper.cpp
     SenderApplication.h
-    SenderApplication.cpp)
+    SenderApplication.cpp
+    ReceiverApplicationHelper.h
+    ReceiverApplicationHelper.cpp
+    ReceiverApplication.h
+    ReceiverApplication.cpp
+    Utils.h
+    Utils.cpp)
 
 
 target_link_libraries(Simulator

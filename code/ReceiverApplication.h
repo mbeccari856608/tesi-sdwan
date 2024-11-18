@@ -1,26 +1,7 @@
-/*
- * Copyright 2007 University of Washington
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation;
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- * Author:  Tom Henderson (tomhend@u.washington.edu)
- */
+#ifndef RECEIVER_APPLICATION_H
+#define RECEIVER_APPLICATION_H
 
-#ifndef PACKET_SINK_H
-#define PACKET_SINK_H
-
-#include "seq-ts-size-header.h"
+#include "ns3/seq-ts-size-header.h"
 
 #include "ns3/address.h"
 #include "ns3/application.h"
@@ -29,7 +10,7 @@
 #include "ns3/inet6-socket-address.h"
 #include "ns3/ptr.h"
 #include "ns3/traced-callback.h"
-
+#include <map>
 #include <unordered_map>
 
 namespace ns3
@@ -58,11 +39,6 @@ class ReceiverApplication : public Application
     uint64_t GetTotalRx() const;
 
     /**
-     * \return pointer to listening socket
-     */
-    Ptr<Socket> GetListeningSocket() const;
-
-    /**
      * \return list of pointers to accepted sockets
      */
     std::list<Ptr<Socket>> GetAcceptedSockets() const;
@@ -86,6 +62,8 @@ class ReceiverApplication : public Application
   private:
     void StartApplication() override;
     void StopApplication() override;
+
+    void InitReceivingSocket(Address &interfaceAddress);
 
     /**
      * \brief Handle a packet received by the application
@@ -120,17 +98,52 @@ class ReceiverApplication : public Application
      */
     void PacketReceived(const Ptr<Packet>& p, const Address& from, const Address& localAddress);
 
+        /**
+     * \brief Hashing for the Address class
+     */
+    struct AddressHash
+    {
+        /**
+         * \brief operator ()
+         * \param x the address of which calculate the hash
+         * \return the hash of x
+         *
+         * Should this method go in address.h?
+         *
+         * It calculates the hash taking the uint32_t hash value of the IPv4 or IPv6 address.
+         * It works only for InetSocketAddresses (IPv4 version) or Inet6SocketAddresses (IPv6
+         * version)
+         */
+        size_t operator()(const Address& x) const
+        {
+            if (InetSocketAddress::IsMatchingType(x))
+            {
+                InetSocketAddress a = InetSocketAddress::ConvertFrom(x);
+                return Ipv4AddressHash()(a.GetIpv4());
+            }
+            else if (Inet6SocketAddress::IsMatchingType(x))
+            {
+                Inet6SocketAddress a = Inet6SocketAddress::ConvertFrom(x);
+                return Ipv6AddressHash()(a.GetIpv6());
+            }
+
+            NS_ABORT_MSG("PacketSink: unexpected address type, neither IPv4 nor IPv6");
+            return 0; // silence the warnings.
+        }
+    };
+
+
+
     std::unordered_map<Address, Ptr<Packet>, AddressHash> m_buffer; //!< Buffer for received packets
 
     // In the case of TCP, each socket accept returns a new socket, so the
     // listening socket is stored separately from the accepted sockets
-    Ptr<Socket> m_socket;                //!< Listening socket
+    std::map<Address, Ptr<Socket>> listeningSocketInfo; //!< Map the associates the IP address of an interface with the socket.
     std::list<Ptr<Socket>> m_socketList; //!< the accepted sockets
 
     Address m_local;      //!< Local address to bind to (address and port)
     uint16_t m_localPort; //!< Local port to bind to
     uint64_t m_totalRx;   //!< Total bytes received
-    TypeId m_tid;         //!< Protocol TypeId
 
     bool m_enableSeqTsSizeHeader{false}; //!< Enable or disable the export of SeqTsSize header
 
@@ -146,4 +159,4 @@ class ReceiverApplication : public Application
 
 } // namespace ns3
 
-#endif /* PACKET_SINK_H */
+#endif /* RECEIVER_APPLICATION_H */

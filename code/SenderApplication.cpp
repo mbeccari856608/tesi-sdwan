@@ -53,11 +53,6 @@ namespace ns3
                               UintegerValue(128),
                               MakeUintegerAccessor(&SenderApplication::m_sendSize),
                               MakeUintegerChecker<uint32_t>(1))
-                .AddAttribute("Remote",
-                              "The address of the destination",
-                              AddressValue(),
-                              MakeAddressAccessor(&SenderApplication::m_peer),
-                              MakeAddressChecker())
                 .AddAttribute("Tos",
                               "The Type of Service used to send IPv4 packets. "
                               "All 8 bits of the TOS byte are set (including ECN bits).",
@@ -86,7 +81,9 @@ namespace ns3
     }
 
     SenderApplication::SenderApplication()
-        : socketInfo(),
+        : destinationInfo(),
+          connectedInfo(),
+          socketInfo(),
           m_totBytes(0),
           m_unsentPacket(nullptr)
     {
@@ -130,7 +127,6 @@ namespace ns3
     SenderApplication::StartApplication() // Called at time specified by Start
     {
         NS_LOG_FUNCTION(this);
-        Address from;
 
         Ptr<Node> node = this->GetNode();
         Ptr<Ipv4> ipv4Node = node->GetObject<ns3::Ipv4>();
@@ -144,20 +140,22 @@ namespace ns3
             {
                 Ipv4Address addr = ipv4Node->GetAddress(i, j).GetLocal();
                 std::cout << "Interface " << i << " IP Address " << j << ": " << addr << std::endl;
-                Address address = InetSocketAddress(addr, 8080); 
-                InitSocket(address);
+                Address address = InetSocketAddress(addr, 8080);
+                Address destinationAddress = this->addresses->at(i - 1);
+                InitSocket(address, destinationAddress);
             }
         }
     }
 
-    void SenderApplication::InitSocket(Address &from)
+    void SenderApplication::InitSocket(Address &from, Address &destinationAddress)
     {
-      
+
         // Create the socket if not already
         if ((this->socketInfo.find(from) == this->socketInfo.end()))
         {
-            Ptr<Socket> maybeSocket = Socket::CreateSocket(GetNode(), TcpSocketFactory::GetTypeId()); 
+            Ptr<Socket> maybeSocket = Socket::CreateSocket(GetNode(), TcpSocketFactory::GetTypeId());
             this->socketInfo.insert_or_assign(from, maybeSocket);
+            this->destinationInfo.insert_or_assign(maybeSocket, destinationAddress);
             this->connectedInfo.insert_or_assign(maybeSocket, false);
             int ret = -1;
 
@@ -170,24 +168,24 @@ namespace ns3
                                "In other words, use TCP instead of UDP.");
             }
 
-            NS_ABORT_MSG_IF(m_peer.IsInvalid(), "'Remote' attribute not properly set");
+            NS_ABORT_MSG_IF(destinationAddress.IsInvalid(), "Invalid destination address");
 
             if (!from.IsInvalid())
             {
-                NS_ABORT_MSG_IF((Inet6SocketAddress::IsMatchingType(m_peer) &&
+                NS_ABORT_MSG_IF((Inet6SocketAddress::IsMatchingType(destinationAddress) &&
                                  InetSocketAddress::IsMatchingType(from)) ||
-                                    (InetSocketAddress::IsMatchingType(m_peer) &&
+                                    (InetSocketAddress::IsMatchingType(destinationAddress) &&
                                      Inet6SocketAddress::IsMatchingType(from)),
                                 "Incompatible peer and local address IP version");
                 ret = maybeSocket->Bind(from);
             }
             else
             {
-                if (Inet6SocketAddress::IsMatchingType(m_peer))
+                if (Inet6SocketAddress::IsMatchingType(destinationAddress))
                 {
                     ret = maybeSocket->Bind6();
                 }
-                else if (InetSocketAddress::IsMatchingType(m_peer))
+                else if (InetSocketAddress::IsMatchingType(destinationAddress))
                 {
                     ret = maybeSocket->Bind();
                 }
@@ -198,17 +196,17 @@ namespace ns3
                 NS_FATAL_ERROR("Failed to bind socket");
             }
 
-            if (InetSocketAddress::IsMatchingType(m_peer))
+            if (InetSocketAddress::IsMatchingType(destinationAddress))
             {
                 maybeSocket->SetIpTos(m_tos); // Affects only IPv4 sockets.
             }
-            maybeSocket->Connect(m_peer);
+            maybeSocket->Connect(destinationAddress);
             maybeSocket->ShutdownRecv();
             maybeSocket->SetConnectCallback(MakeCallback(&SenderApplication::ConnectionSucceeded, this),
                                             MakeCallback(&SenderApplication::ConnectionFailed, this));
         }
-        
-          Ptr<Socket> socket = this->socketInfo[from];
+
+        Ptr<Socket> socket = this->socketInfo[from];
         if (this->connectedInfo[socket])
         {
             socket->GetSockName(from);
@@ -337,11 +335,13 @@ namespace ns3
         NS_LOG_FUNCTION(this << socket);
         NS_LOG_LOGIC("SenderApplication Connection succeeded");
         this->connectedInfo.insert_or_assign(socket, true);
+
         Address from;
         Address to;
         socket->GetSockName(from);
         socket->GetPeerName(to);
-        ns3::Simulator::Schedule(Seconds(2), &SenderApplication::SendPacket, this, from, m_peer);
+        auto destination = this->destinationInfo[socket];
+        ns3::Simulator::Schedule(Seconds(2), &SenderApplication::SendPacket, this, from, destination);
     }
 
     void

@@ -10,13 +10,24 @@ namespace ns3
 class ApplicationSenderHelper : public ApplicationHelper
 {
   public:
+
     /**
-     * Create an ApplicationSenderHelper to make it easier to work with BulkSendApplications
+     * Create an ApplicationSenderHelper to make it easier to work with SenderApplications.
+     * 
+     * @param addresses The possible destination addresses: the first address is for the first interface,
+     *                  the second one is for the second interface and so on.
      *
-     * \param address the address of the remote node to send traffic
-     *        to.
      */
-    ApplicationSenderHelper(const Address& address, uint32_t amount);
+    ApplicationSenderHelper(std::vector<ns3::Address>& destinations, uint32_t packetAmount);
+
+    /**
+     * Due to how ns3 works we may need to do some manual tweaking when adding the application
+     * to the device.
+     */
+    Ptr<Application> DoInstall(Ptr<Node> node) override;
+
+    private:
+      std::vector<Address>& addresses;
 };
 
 } // namespace ns3

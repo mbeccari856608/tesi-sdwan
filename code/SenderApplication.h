@@ -14,11 +14,11 @@
 namespace ns3
 {
 
-class Address;
-class Socket;
+  class Address;
+  class Socket;
 
-class SenderApplication : public Application
-{
+  class SenderApplication : public Application
+  {
   public:
     /**
      * \brief Get the type ID.
@@ -51,6 +51,11 @@ class SenderApplication : public Application
      */
     Ptr<Socket> GetSocket() const;
 
+    /**
+     * \brief Pointer to array containing all available destination addresses
+     */
+    std::unique_ptr<std::vector<Address>> addresses;
+
   protected:
     void DoDispose() override;
 
@@ -63,26 +68,26 @@ class SenderApplication : public Application
      * \param from From address
      * \param to To address
      */
-    void SendData(const Address& from, const Address& to);
+    void SendData(const Address &from, const Address &to);
 
-    std::map<Address, Ptr<Socket> > socketInfo;      //!< Map that keeps the association between the IP interfaces and their sockets.
-    std::map<Ptr<Socket>, bool> connectedInfo;       //!< Map that keeps the association between the sockets and whether or not they are connected,
-    Address m_peer;                      //!< Peer address
-    uint8_t m_tos;                       //!< The packets Type of Service
-    uint32_t m_sendSize;                 //!< Size of data to send each time
-    uint64_t m_maxBytes;                 //!< Limit total number of bytes sent
-    uint64_t m_totBytes;                 //!< Total bytes sent so far
-    TypeId m_tid;                        //!< The type of protocol to use.
-    uint32_t m_seq{0};                   //!< Sequence
-    Ptr<Packet> m_unsentPacket;          //!< Variable to cache unsent packet
-    bool m_enableSeqTsSizeHeader{false}; //!< Enable or disable the SeqTsSizeHeader
+    std::map<Address, Ptr<Socket>> socketInfo; //!< Map that keeps the association between the outgoing IP interfaces and their sockets.
+    std::map<Ptr<Socket>, bool> connectedInfo; //!< Map that keeps the association between the sockets and whether or not they are connected to the sink.
+    std::map<Ptr<Socket>, Address> destinationInfo; //!< Map that keeps the association between the spurce socket and the destination address.
+    uint8_t m_tos;                             //!< The packets Type of Service
+    uint32_t m_sendSize;                       //!< Size of data to send each time
+    uint64_t m_maxBytes;                       //!< Limit total number of bytes sent
+    uint64_t m_totBytes;                       //!< Total bytes sent so far
+    TypeId m_tid;                              //!< The type of protocol to use.
+    uint32_t m_seq{0};                         //!< Sequence
+    Ptr<Packet> m_unsentPacket;                //!< Variable to cache unsent packet
+    bool m_enableSeqTsSizeHeader{false};       //!< Enable or disable the SeqTsSizeHeader
 
     /// Traced Callback: sent packets
     TracedCallback<Ptr<const Packet>> m_txTrace;
 
     /// Callback for tracing the packet Tx events, includes source, destination,  the packet sent,
     /// and header
-    TracedCallback<Ptr<const Packet>, const Address&, const Address&, const SeqTsSizeHeader&>
+    TracedCallback<Ptr<const Packet>, const Address &, const Address &, const SeqTsSizeHeader &>
         m_txTraceWithSeqTsSize;
 
   private:
@@ -106,9 +111,9 @@ class SenderApplication : public Application
      */
     void DataSend(Ptr<Socket> socket, uint32_t unused);
 
-    void InitSocket(Address &from);
+    void InitSocket(Address &from, Address& destinationAddress);
     void SendPacket(const Address &from, const Address &to);
-};
+  };
 
 } // namespace ns3
 
