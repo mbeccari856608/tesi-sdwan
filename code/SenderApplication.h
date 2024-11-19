@@ -72,7 +72,7 @@ namespace ns3
 
     std::map<Address, Ptr<Socket>> socketInfo; //!< Map that keeps the association between the outgoing IP interfaces and their sockets.
     std::map<Ptr<Socket>, bool> connectedInfo; //!< Map that keeps the association between the sockets and whether or not they are connected to the sink.
-    std::map<Ptr<Socket>, Address> destinationInfo; //!< Map that keeps the association between the spurce socket and the destination address.
+    std::map<Ptr<Socket>, Address> destinationInfo; //!< Map that keeps the association between the source socket and the destination address.
     uint8_t m_tos;                             //!< The packets Type of Service
     uint32_t m_sendSize;                       //!< Size of data to send each time
     uint64_t m_maxBytes;                       //!< Limit total number of bytes sent
@@ -112,7 +112,7 @@ namespace ns3
     void DataSend(Ptr<Socket> socket, uint32_t unused);
 
     void InitSocket(Address &from, Address& destinationAddress);
-    void SendPacket(const Address &from, const Address &to);
+    void SendPacket();
   };
 
 } // namespace ns3

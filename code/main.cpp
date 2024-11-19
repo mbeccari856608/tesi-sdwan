@@ -25,7 +25,6 @@ int main(int argc, char *argv[])
     bool tracing = false;
     uint32_t maxBytes = 0;
 
-
     ns3::Ptr<Node> cpe = CreateObject<Node>();
     ns3::Ptr<Node> sinkNode = CreateObject<Node>();
 
@@ -33,30 +32,34 @@ int main(int argc, char *argv[])
     nodes.Add(cpe);
     nodes.Add(sinkNode);
 
-
-
     CsmaHelper slowInterfaceHelper;
     ns3::DataRateValue slowSpeed = Utils::ConvertPacketsPerSecondToBitPerSecond(10);
     slowInterfaceHelper.SetChannelAttribute("DataRate", slowSpeed);
     slowInterfaceHelper.SetChannelAttribute("Delay", TimeValue(MilliSeconds(200)));
     NetDeviceContainer devices = slowInterfaceHelper.Install(nodes);
 
+    CsmaHelper mediumInterfaceHelper;
+    ns3::DataRateValue mediumSpeed = Utils::ConvertPacketsPerSecondToBitPerSecond(20);
+    mediumInterfaceHelper.SetChannelAttribute("DataRate", slowSpeed);
+    mediumInterfaceHelper.SetChannelAttribute("Delay", TimeValue(MilliSeconds(100)));
+    NetDeviceContainer mediumDevices = mediumInterfaceHelper.Install(nodes);
 
     InternetStackHelper internet;
     internet.Install(nodes);
 
-
     Ipv4AddressHelper ipv4;
     ipv4.SetBase("10.1.1.0", "255.255.255.0");
-    Ipv4InterfaceContainer i = ipv4.Assign(devices);
+    Ipv4InterfaceContainer firstInterfaceContainer = ipv4.Assign(devices);
 
-
+    Ipv4AddressHelper ipv4Other;
+    ipv4Other.SetBase("10.1.2.0", "255.255.255.0");
+    Ipv4InterfaceContainer secondInterfaceContainer = ipv4Other.Assign(mediumDevices);
 
     uint16_t port = 9; // well-known echo port number
-    
-    std::vector<ns3::Address> destinations;
-    destinations.push_back(InetSocketAddress(i.GetAddress(1), port));
 
+    std::vector<ns3::Address> destinations;
+    destinations.push_back(InetSocketAddress(firstInterfaceContainer.GetAddress(1), port));
+    destinations.push_back(InetSocketAddress(secondInterfaceContainer.GetAddress(1), port));
 
     ApplicationSenderHelper source(destinations, 1280);
 
@@ -66,7 +69,7 @@ int main(int argc, char *argv[])
     //
     // Create a PacketSinkApplication and install it on node 1
     //
-    ReceiverApplicationHelper sink(destinations.at(0));
+    ReceiverApplicationHelper sink(destinations);
     ApplicationContainer sinkApps = sink.Install(nodes.Get(1));
     sinkApps.Start(Seconds(0.0));
 
@@ -79,7 +82,6 @@ int main(int argc, char *argv[])
     Simulator::Destroy();
 
     std::cout << "Finito " << Simulator::IsFinished() << std::endl;
-    
 
     std::cout << "Durata totale " << finalTime << std::endl;
 

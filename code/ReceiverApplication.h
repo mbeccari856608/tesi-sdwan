@@ -43,6 +43,12 @@ class ReceiverApplication : public Application
      */
     std::list<Ptr<Socket>> GetAcceptedSockets() const;
 
+    
+    /**
+     * \brief Pointer to array containing all the available addressed on which data can arrive
+     */
+    std::unique_ptr<std::vector<Address>> sources;
+
     /**
      * TracedCallback signature for a reception with addresses and SeqTsSizeHeader
      *
@@ -141,7 +147,6 @@ class ReceiverApplication : public Application
     std::map<Address, Ptr<Socket>> listeningSocketInfo; //!< Map the associates the IP address of an interface with the socket.
     std::list<Ptr<Socket>> m_socketList; //!< the accepted sockets
 
-    Address m_local;      //!< Local address to bind to (address and port)
     uint16_t m_localPort; //!< Local port to bind to
     uint64_t m_totalRx;   //!< Total bytes received
 

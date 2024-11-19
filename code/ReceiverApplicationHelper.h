@@ -10,12 +10,21 @@ namespace ns3
   {
   public:
     /**
-     * Create a PacketSinkHelper to make it easier to work with PacketSinkApplications
+     * Create a DestinationHelper to make it easier to work with ReceiverApplicaiton
      *
-     * \param address the address of the sink,
+     * \param address the addresses of the interfaces that can receive data
      *
      */
-    ReceiverApplicationHelper(const Address &address);
+    ReceiverApplicationHelper(std::vector<ns3::Address> &sources);
+
+    /**
+     * Due to how ns3 works we may need to do some manual tweaking when adding the application
+     * to the device.
+     */
+    Ptr<Application> DoInstall(Ptr<Node> node) override;
+
+  private:
+    std::vector<Address> &sources;
   };
 
 } // namespace ns3

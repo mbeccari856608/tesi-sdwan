@@ -46,11 +46,6 @@ namespace ns3
                 .SetParent<Application>()
                 .SetGroupName("Applications")
                 .AddConstructor<ReceiverApplication>()
-                .AddAttribute("Local",
-                              "The Address on which to Bind the rx socket.",
-                              AddressValue(),
-                              MakeAddressAccessor(&ReceiverApplication::m_local),
-                              MakeAddressChecker())
                 .AddAttribute("EnableSeqTsSizeHeader",
                               "Enable optional header tracing of SeqTsSizeHeader",
                               BooleanValue(false),
@@ -135,7 +130,7 @@ namespace ns3
             for (uint32_t j = 0; j < ipv4Node->GetNAddresses(i); ++j)
             {
                 Ipv4Address addr = ipv4Node->GetAddress(i, j).GetLocal();
-                std::cout << "Interface " << i << " IP Address " << j << ": " << addr << std::endl;
+                std::cout << "Receive Interface " << i << " IP Address " << j << ": " << addr << std::endl;
                 Address address = InetSocketAddress(addr, 8080);
                 InitReceivingSocket(address);
             }
@@ -150,20 +145,20 @@ namespace ns3
 
             m_socket = Socket::CreateSocket(GetNode(), TcpSocketFactory::GetTypeId());
             this->listeningSocketInfo.insert_or_assign(interfaceAddress, m_socket);
-            NS_ABORT_MSG_IF(m_local.IsInvalid(), "'Local' attribute not properly set");
-            if (m_socket->Bind(m_local) == -1)
+            NS_ABORT_MSG_IF(interfaceAddress.IsInvalid(), "'Local' attribute not properly set");
+            if (m_socket->Bind(interfaceAddress) == -1)
             {
                 NS_FATAL_ERROR("Failed to bind socket");
             }
             m_socket->Listen();
             m_socket->ShutdownSend();
-            if (addressUtils::IsMulticast(m_local))
+            if (addressUtils::IsMulticast(interfaceAddress))
             {
                 Ptr<UdpSocket> udpSocket = DynamicCast<UdpSocket>(m_socket);
                 if (udpSocket)
                 {
                     // equivalent to setsockopt (MCAST_JOIN_GROUP)
-                    udpSocket->MulticastJoinGroup(0, m_local);
+                    udpSocket->MulticastJoinGroup(0, interfaceAddress);
                 }
                 else
                 {
@@ -176,13 +171,13 @@ namespace ns3
             m_socket = this->listeningSocketInfo.find(interfaceAddress)->second;
         }
 
-        if (InetSocketAddress::IsMatchingType(m_local))
+        if (InetSocketAddress::IsMatchingType(interfaceAddress))
         {
-            m_localPort = InetSocketAddress::ConvertFrom(m_local).GetPort();
+            m_localPort = InetSocketAddress::ConvertFrom(interfaceAddress).GetPort();
         }
-        else if (Inet6SocketAddress::IsMatchingType(m_local))
+        else if (Inet6SocketAddress::IsMatchingType(interfaceAddress))
         {
-            m_localPort = Inet6SocketAddress::ConvertFrom(m_local).GetPort();
+            m_localPort = Inet6SocketAddress::ConvertFrom(interfaceAddress).GetPort();
         }
         else
         {

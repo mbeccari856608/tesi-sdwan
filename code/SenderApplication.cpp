@@ -139,7 +139,7 @@ namespace ns3
             for (uint32_t j = 0; j < ipv4Node->GetNAddresses(i); ++j)
             {
                 Ipv4Address addr = ipv4Node->GetAddress(i, j).GetLocal();
-                std::cout << "Interface " << i << " IP Address " << j << ": " << addr << std::endl;
+                std::cout << "Send Interface " << i << " IP Address " << j << ": " << addr << std::endl;
                 Address address = InetSocketAddress(addr, 8080);
                 Address destinationAddress = this->addresses->at(i - 1);
                 InitSocket(address, destinationAddress);
@@ -213,8 +213,11 @@ namespace ns3
         }
     }
 
-    void SenderApplication::SendPacket(const Address &from, const Address &to)
+    void SenderApplication::SendPacket()
     {
+        auto from = this->socketInfo.begin()->first;
+        auto outSocket = this->socketInfo.begin()->second;
+        auto to = this->destinationInfo.at(outSocket);
         this->SendData(from, to);
     }
 
@@ -341,7 +344,7 @@ namespace ns3
         socket->GetSockName(from);
         socket->GetPeerName(to);
         auto destination = this->destinationInfo[socket];
-        ns3::Simulator::Schedule(Seconds(2), &SenderApplication::SendPacket, this, from, destination);
+        ns3::Simulator::Schedule(Seconds(2), &SenderApplication::SendPacket, this);
     }
 
     void
