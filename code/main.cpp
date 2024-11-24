@@ -22,21 +22,37 @@ NS_LOG_COMPONENT_DEFINE("Demo");
 
 int main(int argc, char *argv[])
 {
+    auto timeSinceEpoch = std::chrono::high_resolution_clock::now().time_since_epoch();
+
+    RngSeedManager::SetSeed(1);
+
     bool tracing = false;
     uint32_t maxBytes = 0;
 
     ns3::Ptr<Node> cpe = CreateObject<Node>();
     ns3::Ptr<Node> sinkNode = CreateObject<Node>();
 
+
+
     NodeContainer nodes;
     nodes.Add(cpe);
     nodes.Add(sinkNode);
+
+    std::vector<double> errorProbabilities;
 
     CsmaHelper slowInterfaceHelper;
     ns3::DataRateValue slowSpeed = Utils::ConvertPacketsPerSecondToBitPerSecond(10);
     slowInterfaceHelper.SetChannelAttribute("DataRate", slowSpeed);
     slowInterfaceHelper.SetChannelAttribute("Delay", TimeValue(MilliSeconds(200)));
     NetDeviceContainer devices = slowInterfaceHelper.Install(nodes);
+
+    std::string errorModelType = "ns3::RateErrorModel";
+    ObjectFactory factory;
+    factory.SetTypeId(errorModelType);
+    Ptr<RateErrorModel> em = factory.Create<RateErrorModel>();
+    em->SetRate(0.5);
+    em->SetAttribute("ErrorUnit", StringValue("ERROR_UNIT_PACKET"));
+    devices.Get(0)->SetAttribute("ReceiveErrorModel", PointerValue(em));
 
     CsmaHelper mediumInterfaceHelper;
     ns3::DataRateValue mediumSpeed = Utils::ConvertPacketsPerSecondToBitPerSecond(20);
@@ -55,11 +71,9 @@ int main(int argc, char *argv[])
     ipv4Other.SetBase("10.1.2.0", "255.255.255.0");
     Ipv4InterfaceContainer secondInterfaceContainer = ipv4Other.Assign(mediumDevices);
 
-    uint16_t port = 9; // well-known echo port number
-
     std::vector<ns3::Address> destinations;
-    destinations.push_back(InetSocketAddress(firstInterfaceContainer.GetAddress(1), port));
-    destinations.push_back(InetSocketAddress(secondInterfaceContainer.GetAddress(1), port));
+    destinations.push_back(InetSocketAddress(firstInterfaceContainer.GetAddress(1), Utils::ConnectionPort));
+    destinations.push_back(InetSocketAddress(secondInterfaceContainer.GetAddress(1), Utils::ConnectionPort));
 
     ApplicationSenderHelper source(destinations, 1280);
 

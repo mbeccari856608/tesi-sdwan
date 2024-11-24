@@ -141,9 +141,6 @@ class ReceiverApplication : public Application
 
 
     std::unordered_map<Address, Ptr<Packet>, AddressHash> m_buffer; //!< Buffer for received packets
-
-    // In the case of TCP, each socket accept returns a new socket, so the
-    // listening socket is stored separately from the accepted sockets
     std::map<Address, Ptr<Socket>> listeningSocketInfo; //!< Map the associates the IP address of an interface with the socket.
     std::list<Ptr<Socket>> m_socketList; //!< the accepted sockets
 

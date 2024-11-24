@@ -32,6 +32,7 @@
 #include "ns3/tcp-socket-factory.h"
 #include "ns3/trace-source-accessor.h"
 #include "ns3/uinteger.h"
+#include "Utils.h"
 
 namespace ns3
 {
@@ -81,7 +82,8 @@ namespace ns3
     }
 
     SenderApplication::SenderApplication()
-        : destinationInfo(),
+        : errorSocketInfo(),
+          destinationInfo(),
           connectedInfo(),
           socketInfo(),
           m_totBytes(0),
@@ -140,23 +142,34 @@ namespace ns3
             {
                 Ipv4Address addr = ipv4Node->GetAddress(i, j).GetLocal();
                 std::cout << "Send Interface " << i << " IP Address " << j << ": " << addr << std::endl;
-                Address address = InetSocketAddress(addr, 8080);
+                Address address = InetSocketAddress(addr, Utils::ConnectionPort);
                 Address destinationAddress = this->addresses->at(i - 1);
-                InitSocket(address, destinationAddress);
+                Ptr<NetDevice> device = node->GetDevice(j);
+                PointerValue errorModelValue;
+                device->GetAttribute("ReceiveErrorModel", errorModelValue);
+                Ptr<RateErrorModel> errorModel = errorModelValue.Get<RateErrorModel>();
+                InitSocket(address, destinationAddress, *errorModel);
             }
         }
+
+        ns3::Simulator::Schedule(Seconds(2), &SenderApplication::SendPacket, this);
     }
 
-    void SenderApplication::InitSocket(Address &from, Address &destinationAddress)
+    void SenderApplication::InitSocket(
+        Address &from,
+        Address &destinationAddress,
+        RateErrorModel& errorModel)
     {
 
         // Create the socket if not already
         if ((this->socketInfo.find(from) == this->socketInfo.end()))
         {
+            // Todo creare classe che contien informazioni di tutte le mappe.
             Ptr<Socket> maybeSocket = Socket::CreateSocket(GetNode(), TcpSocketFactory::GetTypeId());
             this->socketInfo.insert_or_assign(from, maybeSocket);
             this->destinationInfo.insert_or_assign(maybeSocket, destinationAddress);
             this->connectedInfo.insert_or_assign(maybeSocket, false);
+            this->errorSocketInfo.insert_or_assign(maybeSocket, errorModel);
             int ret = -1;
 
             // Fatal error if socket type is not NS3_SOCK_STREAM or NS3_SOCK_SEQPACKET
@@ -218,7 +231,8 @@ namespace ns3
         auto from = this->socketInfo.begin()->first;
         auto outSocket = this->socketInfo.begin()->second;
         auto to = this->destinationInfo.at(outSocket);
-        this->SendData(from, to);
+        auto errorModel = this->errorSocketInfo.at(outSocket);
+        this->SendData(from, to, errorModel);
     }
 
     void
@@ -248,7 +262,7 @@ namespace ns3
     // Private helpers
 
     void
-    SenderApplication::SendData(const Address &from, const Address &to)
+    SenderApplication::SendData(const Address &from, const Address &to, ErrorModel &errorModel)
     {
         auto m_socket = this->socketInfo[from];
         auto m_connected = this->connectedInfo[m_socket];
@@ -269,6 +283,11 @@ namespace ns3
         NS_LOG_LOGIC("sending packet at " << Simulator::Now());
 
         Ptr<Packet> packet;
+
+        if (errorModel.IsCorrupt(packet)){
+            std::cout<< "Pacchetto corrotto: non verrà inviato" << std::endl;
+            return;
+        }
 
         if (m_unsentPacket)
         {
@@ -344,7 +363,6 @@ namespace ns3
         socket->GetSockName(from);
         socket->GetPeerName(to);
         auto destination = this->destinationInfo[socket];
-        ns3::Simulator::Schedule(Seconds(2), &SenderApplication::SendPacket, this);
     }
 
     void
@@ -353,20 +371,4 @@ namespace ns3
         NS_LOG_FUNCTION(this << socket);
         NS_LOG_LOGIC("SenderApplication, Connection Failed");
     }
-
-    void
-    SenderApplication::DataSend(Ptr<Socket> socket, uint32_t)
-    {
-        NS_LOG_FUNCTION(this);
-
-        if (this->connectedInfo[socket])
-        { // Only send new data if the connection has completed
-            Address from;
-            Address to;
-            socket->GetSockName(from);
-            socket->GetPeerName(to);
-            SendData(from, to);
-        }
-    }
-
 } // Namespace ns3

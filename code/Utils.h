@@ -15,6 +15,11 @@ namespace Utils
     const uint32_t PacketSizeBit = 128;
 
     /**
+     *  The port used to create sockets
+     */
+    const uint32_t ConnectionPort = 8080;
+
+    /**
      * @brief Converts a rate defined in packet per second to a rate in bits per second,
      * understandable by ns3 components.
      *

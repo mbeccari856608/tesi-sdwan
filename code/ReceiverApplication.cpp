@@ -1,6 +1,6 @@
 
 #include "ReceiverApplication.h"
-
+#include "Utils.h"
 #include "ns3/address-utils.h"
 #include "ns3/address.h"
 #include "ns3/boolean.h"
@@ -121,6 +121,7 @@ namespace ns3
 
         Ptr<Node> node = this->GetNode();
         Ptr<ns3::Ipv4> ipv4Node = node->GetObject<ns3::Ipv4>();
+        
 
         // Saltiamo la prima interfaccia di rete perchè è quella di loopback
 
@@ -131,7 +132,7 @@ namespace ns3
             {
                 Ipv4Address addr = ipv4Node->GetAddress(i, j).GetLocal();
                 std::cout << "Receive Interface " << i << " IP Address " << j << ": " << addr << std::endl;
-                Address address = InetSocketAddress(addr, 8080);
+                Address address = InetSocketAddress(addr, Utils::ConnectionPort);
                 InitReceivingSocket(address);
             }
         }

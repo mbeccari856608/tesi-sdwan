@@ -8,6 +8,7 @@
 #include "ns3/application.h"
 #include "ns3/event-id.h"
 #include "ns3/ptr.h"
+#include "ns3/error-model.h"
 #include "ns3/traced-callback.h"
 #include <map>
 
@@ -68,19 +69,20 @@ namespace ns3
      * \param from From address
      * \param to To address
      */
-    void SendData(const Address &from, const Address &to);
+    void SendData(const Address &from, const Address &to, ErrorModel &errorModel);
 
-    std::map<Address, Ptr<Socket>> socketInfo; //!< Map that keeps the association between the outgoing IP interfaces and their sockets.
-    std::map<Ptr<Socket>, bool> connectedInfo; //!< Map that keeps the association between the sockets and whether or not they are connected to the sink.
-    std::map<Ptr<Socket>, Address> destinationInfo; //!< Map that keeps the association between the source socket and the destination address.
-    uint8_t m_tos;                             //!< The packets Type of Service
-    uint32_t m_sendSize;                       //!< Size of data to send each time
-    uint64_t m_maxBytes;                       //!< Limit total number of bytes sent
-    uint64_t m_totBytes;                       //!< Total bytes sent so far
-    TypeId m_tid;                              //!< The type of protocol to use.
-    uint32_t m_seq{0};                         //!< Sequence
-    Ptr<Packet> m_unsentPacket;                //!< Variable to cache unsent packet
-    bool m_enableSeqTsSizeHeader{false};       //!< Enable or disable the SeqTsSizeHeader
+    std::map<Address, Ptr<Socket>> socketInfo;             //!< Map that keeps the association between the outgoing IP interfaces and their sockets.
+    std::map<Ptr<Socket>, bool> connectedInfo;             //!< Map that keeps the association between the sockets and whether or not they are connected to the sink.
+    std::map<Ptr<Socket>, Address> destinationInfo;        //!< Map that keeps the association between the source socket and the destination address.
+    std::map<Ptr<Socket>, RateErrorModel> errorSocketInfo; //!< Map that keeps the assocation between the outgoing socket and the error model of the packets outgoing from the socket itself.
+    uint8_t m_tos;                                         //!< The packets Type of Service
+    uint32_t m_sendSize;                                   //!< Size of data to send each time
+    uint64_t m_maxBytes;                                   //!< Limit total number of bytes sent
+    uint64_t m_totBytes;                                   //!< Total bytes sent so far
+    TypeId m_tid;                                          //!< The type of protocol to use.
+    uint32_t m_seq{0};                                     //!< Sequence
+    Ptr<Packet> m_unsentPacket;                            //!< Variable to cache unsent packet
+    bool m_enableSeqTsSizeHeader{false};                   //!< Enable or disable the SeqTsSizeHeader
 
     /// Traced Callback: sent packets
     TracedCallback<Ptr<const Packet>> m_txTrace;
@@ -101,17 +103,8 @@ namespace ns3
      * \param socket the connected socket
      */
     void ConnectionFailed(Ptr<Socket> socket);
-    /**
-     * \brief Send more data as soon as some has been transmitted.
-     *
-     * Used in socket's SetSendCallback - params are forced by it.
-     *
-     * \param socket socket to use
-     * \param unused actually unused
-     */
-    void DataSend(Ptr<Socket> socket, uint32_t unused);
 
-    void InitSocket(Address &from, Address& destinationAddress);
+    void InitSocket(Address &from, Address &destinationAddress, RateErrorModel &errorModel);
     void SendPacket();
   };
 
