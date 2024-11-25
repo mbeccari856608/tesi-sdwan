@@ -25,7 +25,8 @@ add_executable(Simulator
     ReceiverApplication.h
     ReceiverApplication.cpp
     Utils.h
-    Utils.cpp)
+    Utils.cpp
+    ISPInterface.h)
 
 
 target_link_libraries(Simulator
