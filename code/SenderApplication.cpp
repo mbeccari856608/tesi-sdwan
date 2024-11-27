@@ -81,13 +81,9 @@ namespace ns3
         return tid;
     }
 
-    SenderApplication::SenderApplication()
-        : errorSocketInfo(),
-          destinationInfo(),
-          connectedInfo(),
-          socketInfo(),
-          m_totBytes(0),
-          m_unsentPacket(nullptr)
+    SenderApplication::SenderApplication() : m_totBytes(0),
+                                             m_unsentPacket(nullptr),
+                                             availableInterfaces()
     {
         NS_LOG_FUNCTION(this);
     }
@@ -109,19 +105,20 @@ namespace ns3
     {
         NS_LOG_FUNCTION(this);
 
-        std::map<Address, Ptr<Socket>>::iterator keyValuePair;
-
-        for (keyValuePair = this->socketInfo.begin(); keyValuePair != this->socketInfo.end(); keyValuePair++)
+        for (const auto &interface : availableInterfaces)
         {
-            Ptr<Socket> socket = keyValuePair->second;
-
-            socket = nullptr;
+            interface.socketInfo->Close();
         }
 
-        this->socketInfo.clear();
         m_unsentPacket = nullptr;
         // chain up
         Application::DoDispose();
+    }
+
+    bool SenderApplication::HasAlreadyInitSocket(Address &from)
+    {
+        return std::any_of(this->availableInterfaces.begin(), availableInterfaces.end(), [from](const ISPInterface &interface)
+                           { return interface.outgoingAddress == from; });
     }
 
     // Application Methods
@@ -158,18 +155,18 @@ namespace ns3
     void SenderApplication::InitSocket(
         Address &from,
         Address &destinationAddress,
-        RateErrorModel& errorModel)
+        RateErrorModel &errorModel)
     {
 
+        std::unique_ptr<ISPInterface> matchingInterface;
+
         // Create the socket if not already
-        if ((this->socketInfo.find(from) == this->socketInfo.end()))
+        if (!this->HasAlreadyInitSocket(from))
         {
-            // Todo creare classe che contien informazioni di tutte le mappe.
             Ptr<Socket> maybeSocket = Socket::CreateSocket(GetNode(), TcpSocketFactory::GetTypeId());
-            this->socketInfo.insert_or_assign(from, maybeSocket);
-            this->destinationInfo.insert_or_assign(maybeSocket, destinationAddress);
-            this->connectedInfo.insert_or_assign(maybeSocket, false);
-            this->errorSocketInfo.insert_or_assign(maybeSocket, errorModel);
+            ISPInterface interface(from, maybeSocket, destinationAddress, errorModel);
+            matchingInterface = std::make_unique<ISPInterface>(interface);
+            this->availableInterfaces.push_back(interface);
             int ret = -1;
 
             // Fatal error if socket type is not NS3_SOCK_STREAM or NS3_SOCK_SEQPACKET
@@ -218,21 +215,24 @@ namespace ns3
             maybeSocket->SetConnectCallback(MakeCallback(&SenderApplication::ConnectionSucceeded, this),
                                             MakeCallback(&SenderApplication::ConnectionFailed, this));
         }
-
-        Ptr<Socket> socket = this->socketInfo[from];
-        if (this->connectedInfo[socket])
+        else
         {
-            socket->GetSockName(from);
+            auto currentInterface = std::find_if(this->availableInterfaces.begin(), this->availableInterfaces.end(), [from](const ISPInterface &interface)
+                                                 { return interface.outgoingAddress == from; });
+
+            matchingInterface = std::make_unique<ISPInterface>(*currentInterface);
+        }
+
+        if (matchingInterface->connected)
+        {
+
+            matchingInterface->socketInfo->GetSockName(from);
         }
     }
 
     void SenderApplication::SendPacket()
     {
-        auto from = this->socketInfo.begin()->first;
-        auto outSocket = this->socketInfo.begin()->second;
-        auto to = this->destinationInfo.at(outSocket);
-        auto errorModel = this->errorSocketInfo.at(outSocket);
-        this->SendData(from, to, errorModel);
+        this->SendData(this->availableInterfaces.at(0));
     }
 
     void
@@ -240,17 +240,17 @@ namespace ns3
     {
         NS_LOG_FUNCTION(this);
 
-        std::map<Address, Ptr<Socket>>::iterator keyValuePair;
+        std::vector<ISPInterface>::iterator interface;
 
-        if (keyValuePair != this->socketInfo.end())
+        if (interface != this->availableInterfaces.end())
         {
 
-            for (keyValuePair = this->socketInfo.begin(); keyValuePair != this->socketInfo.end(); keyValuePair++)
+            for (interface = this->availableInterfaces.begin(); interface != this->availableInterfaces.end(); interface++)
             {
-                Ptr<Socket> socket = keyValuePair->second;
+                Ptr<Socket> socket = interface->socketInfo;
 
                 socket->Close();
-                this->connectedInfo[socket] = false;
+                interface->connected = false;
             }
         }
         else
@@ -262,10 +262,10 @@ namespace ns3
     // Private helpers
 
     void
-    SenderApplication::SendData(const Address &from, const Address &to, ErrorModel &errorModel)
+    SenderApplication::SendData(ISPInterface &interface)
     {
-        auto m_socket = this->socketInfo[from];
-        auto m_connected = this->connectedInfo[m_socket];
+        auto m_socket = interface.socketInfo;
+        auto m_connected = interface.connected;
         NS_LOG_FUNCTION(this);
 
         // Time to send more
@@ -284,8 +284,9 @@ namespace ns3
 
         Ptr<Packet> packet;
 
-        if (errorModel.IsCorrupt(packet)){
-            std::cout<< "Pacchetto corrotto: non verrà inviato" << std::endl;
+        if (interface.errorModel.IsCorrupt(packet))
+        {
+            std::cout << "Pacchetto corrotto: non verrà inviato" << std::endl;
             return;
         }
 
@@ -302,7 +303,7 @@ namespace ns3
             NS_ABORT_IF(toSend < header.GetSerializedSize());
             packet = Create<Packet>(toSend - header.GetSerializedSize());
             // Trace before adding header, for consistency with PacketSink
-            m_txTraceWithSeqTsSize(packet, from, to, header);
+            m_txTraceWithSeqTsSize(packet, interface.outgoingAddress, interface.destinationAddress, header);
             packet->AddHeader(header);
         }
         else
@@ -351,18 +352,24 @@ namespace ns3
         }
     }
 
+    std::vector<ISPInterface>::iterator SenderApplication::GetMatchingInterface(Ptr<Socket> socket)
+    {
+        return std::find_if(this->availableInterfaces.begin(), this->availableInterfaces.end(), [socket](const ISPInterface &interface)
+                            { return interface.socketInfo == socket; });
+    }
+
     void
     SenderApplication::ConnectionSucceeded(Ptr<Socket> socket)
     {
+        std::vector<ISPInterface>::iterator interface = this->GetMatchingInterface(socket);
         NS_LOG_FUNCTION(this << socket);
         NS_LOG_LOGIC("SenderApplication Connection succeeded");
-        this->connectedInfo.insert_or_assign(socket, true);
+        interface->connected = true;
 
         Address from;
         Address to;
         socket->GetSockName(from);
         socket->GetPeerName(to);
-        auto destination = this->destinationInfo[socket];
     }
 
     void

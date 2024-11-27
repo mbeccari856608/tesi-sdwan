@@ -10,6 +10,8 @@
 #include "ns3/ptr.h"
 #include "ns3/error-model.h"
 #include "ns3/traced-callback.h"
+#include "ISPInterface.h"
+#include <vector>
 #include <map>
 
 namespace ns3
@@ -64,17 +66,10 @@ namespace ns3
     void StartApplication() override;
     void StopApplication() override;
 
-    /**
-     * \brief Send data until the L4 transmission buffer is full.
-     * \param from From address
-     * \param to To address
-     */
-    void SendData(const Address &from, const Address &to, ErrorModel &errorModel);
+    void SendData(ISPInterface& interface);
 
-    std::map<Address, Ptr<Socket>> socketInfo;             //!< Map that keeps the association between the outgoing IP interfaces and their sockets.
-    std::map<Ptr<Socket>, bool> connectedInfo;             //!< Map that keeps the association between the sockets and whether or not they are connected to the sink.
-    std::map<Ptr<Socket>, Address> destinationInfo;        //!< Map that keeps the association between the source socket and the destination address.
-    std::map<Ptr<Socket>, RateErrorModel> errorSocketInfo; //!< Map that keeps the assocation between the outgoing socket and the error model of the packets outgoing from the socket itself.
+
+    std::vector<ISPInterface> availableInterfaces;          //!< List of the interfaces that can be used to send data.
     uint8_t m_tos;                                         //!< The packets Type of Service
     uint32_t m_sendSize;                                   //!< Size of data to send each time
     uint64_t m_maxBytes;                                   //!< Limit total number of bytes sent
@@ -105,6 +100,11 @@ namespace ns3
     void ConnectionFailed(Ptr<Socket> socket);
 
     void InitSocket(Address &from, Address &destinationAddress, RateErrorModel &errorModel);
+
+    bool HasAlreadyInitSocket(Address &from);
+
+    std::vector<ISPInterface>::iterator GetMatchingInterface(Ptr<Socket> socket);
+
     void SendPacket();
   };
 
