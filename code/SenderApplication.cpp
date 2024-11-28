@@ -49,11 +49,6 @@ namespace ns3
                 .SetParent<Application>()
                 .SetGroupName("Applications")
                 .AddConstructor<SenderApplication>()
-                .AddAttribute("SendSize",
-                              "The amount of data to send each time.",
-                              UintegerValue(128),
-                              MakeUintegerAccessor(&SenderApplication::m_sendSize),
-                              MakeUintegerChecker<uint32_t>(1))
                 .AddAttribute("Tos",
                               "The Type of Service used to send IPv4 packets. "
                               "All 8 bits of the TOS byte are set (including ECN bits).",
@@ -63,13 +58,8 @@ namespace ns3
                 .AddAttribute("TotalAmount",
                               "The total amount of bytes to send",
                               UintegerValue(128),
-                              MakeUintegerAccessor(&SenderApplication::m_maxBytes),
+                              MakeUintegerAccessor(&SenderApplication::amountOfPacketsToSend),
                               MakeUintegerChecker<uint64_t>())
-                .AddAttribute("EnableSeqTsSizeHeader",
-                              "Add SeqTsSizeHeader to each packet",
-                              BooleanValue(false),
-                              MakeBooleanAccessor(&SenderApplication::m_enableSeqTsSizeHeader),
-                              MakeBooleanChecker())
                 .AddTraceSource("Tx",
                                 "A new packet is sent",
                                 MakeTraceSourceAccessor(&SenderApplication::m_txTrace),
@@ -97,7 +87,7 @@ namespace ns3
     SenderApplication::SetMaxBytes(uint64_t maxBytes)
     {
         NS_LOG_FUNCTION(this << maxBytes);
-        m_maxBytes = maxBytes;
+        amountOfPacketsToSend = maxBytes;
     }
 
     void
@@ -273,11 +263,11 @@ namespace ns3
         // uint64_t to allow the comparison later.
         // the result is in a uint32_t range anyway, because
         // m_sendSize is uint32_t.
-        uint64_t toSend = m_sendSize;
+        uint64_t toSend = amountOfPacketsToSend;
         // Make sure we don't send too many
-        if (m_maxBytes > 0)
+        if (amountOfPacketsToSend > 0)
         {
-            toSend = std::min(toSend, m_maxBytes - m_totBytes);
+            toSend = std::min(toSend, amountOfPacketsToSend - m_totBytes);
         }
 
         NS_LOG_LOGIC("sending packet at " << Simulator::Now());
@@ -294,17 +284,6 @@ namespace ns3
         {
             packet = m_unsentPacket;
             toSend = packet->GetSize();
-        }
-        else if (m_enableSeqTsSizeHeader)
-        {
-            SeqTsSizeHeader header;
-            header.SetSeq(m_seq++);
-            header.SetSize(toSend);
-            NS_ABORT_IF(toSend < header.GetSerializedSize());
-            packet = Create<Packet>(toSend - header.GetSerializedSize());
-            // Trace before adding header, for consistency with PacketSink
-            m_txTraceWithSeqTsSize(packet, interface.outgoingAddress, interface.destinationAddress, header);
-            packet->AddHeader(header);
         }
         else
         {
@@ -345,7 +324,7 @@ namespace ns3
         }
 
         // Check if time to close (all sent)
-        if (m_totBytes == m_maxBytes && m_connected)
+        if (m_totBytes == amountOfPacketsToSend && m_connected)
         {
             m_socket->Close();
             m_connected = false;

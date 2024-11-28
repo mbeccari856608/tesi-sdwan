@@ -66,18 +66,15 @@ namespace ns3
     void StartApplication() override;
     void StopApplication() override;
 
-    void SendData(ISPInterface& interface);
+    void SendData(ISPInterface &interface);
 
-
-    std::vector<ISPInterface> availableInterfaces;          //!< List of the interfaces that can be used to send data.
-    uint8_t m_tos;                                         //!< The packets Type of Service
-    uint32_t m_sendSize;                                   //!< Size of data to send each time
-    uint64_t m_maxBytes;                                   //!< Limit total number of bytes sent
-    uint64_t m_totBytes;                                   //!< Total bytes sent so far
-    TypeId m_tid;                                          //!< The type of protocol to use.
-    uint32_t m_seq{0};                                     //!< Sequence
-    Ptr<Packet> m_unsentPacket;                            //!< Variable to cache unsent packet
-    bool m_enableSeqTsSizeHeader{false};                   //!< Enable or disable the SeqTsSizeHeader
+    std::vector<ISPInterface> availableInterfaces; //!< List of the interfaces that can be used to send data.
+    uint8_t m_tos;                                 //!< The packets Type of Service
+    uint64_t amountOfPacketsToSend;                //!< Limit total number of bytes sent
+    uint64_t m_totBytes;                           //!< Total bytes sent so far
+    TypeId m_tid;                                  //!< The type of protocol to use.
+    uint32_t m_seq{0};                             //!< Sequence
+    Ptr<Packet> m_unsentPacket;                    //!< Variable to cache unsent packet
 
     /// Traced Callback: sent packets
     TracedCallback<Ptr<const Packet>> m_txTrace;
