@@ -8,6 +8,8 @@ set(GNU_MinVersion 9.1.0)
 # set the project name and version
 project(Simulator VERSION 1.0)
 
+SET(BUILD_DEPS ON)
+add_subdirectory(${CMAKE_SOURCE_DIR}/external/or-tools/)
 add_subdirectory(${CMAKE_SOURCE_DIR}/external/ns-allinone-3.42/ns-3.42/)
 
 
