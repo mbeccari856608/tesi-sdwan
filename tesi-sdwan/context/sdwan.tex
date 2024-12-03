@@ -132,7 +132,7 @@
    
   WAN connectivity, also known as \textit{generalized connectivity} is by far more expensive than generalized connectivity (i.e the "normal" consumer internet).
   
-   The extra cost may be justifies by the guarantees a WAN can provide in terms of quality of service (e.g availabilirt, end-to end latency...).
+   The extra cost may be justifies by the guarantees a WAN can provide in terms of quality of service (e.g availability, end-to end latency...).
    
    In a WAN the local networks of the branches are connected to the core of the network via border routers; there are multiple ways of achieving this design:
    
@@ -171,177 +171,123 @@
  \section{Load balancing in SD-WANs}
  
  As we previously discussed, in SD-WANs a controller's task is to instruct CPEs on how they should distribute outgoing traffic among the available links. \\
- To controller receives data from the strategy CPEs (e.g bandwidth usage) and the tries to build an optimal strategy. \\
- \textit{While this holds true in most cases, some strategies may avoid using a controller} \\
- Some of the challenges in load balancing include:
+ Usually the challenge is in minimizing the overall cost of transmitting a given amount of packets while still guaranteeing a certain level of quality (e.g maintaining the average latency under a given threshold )
  \begin{enumerate}
  	\item Formalizing the problem: how can we define the load balancing problem in a structured away, to then be able to solve it?
- 	\item Evaluating a strategy: what metrics should be considered when trying to find the best strategy for traffic handling? (e.g. end to end latency, packet loss \dots)
+ 	\item Evaluating a strategy: what kind of strategy can be used to minimize the cost?
  \end{enumerate}
 \pagebreak
-\subsubsection{Definitions}
 
-%https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=9500992
-This definition of the problem consider a load balancing strategy that avoids the use of a controller. \\
+\subsubsection{Problem definition}
 
-Each edge device (i.e a switch) is equipped with a load balancing agent that along with all the other agents tries to minimize the MLU (\textit{M}aximum \textit{L}ink \textit{U}tilisation). \\
-Each load balancing agent manages a set of OD (\textit{O}rigin-\textit{D}estination) that begins from the edge device itself.
-The flows will be called \textit{tunnels} for the rest of the paper.
-Tunnels can be split over multiple paths (and therefore multiple links); the amount of traffic going through to each tunnel is continuously updated by agents.
-The measure of how the traffic is divided on the tunnels is called a \textit{target split ratio}
+As a first step in formalizing the problem,  we can picture a scenario in which we have a CPE sending an arbitrary amount of packets to a sink. \\
 
-\subsubsection{Formalizing the problem}
+The CPE is connected to the sink through a set of distinct links. \\
 
-We define the problem on a network, which we encode with a graph:
-\[
-	G = (V,A)
-\]
-Where:
+The goal of the CPE is to transmit an arbitrary amount of packets to the sink. The transmission of data has some bounds in regards to:
+
 \begin{itemize}
-	\item $V$ is the set of nodes
-	\item $A$ is the set of arcs	
+	\item Average speed
+	\item Average delay
+	\item Packet loss
 \end{itemize}
 
-We then define:
+Each link has different characteristics in regard to:
 \begin{itemize}
-	\item $C: A \rightarrow \mathbb{R}_+  $ : the function that gives the capacity of each arc
-	\item: $K$: the set of tunnels
-	\item $d: K \rightarrow \mathbb{R}_+$: the function that indicates the traffic demand of each tunnel
-	\item $P^k = \{ p^k_0, \dots, p^k_{|P^k|}\}$: the set of available paths for tunnel $k \in K$
-\end{itemize}
-We assume that for all $k \in K$, $|P^k| \ge 2$. If there is just one path for any given tunnel, the associated tunnel can be removed from the association problem.
+	\item Available bandwidth \textit{(i.e how many bytes can be sent per second through the link)}
+	\item Delay \textit{(i.e how long it takes for a packet to reach the sink)}
+	\item Cost \textit{(i.e a metric used to track how convenient is to use a link instead of another: the lower the better)}
+	\item QoS \textit{(i.e how many packets are lost and/or need to be sent multiple times?)}
+\end{itemize} 
 
-The core of the problem is minimizing the
-maximum link utilization defined for a set $A$ of links as:
+The goal is to optimize the transmission in order to minimize the overall cost, while still respecting the boundaries
 
-\[
-	MLU(A) = \max_{a \in A}\{ \frac{V_a}{C_a} \}
-\]
+% Some examples of strategies could be:
+% \begin{itemize}
+% 	   \item A greedy strategy which uses all the   links at their fullest extent: if there is available bandwidth on a  particular link to send a packet,it will be sent. \\
+% 	 While this strategy minimizes the total amount of time required to send the data, it also leads to increased costs. 
+ %   	\item A strategy which only uses the cheapest link to minimize the total cost of the transmission, leading to an  increase of the total amount of time required to complete the transmission.
+ %\end{itemize}
 
-Where \begin{itemize}
-	\item $V_a$ is the amount of traffic of link $a$
-	\item $C_a$ is the capacity of link $a$.
-\end{itemize}
+%The kind of traffic that is sent through the links can also have an impact on which links should be used; \\
+%For a large amount of small packets minimizing the link delay is more important than the bandwidth and vice versa.
 
-With $LU_a = \frac{V_a}{C_a}$ we will the denote the link utilization of $a \in A$. \\
+\subsubsection{The problem as a linear optimization problem}
 
-The problem can be formulated with the following variables:
+We can formalize the problem as a linear optimization problem;
+As a starting point we consider a situation in which we wanto to minimize the total cost of sending an amount $N$ of packets of fixed size using three different links.
+
+To simplify the problem we set the bandwidth of the links in a way that it is always a multiple of the size of a single packet (i.e the bandwith of a link can only be an integer, 1 packet per second, 5 packet per second \dots)
+
+
+We consider a set of links $l_1, l_2, l_3$. \\
+
+For each one we define
 \begin{itemize}
-	\item $x^k_p \in [0,1]$: split ratio on path $p \in P^k$ for tunnel $k \in K$
-	\item $\theta \in \mathbb{R}_+$: maximum link utilization of $A$
+	\item The link delay:  $d_1, d_2, d_3$, measured in $ms$
+	\item The link bandwidth: $b_1, b_2, b_3$, measured in \textit{packets per second (pps)}
+	\item The cost for sending a single packet $c_1, c_2, c_3$
+	\item The probability of losing a packet, expressed as a number in the range $ [0, 1)$
 \end{itemize}
 
-\begin{align*}
-	\min \theta
-\end{align*}
-\begin{align}
-	&\sum_{p \in P^{k}} x^k_p = 1
-	&   && \forall k\in K \\ \label{constraint_1}
-	&\sum_{k \in K} d_k 	\sum_{p \in P^k, a \in p} x^k_p \le \theta C_a 
-	&   &&  a \in A \\ 
-	& 0 \le x^k_p
-	&   &&  \forall k\in K, \forall p \in P^k
-\end{align}
-
-Constraints (1) guarantee that all traffic is split on the paths, while constraints (2) permit to compute the MLU.
-
-% https://link.springer.com/article/10.1007/s10922-020-09523-2
-\subsubsection{Alternative formulation}
-While the previous definition allows us to define the problem in terms of link utilization, it does not rely on the use of controllers.
-
-%https://link.springer.com/article/10.1007/s10922-020-09523-2
-This paper [referenza] provides an approach to the load balancing problem in a SD-WAN context, trying to formalize the problem using linear programming.
-
-In an OpenFlow network, an incoming flow $f$ experiences five delays before being served.
-
-When the first packet of a flow reaches the ingress switch $s$, it is queues within a local queue $Q_s$. \\
-After waiting a time of $T^S_W$ the flow is then served for a duration $T^S_S$.
-If the switch does not know the destination of the flow (i.e no there are no matching \textit{flow entries} in the local flow table) a \textit{\textbf{PacketIn}} message is sent to the controller $c$ through a path for a duration of $R(s,c)$.
-The controller then receives the \textit{\textbf{PacketIn}} message and queues the message for a duration of $T^C_W$, before handling it within a duration of $T^C_S$. \\
-Finally, the response is sent back to the switch $s$ using a \textit{\textbf{PacketOut}} message or a \textit{\textbf{FlowMod}} message through a path within a duration of $R(c, s)$. \\
-All subsequent packets of the flow $f$ will be then forwarded based on the flow  entry already installed in the flow table of the switch $s$.
-
-Let $T^{(s,c)}_f$ be the whole delay experienced by a flow $f$ at the switch $s$ before being served by the controller $c$. \\
-The delay can be expressed as follows:
+The total cost time required to send the packets can be expressed as:
 \[
-	T^{(s,c)}_f = T^S_W + T^S_S + R(s,c) + T^C_W + T^C_S + R(c, s)
+	N_1 \cdot c_1 +
+	N_2 \cdot c_2 +
+	N_3 \cdot c_3 
 \]
 
-Our objective is to minimize the above delay. \\
-$T^{(s,c)}_f$ consists of three parameters:
-\begin{enumerate}
-	\item $T_{sj}(s) = T^S_W + T^S_S$: the switch sojourn time (i.e. how much time the packets spends in the switch $s$)
-	\item $T_{RTT}(s,c) = R(s,c) + R(c, s)$: the round trip time between the switch and the controller
-	\item $T_{sj}(c) = T^c_W + T^c_S$: the controller sojourn time (i.e. how much time the packets spends in the controller $c$)
-\end{enumerate}
+Where $N_i$ is the amount of packets sent on the the $ith$ interface.
 
-We can then rewrite the $T^{(s,c)}_f$ delay as: 
+We also have to consider the bound on average delay:
+
 \[
-	T^{(s,c)}_f =  T_{sj}(s) +  T_{RTT}(s,c) + T_{sj}(c)
+	\frac
+	{N_1 * d_1 + N_2 * d_2  + N_3 * d_3 }
+	{N}
+	 \le \text{delay}
 \]
 
-Now that we have a cost function, we can then take a linear programming approach to the problem resolution.
-Let $S_{c_j}$ be the set of switches managed by the controller $c_j$, where $c_j \in C$ and $S_{c_j} \subseteq S$.
-The main goal is to find an assignment between the switches (S) and the controllers (C) that minimizes the cost function $T^{(s,c)}_f$. \\
+The bound on average bandwidth:
+\[
+\frac
+{N_1 * b_1 + N_2 * b_2  + N_3 * b_3 }
+{N}
+\le \text{bandwidth}
+\]
 
-\begin{equation}\label{eq:cost_function_lp}
-	\begin{dcases}
-		\begin{aligned}
-			& {\text{min}}
-			& & \sum_{c_j \in C} \sum_{s_i \in S} T^{(s_i,c_j)} \\
-			& \text{subject to:}
-			& & \bigcup_{c_j \in C} S_{c_j} = S
-		\end{aligned}
-	\end{dcases}
-\end{equation}
-The constraint in \eqref{eq:cost_function_lp} states that each ingress switch must be assigned to one controller.
-However, a controller may serve more than one ingress switch, but it also may not support any new ingress switch when it is overloaded. \\
-The assignment of switches to controller should be dynamic and should consider at any given time:
-\begin{enumerate}
-	\item The current load on a controller
-	\item The current load on a switch
-	\item The round trip time between them
-\end{enumerate}
-
-The set of controllers involved in the assignment process should be dynamically updated to exclude the overloaded controllers. \\
-The mapping problem between controllers and switches can be resolved using linear programming, as it will be discussed in greater detail in the following section.
+The bound on packet loss, expressed as a percentage:
+\[
+\frac
+{N_1 \cdot p_1 + N_2 \cdot p_2 + N_3 \cdot p_3 }
+{N}
+\le \text{packet loss}
+\]
 
 \pagebreak
 
-\subsection{Linear Minimum Cost Bipartite Assignment Programming}
+This simplified version of the problem can be expressed as: 
 
-Given the two sets $S$ and $C$ and the cost function $T^{(s,c)}_f$, we formulate the minimum cost bipartite assignment problem as follows:
-
-\begin{equation}\label{eq:bipartite_formulation}
+\begin{equation}\label{eq:linear_formulation_final}
 	\begin{dcases}
 		\begin{aligned}
 			& {\text{min}}
-			& & \sum_{c_j \in C} \sum_{s_i \in S} T^{(s_i,c_j)} \\
+			& & N_1 \cdot c_1 + N_2 \cdot c_2 +	N_3 \cdot c_3 \\
 			& \text{subject to:}
-			& & \sum_{c_j \in C} x_{ij} = 1 \ \forall s_i \in S \\
-			& & & x_{ij} \ge 0
+			& & \frac
+			{N_1 * d_1 + N_2 * d_2  + N_3 * d_3 }
+			{N}
+			\le \text{delay} \\
+			& & & \frac
+			{N_1 * b_1 + N_2 * b_2  + N_3 * b_3 }
+			{N}
+			\le \text{bandwidth} \\
+			& & & \frac
+			{N_1 \cdot p_1 + N_2 \cdot p_2 + N_3 \cdot p_3 }
+			{N}
+			\le \text{packet loss}
 		\end{aligned}
 	\end{dcases}
 \end{equation}
-
-Where $x_{ij}$ represents the assignment of the switch $s_{i}$ to the controller $c_j$  , taking value
-1 if the assignment is done and 0 otherwise.
-
-The paper [https://link.springer.com/article/10.1007/s10922-020-09523-2] goes into details on how both the switch sojourn time and the controller sojourn do does not depend on $x_{ij}$ (the fact that a particular switch is assigned or not to a controller does not have an impact on the switch nor the controller sojourn time).
-
-Therefore we can rewrite the formulation of the problem including only the round trip time.
-
-\begin{equation}\label{eq:bipartite_formulation_final}
-	\begin{dcases}
-		\begin{aligned}
-			& {\text{min}}
-			& & \sum_{c_j \in C} \sum_{s_i \in S} T^{(s_i,c_j)}_{RTT} x_{ij} \\
-			& \text{subject to:}
-			& & \sum_{c_j \in C} x_{ij} = 1 \ \forall s_i \in S \\
-			& & & x_{ij} \ge 0
-		\end{aligned}
-	\end{dcases}
-\end{equation}
-
 
 \end{document}
