@@ -29,7 +29,11 @@ add_executable(Simulator
     Utils.h
     Utils.cpp
     ISPInterface.h
-    ISPInterface.cpp)
+    ISPInterface.cpp
+    SDWanApplication.h
+    SDWanApplication.cpp
+    SDWanStaticApplication.h
+    SDWanStaticApplication.cpp)
 
 
 target_link_libraries(Simulator

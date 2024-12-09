@@ -58,7 +58,7 @@ main(int argc, char* argv[])
     // allocator's configuration; the grid layout will exceed the
     // bounding box if more than 18 nodes are provided.
     if (nWifi > 18)
-    {
+    { 
         std::cout << "nWifi should be 18 or less; otherwise grid layout exceeds the bounding box"
                   << std::endl;
         return 1;

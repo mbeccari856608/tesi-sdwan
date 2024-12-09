@@ -32,8 +32,6 @@ int main(int argc, char *argv[])
     ns3::Ptr<Node> cpe = CreateObject<Node>();
     ns3::Ptr<Node> sinkNode = CreateObject<Node>();
 
-
-
     NodeContainer nodes;
     nodes.Add(cpe);
     nodes.Add(sinkNode);
@@ -75,7 +73,14 @@ int main(int argc, char *argv[])
     destinations.push_back(InetSocketAddress(firstInterfaceContainer.GetAddress(1), Utils::ConnectionPort));
     destinations.push_back(InetSocketAddress(secondInterfaceContainer.GetAddress(1), Utils::ConnectionPort));
 
-    ApplicationSenderHelper source(destinations, 1280);
+    ns3::DataRateValue slowSpeedRequirement = Utils::ConvertPacketsPerSecondToBitPerSecond(1);
+
+    std::vector<SDWanApplication> applications;
+
+    SDWanApplication testApplication(slowSpeedRequirement, 100, 12);
+    applications.push_back(testApplication);
+
+    ApplicationSenderHelper source(destinations, applications);
 
     ApplicationContainer sourceApps = source.Install(nodes.Get(0));
     sourceApps.Start(Seconds(0.0));
