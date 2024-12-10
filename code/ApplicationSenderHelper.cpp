@@ -10,7 +10,7 @@ using namespace ns3;
 
 ApplicationSenderHelper::ApplicationSenderHelper(
     std::vector<Address> &addresses,
-    std::vector<SDWanApplication> &applications)
+    std::vector<std::shared_ptr<SDWanApplication>> &applications)
     : ApplicationHelper("SenderApplication"), addresses(addresses), applications(applications)
 {
 }
@@ -19,6 +19,6 @@ ns3::Ptr<Application> ApplicationSenderHelper::DoInstall(Ptr<Node> node)
 {
   ns3::Ptr<SenderApplication> baseApplication = DynamicCast<SenderApplication>(ApplicationHelper::DoInstall(node));
   baseApplication->addresses = std::make_unique<std::vector<Address>>(addresses);
-  baseApplication->application = std::make_unique<std::vector<SDWanApplication>>(applications);
+  baseApplication->application = std::make_unique<std::vector<std::shared_ptr<SDWanApplication>>>(applications);
   return baseApplication;
 }

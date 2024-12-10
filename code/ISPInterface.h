@@ -17,10 +17,17 @@ class ISPInterface
 
 public:
     ISPInterface(
+        ns3::NetDevice &netDevice,
         const ns3::Address &outgoingAddress,
         ns3::Ptr<ns3::Socket> socketInfo,
         const ns3::Address &destinationAddress,
         ns3::RateErrorModel &errorModel);
+
+
+    /**
+     * @brief The net device associated with the interface.
+     */
+    ns3::NetDevice &netDevice;
 
     /**
      * @brief IP from where the data is sent from.
@@ -43,6 +50,11 @@ public:
      * The object used do determine whether or not a package is corrupt.
      */
     ns3::RateErrorModel &errorModel;
+
+    /**
+     * Gets the maximum data rate this interface can send data with.
+     */
+    ns3::DataRate getDataRate();
 
     uint32_t correctPackages;
 

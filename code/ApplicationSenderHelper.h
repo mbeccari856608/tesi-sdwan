@@ -25,7 +25,7 @@ class ApplicationSenderHelper : public ns3::ApplicationHelper
      */
     ApplicationSenderHelper(
       std::vector<ns3::Address>& destinations,
-      std::vector<SDWanApplication>& applications);
+      std::vector<std::shared_ptr<SDWanApplication>>& applications);
 
     /**
      * Due to how ns3 works we may need to do some manual tweaking when adding the application
@@ -35,7 +35,7 @@ class ApplicationSenderHelper : public ns3::ApplicationHelper
 
     private:
       std::vector<ns3::Address>& addresses;
-      std::vector<SDWanApplication>& applications;
+      std::vector<std::shared_ptr<SDWanApplication>>& applications;
 };
 
 #endif /* APPLICATION_SENDER_HELPER_H */

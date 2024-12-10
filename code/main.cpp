@@ -12,6 +12,7 @@
 #include "ReceiverApplicationHelper.h"
 #include "ReceiverApplication.h"
 #include "Utils.h"
+#include "SDWanStaticApplication.h"
 
 #include <fstream>
 #include <iostream>
@@ -75,10 +76,10 @@ int main(int argc, char *argv[])
 
     ns3::DataRateValue slowSpeedRequirement = Utils::ConvertPacketsPerSecondToBitPerSecond(1);
 
-    std::vector<SDWanApplication> applications;
+    std::vector<std::shared_ptr<SDWanApplication>> applications;
 
-    SDWanApplication testApplication(slowSpeedRequirement, 100, 12);
-    applications.push_back(testApplication);
+    std::shared_ptr<SDWanApplication> testApplication = std::make_shared<SDWanStaticApplication>(slowSpeedRequirement, 100, 12);
+    applications.push_back(std::move(testApplication));
 
     ApplicationSenderHelper source(destinations, applications);
 

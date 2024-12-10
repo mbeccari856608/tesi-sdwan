@@ -61,7 +61,7 @@ public:
     /**
    * \brief Pointer to array containing all the applications on the CPE
    */
-  std::unique_ptr<std::vector<SDWanApplication>> application;
+  std::unique_ptr<std::vector<std::shared_ptr<SDWanApplication>>> application;
 
 protected:
   void DoDispose() override;
