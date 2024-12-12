@@ -7,7 +7,7 @@ void SDWanStaticApplication::OnApplicationStart(){
     {
         this->pendingpackets.push(i);
     }
-    this->hasStoppedGeneratingData = true;
+    this->allPacketsGenerated = true;
     
 }
 SDWanStaticApplication::SDWanStaticApplication(
@@ -19,4 +19,7 @@ SDWanStaticApplication::SDWanStaticApplication(
 
 void SDWanStaticApplication::OnUpdate(){
 
+}
+bool SDWanStaticApplication::getHasStoppedGeneratingData(){
+    return this->pendingpackets.empty() && this->allPacketsGenerated;
 }

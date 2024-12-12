@@ -9,6 +9,7 @@
 #include "ns3/csma-module.h"
 #include "ns3/point-to-point-module.h"
 #include "SDWanApplication.h"
+#include "StrategyTypes.h"
 
 class ApplicationSenderHelper : public ns3::ApplicationHelper
 {
@@ -17,15 +18,14 @@ class ApplicationSenderHelper : public ns3::ApplicationHelper
     /**
      * Create an ApplicationSenderHelper to make it easier to work with SenderApplications.
      * 
-     * @param addresses The possible destination addresses: the first address is for the first interface,
+     * @param destinations The possible destination addresses: the first address is for the first interface,
      *                  the second one is for the second interface and so on.
      * 
-     * @param amountForEachInterface The amount of packets for each interface.
-     *
      */
     ApplicationSenderHelper(
       std::vector<ns3::Address>& destinations,
-      std::vector<std::shared_ptr<SDWanApplication>>& applications);
+      std::vector<std::shared_ptr<SDWanApplication>>& applications,
+      StrategyTypes strategy);
 
     /**
      * Due to how ns3 works we may need to do some manual tweaking when adding the application
@@ -36,6 +36,7 @@ class ApplicationSenderHelper : public ns3::ApplicationHelper
     private:
       std::vector<ns3::Address>& addresses;
       std::vector<std::shared_ptr<SDWanApplication>>& applications;
+      StrategyTypes strategy;
 };
 
 #endif /* APPLICATION_SENDER_HELPER_H */

@@ -16,19 +16,22 @@
  */
 class SDWanStaticApplication : public SDWanApplication
 {
-    public:
-
+public:
     SDWanStaticApplication();
-    
+
     SDWanStaticApplication(
         ns3::DataRateValue requiredDataRate,
         uint32_t requiredDelay,
         uint32_t errorRate);
-        
+
     virtual void OnUpdate();
-    
-    protected:
-        virtual void OnApplicationStart();
+    virtual bool getHasStoppedGeneratingData();
+
+protected:
+    virtual void OnApplicationStart();
+
+private:
+    bool allPacketsGenerated;
 };
 
 #endif /* SD_WAN_STATIC_APPLICATION_H */

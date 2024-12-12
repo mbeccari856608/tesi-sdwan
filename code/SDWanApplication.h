@@ -44,6 +44,8 @@ public:
      * The maximum average required delay for all the packets sent for the application.
      */
     const uint32_t requiredDelay;
+    
+    virtual bool getHasStoppedGeneratingData() = 0;
 
     /**
      * @brief
@@ -66,14 +68,13 @@ public:
 
     void Update()
     {
-        if (!this->hasStoppedGeneratingData)
+        if (!this->getHasStoppedGeneratingData())
         {
             this->OnUpdate();
         }
     }
 
 protected:
-    bool hasStoppedGeneratingData;
     virtual void OnUpdate() = 0;
 };
 

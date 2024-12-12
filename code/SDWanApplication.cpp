@@ -14,7 +14,6 @@ SDWanApplication::SDWanApplication() :
       requiredDataRate(),
       requiredDelay(),
       errorRate(),
-      hasStoppedGeneratingData(false),
       pendingpackets() {}
 
 SDWanApplication::SDWanApplication(
@@ -24,7 +23,6 @@ SDWanApplication::SDWanApplication(
     : requiredDataRate(requiredDataRate),
       requiredDelay(requiredDelay),
       errorRate(errorRate),
-      hasStoppedGeneratingData(false),
       pendingpackets() {}
 
 
@@ -48,3 +46,4 @@ SDWanApplication::SDWanApplication(const SDWanApplication &data)
   SDWanApplication& SDWanApplication::operator=(SDWanApplication &&data) {
    return *this;
   }
+

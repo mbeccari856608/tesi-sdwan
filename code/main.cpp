@@ -5,7 +5,6 @@
 #include "ns3/packet-sink.h"
 #include "ns3/csma-module.h"
 #include "ns3/point-to-point-module.h"
-#include "DeviceApplication.h"
 #include <fstream>
 #include <string>
 #include "ApplicationSenderHelper.h"
@@ -81,7 +80,7 @@ int main(int argc, char *argv[])
     std::shared_ptr<SDWanApplication> testApplication = std::make_shared<SDWanStaticApplication>(slowSpeedRequirement, 100, 12);
     applications.push_back(std::move(testApplication));
 
-    ApplicationSenderHelper source(destinations, applications);
+    ApplicationSenderHelper source(destinations, applications, LINEAR);
 
     ApplicationContainer sourceApps = source.Install(nodes.Get(0));
     sourceApps.Start(Seconds(0.0));

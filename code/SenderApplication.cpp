@@ -33,6 +33,9 @@
 #include "ns3/trace-source-accessor.h"
 #include "ns3/uinteger.h"
 #include "Utils.h"
+#include "Strategy.h"
+#include "StrategyTypes.h"
+#include "LinearStrategy.h"
 
 using namespace ns3;
 
@@ -72,7 +75,8 @@ SenderApplication::GetTypeId()
 
 SenderApplication::SenderApplication() : m_totBytes(0),
                                          m_unsentPacket(nullptr),
-                                         availableInterfaces()
+                                         availableInterfaces(),
+                                         strategyType(LINEAR)
 {
     NS_LOG_FUNCTION(this);
 }
@@ -131,14 +135,41 @@ void SenderApplication::StartApplication() // Called at time specified by Start
             PointerValue errorModelValue;
             device->GetAttribute("ReceiveErrorModel", errorModelValue);
             Ptr<RateErrorModel> errorModel = errorModelValue.Get<RateErrorModel>();
-            InitSocket(address, destinationAddress, *errorModel);
+            InitSocket(device, address, destinationAddress, *errorModel);
         }
     }
 
-    ns3::Simulator::Schedule(Seconds(2), &SenderApplication::SendPacket, this);
+    switch (this->strategyType)
+    {
+    case LINEAR:
+        this->strategy = std::make_unique<LinearStrategy>(this->application, this->availableInterfaces);
+    default:
+        break;
+    }
+
+    if (this->strategy == nullptr)
+    {
+        std::cout << "Non è stato possibile determinare la strategia" << "\n";
+        return;
+    }
+
+    std::for_each(this->strategy->applications->begin(), this->strategy->applications->end(), [](const std::shared_ptr<SDWanApplication> &application)
+                  { application->OnApplicationStart(); });
+
+    this->strategy->Compute();
+    for (ISPInterface &e : this->strategy->availableInterfaces)
+    {
+        InitInterfaceEventLoop(e);
+    }
+
+    Simulator::Schedule(Seconds(0), [this]() {
+         // TODO: trasformare in loop
+    });
 }
 
+// Todo rinominare in initdevice
 void SenderApplication::InitSocket(
+    Ptr<NetDevice> device,
     Address &from,
     Address &destinationAddress,
     RateErrorModel &errorModel)
@@ -150,7 +181,7 @@ void SenderApplication::InitSocket(
     if (!this->HasAlreadyInitSocket(from))
     {
         Ptr<Socket> maybeSocket = Socket::CreateSocket(GetNode(), TcpSocketFactory::GetTypeId());
-        ISPInterface interface(from, maybeSocket, destinationAddress, errorModel);
+        ISPInterface interface(device, from, maybeSocket, destinationAddress, errorModel);
         matchingInterface = std::make_unique<ISPInterface>(interface);
         this->availableInterfaces.push_back(interface);
         int ret = -1;
@@ -216,9 +247,20 @@ void SenderApplication::InitSocket(
     }
 }
 
-void SenderApplication::SendPacket()
+void SenderApplication::InitInterfaceEventLoop(ISPInterface &interface)
 {
-    this->SendData(this->availableInterfaces.at(0));
+    Simulator::Schedule(Seconds(1), &SenderApplication::SendPacket, this, interface);
+}
+
+void SenderApplication::SendPacket(ISPInterface &interface)
+{
+    ns3::DataRate dataRate = interface.getDataRate();
+    if (!this->strategy->getAllDataHasBeenSent())
+    {
+        this->SendData(interface);
+        Time tNext(Seconds(Utils::PacketSizeBit * 8 / static_cast<double>(dataRate.GetBitRate())));
+        Simulator::Schedule(tNext, &SenderApplication::SendPacket, this, interface);
+    }
 }
 
 void SenderApplication::StopApplication() // Called at time specified by Stop
@@ -252,21 +294,15 @@ void SenderApplication::SendData(ISPInterface &interface)
     auto m_connected = interface.connected;
     NS_LOG_FUNCTION(this);
 
-    // Time to send more
-
-    // uint64_t to allow the comparison later.
-    // the result is in a uint32_t range anyway, because
-    // m_sendSize is uint32_t.
-    uint64_t toSend = amountOfPacketsToSend;
-    // Make sure we don't send too many
-    if (amountOfPacketsToSend > 0)
-    {
-        toSend = std::min(toSend, amountOfPacketsToSend - m_totBytes);
-    }
-
     NS_LOG_LOGIC("sending packet at " << Simulator::Now());
 
-    Ptr<Packet> packet;
+    if (!interface.getHasAnyAvailablePackage())
+    {
+        return;
+    }
+
+    Ptr<Packet> packet = interface.getNextPacket();
+    uint32_t toSend = packet->GetSize();
 
     if (interface.errorModel.IsCorrupt(packet))
     {
@@ -275,18 +311,8 @@ void SenderApplication::SendData(ISPInterface &interface)
         return;
     }
 
-    if (m_unsentPacket)
-    {
-        packet = m_unsentPacket;
-        toSend = packet->GetSize();
-    }
-    else
-    {
-        packet = Create<Packet>(toSend);
-    }
-
     int actual = m_socket->Send(packet);
-    if ((unsigned)actual == toSend)
+    if ((unsigned)actual == Utils::PacketSizeBit)
     {
         interface.correctPackages++;
         m_totBytes += actual;
@@ -317,13 +343,6 @@ void SenderApplication::SendData(ISPInterface &interface)
     else
     {
         NS_FATAL_ERROR("Unexpected return value from m_socket->Send ()");
-    }
-
-    // Check if time to close (all sent)
-    if (m_totBytes == amountOfPacketsToSend && m_connected)
-    {
-        m_socket->Close();
-        m_connected = false;
     }
 }
 

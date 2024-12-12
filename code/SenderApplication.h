@@ -14,7 +14,8 @@
 #include "SDWanApplication.h"
 #include <vector>
 #include <map>
-
+#include "Strategy.h"
+#include "StrategyTypes.h"
 
 using namespace ns3;
 
@@ -58,10 +59,18 @@ public:
    */
   std::unique_ptr<std::vector<Address>> addresses;
 
-    /**
+
+  StrategyTypes strategyType;
+
+  /**
+   * \brief Pointer to the strategy used to determine how the packets are sent.
+   */
+  std::unique_ptr<Strategy> strategy;
+
+  /**
    * \brief Pointer to array containing all the applications on the CPE
    */
-  std::unique_ptr<std::vector<std::shared_ptr<SDWanApplication>>> application;
+  std::shared_ptr<std::vector<std::shared_ptr<SDWanApplication>>> application;
 
 protected:
   void DoDispose() override;
@@ -71,6 +80,8 @@ private:
   void StopApplication() override;
 
   void SendData(ISPInterface &interface);
+
+  void InitInterfaceEventLoop(ISPInterface &interface);
 
   std::vector<ISPInterface> availableInterfaces; //!< List of the interfaces that can be used to send data.
   uint8_t m_tos;                                 //!< The packets Type of Service
@@ -88,6 +99,8 @@ private:
   TracedCallback<Ptr<const Packet>, const Address &, const Address &, const SeqTsSizeHeader &>
       m_txTraceWithSeqTsSize;
 
+  void SendPacket(ISPInterface &interface);
+
 private:
   /**
    * \brief Connection Succeeded (called by Socket through a callback)
@@ -100,13 +113,11 @@ private:
    */
   void ConnectionFailed(Ptr<Socket> socket);
 
-  void InitSocket(Address &from, Address &destinationAddress, RateErrorModel &errorModel);
+  void InitSocket(Ptr<NetDevice> device, Address &from, Address &destinationAddress, RateErrorModel &errorModel);
 
   bool HasAlreadyInitSocket(Address &from);
 
   std::vector<ISPInterface>::iterator GetMatchingInterface(Ptr<Socket> socket);
-
-  void SendPacket();
 };
 
 #endif /* SENDER_APPLICATION_H */

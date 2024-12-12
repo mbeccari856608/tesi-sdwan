@@ -16,8 +16,6 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/external/ns-allinone-3.42/ns-3.42/)
 
 add_executable(Simulator 
     main.cpp
-    DeviceApplication.h
-    DeviceApplication.cpp
     ApplicationSenderHelper.h
     ApplicationSenderHelper.cpp
     SenderApplication.h
@@ -33,7 +31,12 @@ add_executable(Simulator
     SDWanApplication.h
     SDWanApplication.cpp
     SDWanStaticApplication.h
-    SDWanStaticApplication.cpp)
+    SDWanStaticApplication.cpp
+    Strategy.h
+    Strategy.cpp
+    LinearStrategy.h
+    LinearStrategy.cpp
+    StrategyTypes.h)
 
 
 target_link_libraries(Simulator

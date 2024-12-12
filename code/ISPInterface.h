@@ -5,6 +5,9 @@
 #include "ns3/socket.h"
 #include "ns3/error-model.h"
 #include <cstdint>
+#include <queue>
+#include "ns3/internet-module.h"
+
 
 /**
  * @brief Class used to represent a network interface in an SD-WAN context.
@@ -17,17 +20,16 @@ class ISPInterface
 
 public:
     ISPInterface(
-        ns3::NetDevice &netDevice,
+        ns3::Ptr<ns3::NetDevice> netDevice,
         const ns3::Address &outgoingAddress,
         ns3::Ptr<ns3::Socket> socketInfo,
         const ns3::Address &destinationAddress,
         ns3::RateErrorModel &errorModel);
 
-
     /**
-     * @brief The net device associated with the interface.
+     * @brief Pointer to the net device associated with the interface.
      */
-    ns3::NetDevice &netDevice;
+    ns3::Ptr<ns3::NetDevice> netDevice;
 
     /**
      * @brief IP from where the data is sent from.
@@ -59,6 +61,19 @@ public:
     uint32_t correctPackages;
 
     uint32_t corruptPackages;
+
+    void enqueuePacket();
+
+    bool getHasAnyAvailablePackage();
+
+    ns3::Ptr<ns3::Packet> getNextPacket();
+
+    private:
+        /**
+         * @brief Queue containing the packets waiting to be sent through this interface.
+         */
+        std::queue<ns3::Ptr<ns3::Packet>> pendingpackets;
+
 };
 
 #endif // ISP_INTERFACE_H
