@@ -157,14 +157,15 @@ void SenderApplication::StartApplication() // Called at time specified by Start
                   { application->OnApplicationStart(); });
 
     this->strategy->Compute();
+
     for (ISPInterface &e : this->strategy->availableInterfaces)
     {
         InitInterfaceEventLoop(e);
     }
-
-    Simulator::Schedule(Seconds(0), [this]() {
-         // TODO: trasformare in loop
-    });
+    Simulator::Schedule(Seconds(0), [this]()
+                        {
+                            // TODO: trasformare in loop
+                        });
 }
 
 // Todo rinominare in initdevice
@@ -183,7 +184,7 @@ void SenderApplication::InitSocket(
         Ptr<Socket> maybeSocket = Socket::CreateSocket(GetNode(), TcpSocketFactory::GetTypeId());
         ISPInterface interface(device, from, maybeSocket, destinationAddress, errorModel);
         matchingInterface = std::make_unique<ISPInterface>(interface);
-        this->availableInterfaces.push_back(interface);
+        this->availableInterfaces.emplace_back(interface);
         int ret = -1;
 
         // Fatal error if socket type is not NS3_SOCK_STREAM or NS3_SOCK_SEQPACKET
@@ -254,13 +255,14 @@ void SenderApplication::InitInterfaceEventLoop(ISPInterface &interface)
 
 void SenderApplication::SendPacket(ISPInterface &interface)
 {
-    ns3::DataRate dataRate = interface.getDataRate();
-    if (!this->strategy->getAllDataHasBeenSent())
+    std::cout << "SendPacket" << "\n";
+
+    if (this->strategy->getAllDataHasBeenSent())
     {
-        this->SendData(interface);
-        Time tNext(Seconds(Utils::PacketSizeBit * 8 / static_cast<double>(dataRate.GetBitRate())));
-        Simulator::Schedule(tNext, &SenderApplication::SendPacket, this, interface);
+        return;
     }
+
+    this->SendData(interface);
 }
 
 void SenderApplication::StopApplication() // Called at time specified by Stop
@@ -296,54 +298,61 @@ void SenderApplication::SendData(ISPInterface &interface)
 
     NS_LOG_LOGIC("sending packet at " << Simulator::Now());
 
+    ns3::DataRate dataRate = interface.getDataRate();
+    Time tNext(Seconds(Utils::PacketSizeBit * 8 / static_cast<double>(dataRate.GetBitRate())));
+
     if (!interface.getHasAnyAvailablePackage())
     {
+        Simulator::Schedule(tNext, &SenderApplication::SendPacket, this, interface);
         return;
     }
 
     Ptr<Packet> packet = interface.getNextPacket();
+    std::cout << "Ci sono pacchetti rimasti?  " << interface.getHasAnyAvailablePackage() << "\n";
     uint32_t toSend = packet->GetSize();
 
     if (interface.errorModel.IsCorrupt(packet))
     {
         std::cout << "Pacchetto corrotto: non verrà inviato" << std::endl;
         interface.corruptPackages++;
-        return;
-    }
-
-    int actual = m_socket->Send(packet);
-    if ((unsigned)actual == Utils::PacketSizeBit)
-    {
-        interface.correctPackages++;
-        m_totBytes += actual;
-        m_txTrace(packet);
-        m_unsentPacket = nullptr;
-    }
-    else if (actual == -1)
-    {
-        // We exit this loop when actual < toSend as the send side
-        // buffer is full. The "DataSent" callback will pop when
-        // some buffer space has freed up.
-        NS_LOG_DEBUG("Unable to send packet; caching for later attempt");
-        m_unsentPacket = packet;
-    }
-    else if (actual > 0 && (unsigned)actual < toSend)
-    {
-        // A Linux socket (non-blocking, such as in DCE) may return
-        // a quantity less than the packet size.  Split the packet
-        // into two, trace the sent packet, save the unsent packet
-        NS_LOG_DEBUG("Packet size: " << packet->GetSize() << "; sent: " << actual
-                                     << "; fragment saved: " << toSend - (unsigned)actual);
-        Ptr<Packet> sent = packet->CreateFragment(0, actual);
-        Ptr<Packet> unsent = packet->CreateFragment(actual, (toSend - (unsigned)actual));
-        m_totBytes += actual;
-        m_txTrace(sent);
-        m_unsentPacket = unsent;
     }
     else
     {
-        NS_FATAL_ERROR("Unexpected return value from m_socket->Send ()");
+        int actual = m_socket->Send(packet);
+        if ((unsigned)actual == Utils::PacketSizeBit)
+        {
+            interface.correctPackages++;
+            m_totBytes += actual;
+            m_txTrace(packet);
+            m_unsentPacket = nullptr;
+        }
+        else if (actual == -1)
+        {
+            // We exit this loop when actual < toSend as the send side
+            // buffer is full. The "DataSent" callback will pop when
+            // some buffer space has freed up.
+            NS_LOG_DEBUG("Unable to send packet; caching for later attempt");
+            m_unsentPacket = packet;
+        }
+        else if (actual > 0 && (unsigned)actual < toSend)
+        {
+            // A Linux socket (non-blocking, such as in DCE) may return
+            // a quantity less than the packet size.  Split the packet
+            // into two, trace the sent packet, save the unsent packet
+            NS_LOG_DEBUG("Packet size: " << packet->GetSize() << "; sent: " << actual
+                                         << "; fragment saved: " << toSend - (unsigned)actual);
+            Ptr<Packet> sent = packet->CreateFragment(0, actual);
+            Ptr<Packet> unsent = packet->CreateFragment(actual, (toSend - (unsigned)actual));
+            m_totBytes += actual;
+            m_txTrace(sent);
+            m_unsentPacket = unsent;
+        }
+        else
+        {
+            NS_FATAL_ERROR("Unexpected return value from m_socket->Send ()");
+        }
     }
+    Simulator::Schedule(tNext, &SenderApplication::SendPacket, this, interface);
 }
 
 std::vector<ISPInterface>::iterator SenderApplication::GetMatchingInterface(Ptr<Socket> socket)

@@ -2,7 +2,7 @@
 #include "SDWanStaticApplication.h"
 
 void SDWanStaticApplication::OnApplicationStart(){
-    uint8_t amountOfPackets = 1;
+    uint8_t amountOfPackets = 3;
     for (size_t i = 0; i < amountOfPackets; i++)
     {
         this->pendingpackets.push(i);

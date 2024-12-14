@@ -21,10 +21,15 @@ class ISPInterface
 public:
     ISPInterface(
         ns3::Ptr<ns3::NetDevice> netDevice,
-        const ns3::Address &outgoingAddress,
+        ns3::Address outgoingAddress,
         ns3::Ptr<ns3::Socket> socketInfo,
-        const ns3::Address &destinationAddress,
+        ns3::Address destinationAddress,
         ns3::RateErrorModel &errorModel);
+
+    ISPInterface(const ISPInterface& other);
+
+    ISPInterface& operator=(const ISPInterface& other);
+
 
     /**
      * @brief Pointer to the net device associated with the interface.
@@ -34,7 +39,7 @@ public:
     /**
      * @brief IP from where the data is sent from.
      */
-    const ns3::Address &outgoingAddress;
+    ns3::Address outgoingAddress;
 
     /**
      * @brief Pointer to the socket used to send data.
@@ -46,7 +51,7 @@ public:
     /**
      * The address to which data is sent
      */
-    const ns3::Address &destinationAddress;
+    ns3::Address destinationAddress;
 
     /**
      * The object used do determine whether or not a package is corrupt.

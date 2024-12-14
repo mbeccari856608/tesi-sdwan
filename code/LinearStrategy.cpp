@@ -15,11 +15,12 @@ LinearStrategy::LinearStrategy(
 
 void LinearStrategy::Compute()
 {
-    auto firstApplication = this->applications->at(0);
-    auto firstInterface = this->availableInterfaces.at(0);
-    if (!firstApplication->pendingpackets.empty()){
+    std::shared_ptr<SDWanApplication>& firstApplication = this->applications->at(0);
+    ISPInterface& firstInterface = this->availableInterfaces.at(0);
+    while (!firstApplication->pendingpackets.empty()){
         firstApplication->pendingpackets.pop();
         firstInterface.enqueuePacket();
+        std::cout << "Accodato" << "\n";
     }
 
 }
