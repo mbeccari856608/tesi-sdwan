@@ -79,11 +79,11 @@ private:
   void StartApplication() override;
   void StopApplication() override;
 
-  void SendData(ISPInterface &interface);
+  void SendData(std::shared_ptr<ISPInterface> interface);
 
-  void InitInterfaceEventLoop(ISPInterface &interface);
+  void InitInterfaceEventLoop(std::shared_ptr<ISPInterface> interface);
 
-  std::vector<ISPInterface> availableInterfaces; //!< List of the interfaces that can be used to send data.
+  std::vector<std::shared_ptr<ISPInterface>> availableInterfaces; //!< List of the interfaces that can be used to send data.
   uint8_t m_tos;                                 //!< The packets Type of Service
   uint64_t amountOfPacketsToSend;                //!< Limit total number of bytes sent
   uint64_t m_totBytes;                           //!< Total bytes sent so far
@@ -99,7 +99,7 @@ private:
   TracedCallback<Ptr<const Packet>, const Address &, const Address &, const SeqTsSizeHeader &>
       m_txTraceWithSeqTsSize;
 
-  void SendPacket(ISPInterface &interface);
+  void SendPacket(std::shared_ptr<ISPInterface> interface);
 
 private:
   /**
@@ -117,7 +117,7 @@ private:
 
   bool HasAlreadyInitSocket(Address &from);
 
-  std::vector<ISPInterface>::iterator GetMatchingInterface(Ptr<Socket> socket);
+  std::vector<std::shared_ptr<ISPInterface>>::iterator GetMatchingInterface(Ptr<Socket> socket);
 };
 
 #endif /* SENDER_APPLICATION_H */

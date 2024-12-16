@@ -15,7 +15,7 @@ private:
 public:
     LinearStrategy(
         std::shared_ptr<std::vector<std::shared_ptr<SDWanApplication>>> applications,
-        std::vector<ISPInterface> &availableInterfaces);
+        std::vector<std::shared_ptr<ISPInterface>> &availableInterfaces);
 
     virtual void Compute();
 };

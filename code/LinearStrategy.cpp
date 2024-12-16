@@ -8,7 +8,7 @@
 
 LinearStrategy::LinearStrategy(
         std::shared_ptr<std::vector<std::shared_ptr<SDWanApplication>>> applications,
-        std::vector<ISPInterface> &availableInterfaces) :
+        std::vector<std::shared_ptr<ISPInterface>> &availableInterfaces) :
              Strategy(applications, availableInterfaces)
 {
 }
@@ -16,10 +16,10 @@ LinearStrategy::LinearStrategy(
 void LinearStrategy::Compute()
 {
     std::shared_ptr<SDWanApplication>& firstApplication = this->applications->at(0);
-    ISPInterface& firstInterface = this->availableInterfaces.at(0);
+    std::shared_ptr<ISPInterface> firstInterface = this->availableInterfaces.at(0);
     while (!firstApplication->pendingpackets.empty()){
         firstApplication->pendingpackets.pop();
-        firstInterface.enqueuePacket();
+        firstInterface->enqueuePacket();
         std::cout << "Accodato" << "\n";
     }
 
