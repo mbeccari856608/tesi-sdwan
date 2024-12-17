@@ -8,7 +8,6 @@
 #include <queue>
 #include "ns3/internet-module.h"
 
-
 /**
  * @brief Class used to represent a network interface in an SD-WAN context.
  *
@@ -24,12 +23,12 @@ public:
         ns3::Address outgoingAddress,
         ns3::Ptr<ns3::Socket> socketInfo,
         ns3::Address destinationAddress,
-        ns3::RateErrorModel &errorModel);
+        ns3::RateErrorModel &errorModel,
+        uint32_t cost);
 
-    ISPInterface(const ISPInterface& other);
+    ISPInterface(const ISPInterface &other);
 
-    ISPInterface& operator=(const ISPInterface& other);
-
+    ISPInterface &operator=(const ISPInterface &other);
 
     /**
      * @brief Pointer to the net device associated with the interface.
@@ -63,6 +62,11 @@ public:
      */
     ns3::DataRate getDataRate();
 
+    /**
+     * Gets the delay of the interface when seding packets.
+     */
+    const uint32_t getDelayInMilliseconds();
+
     uint32_t correctPackages;
 
     uint32_t corruptPackages;
@@ -73,12 +77,13 @@ public:
 
     ns3::Ptr<ns3::Packet> getNextPacket();
 
-    private:
-        /**
-         * @brief Queue containing the packets waiting to be sent through this interface.
-         */
-        std::queue<ns3::Ptr<ns3::Packet>> pendingpackets;
+    uint32_t cost;
 
+private:
+    /**
+     * @brief Queue containing the packets waiting to be sent through this interface.
+     */
+    std::queue<ns3::Ptr<ns3::Packet>> pendingpackets;
 };
 
 #endif // ISP_INTERFACE_H

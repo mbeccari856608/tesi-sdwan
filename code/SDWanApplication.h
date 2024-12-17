@@ -60,7 +60,7 @@ public:
     /**
      * @brief The maximum required error rate, expressed as a percentage
      *
-     * @example If the desired error rate must be 80% this property will be 80.
+     * @example If the desired error rate must be lower than 10% this property will be 10.
      */
     const uint32_t errorRate;
 

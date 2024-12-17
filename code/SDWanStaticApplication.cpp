@@ -2,7 +2,7 @@
 #include "SDWanStaticApplication.h"
 
 void SDWanStaticApplication::OnApplicationStart(){
-    uint8_t amountOfPackets = 10;
+    uint8_t amountOfPackets = this->amountOfPacketsToSend;
     for (size_t i = 0; i < amountOfPackets; i++)
     {
         this->pendingpackets.push(i);
@@ -13,7 +13,8 @@ void SDWanStaticApplication::OnApplicationStart(){
 SDWanStaticApplication::SDWanStaticApplication(
         ns3::DataRateValue requiredDataRate,
         uint32_t requiredDelay,
-        uint32_t errorRate) : SDWanApplication(requiredDataRate, requiredDelay, errorRate) {
+        uint32_t errorRate,
+        uint32_t amountOfPacketsToSend) : SDWanApplication(requiredDataRate, requiredDelay, errorRate), amountOfPacketsToSend(amountOfPacketsToSend) {
 
 }
 

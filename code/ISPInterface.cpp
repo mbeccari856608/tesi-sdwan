@@ -2,21 +2,24 @@
 #include "ns3/core-module.h"
 #include "ns3/network-module.h"
 #include "Utils.h"
+#include "ns3/csma-module.h"
 
 ISPInterface::ISPInterface(
     ns3::Ptr<ns3::NetDevice> netDevice,
     ns3::Address outgoingAddress,
     ns3::Ptr<ns3::Socket> socketInfo,
     ns3::Address destinationAddress,
-    ns3::RateErrorModel &errorModel) : outgoingAddress(outgoingAddress),
-                                       socketInfo(socketInfo),
-                                       destinationAddress(destinationAddress),
-                                       errorModel(errorModel),
-                                       corruptPackages(0),
-                                       correctPackages(0),
-                                       connected(false),
-                                       netDevice(netDevice),
-                                       pendingpackets()
+    ns3::RateErrorModel &errorModel,
+    uint32_t cost) : outgoingAddress(outgoingAddress),
+                     socketInfo(socketInfo),
+                     destinationAddress(destinationAddress),
+                     errorModel(errorModel),
+                     corruptPackages(0),
+                     correctPackages(0),
+                     connected(false),
+                     netDevice(netDevice),
+                     pendingpackets(),
+                     cost(cost)
 {
 }
 ISPInterface::ISPInterface(const ISPInterface &other)
@@ -28,7 +31,8 @@ ISPInterface::ISPInterface(const ISPInterface &other)
       correctPackages(other.correctPackages),
       connected(other.connected),
       netDevice(other.netDevice),
-      pendingpackets(other.pendingpackets)
+      pendingpackets(other.pendingpackets),
+      cost(other.cost)
 {
     std::cout << "Copiato" << "\n";
 }
@@ -56,6 +60,13 @@ ns3::DataRate ISPInterface::getDataRate()
     ns3::DataRateValue dataRateValue;
     channel->GetAttribute("DataRate", dataRateValue);
     return dataRateValue.Get();
+}
+
+const uint32_t ISPInterface::getDelayInMilliseconds()
+{
+    auto channel = this->netDevice->GetChannel();
+    ns3::Ptr<ns3::CsmaChannel> csmaChannel = ns3::DynamicCast<ns3::CsmaChannel>(channel);
+    return csmaChannel->GetDelay().GetMilliSeconds();
 }
 
 void ISPInterface::enqueuePacket()

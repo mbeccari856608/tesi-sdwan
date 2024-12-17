@@ -36,13 +36,14 @@ int main(int argc, char *argv[])
     nodes.Add(cpe);
     nodes.Add(sinkNode);
 
-    std::vector<double> errorProbabilities;
+    std::vector<uint32_t> costs;
 
     CsmaHelper slowInterfaceHelper;
     ns3::DataRateValue slowSpeed = Utils::ConvertPacketsPerSecondToBitPerSecond(10);
     slowInterfaceHelper.SetChannelAttribute("DataRate", slowSpeed);
     slowInterfaceHelper.SetChannelAttribute("Delay", TimeValue(MilliSeconds(200)));
     NetDeviceContainer devices = slowInterfaceHelper.Install(nodes);
+    costs.push_back(3);
 
     std::string errorModelType = "ns3::RateErrorModel";
     ObjectFactory factory;
@@ -57,6 +58,7 @@ int main(int argc, char *argv[])
     mediumInterfaceHelper.SetChannelAttribute("DataRate", slowSpeed);
     mediumInterfaceHelper.SetChannelAttribute("Delay", TimeValue(MilliSeconds(100)));
     NetDeviceContainer mediumDevices = mediumInterfaceHelper.Install(nodes);
+    costs.push_back(10);
 
     InternetStackHelper internet;
     internet.Install(nodes);
@@ -77,10 +79,10 @@ int main(int argc, char *argv[])
 
     std::vector<std::shared_ptr<SDWanApplication>> applications;
 
-    std::shared_ptr<SDWanApplication> testApplication = std::make_shared<SDWanStaticApplication>(slowSpeedRequirement, 100, 12);
+    std::shared_ptr<SDWanApplication> testApplication = std::make_shared<SDWanStaticApplication>(slowSpeedRequirement, 100, 12, 100);
     applications.push_back(std::move(testApplication));
 
-    ApplicationSenderHelper source(destinations, applications, LINEAR);
+    ApplicationSenderHelper source(destinations, applications, costs, LINEAR);
 
     ApplicationContainer sourceApps = source.Install(nodes.Get(0));
     sourceApps.Start(Seconds(0.0));

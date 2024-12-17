@@ -60,6 +60,9 @@ public:
   std::unique_ptr<std::vector<Address>> addresses;
 
 
+  std::unique_ptr<std::vector<uint32_t>> costs;
+
+
   StrategyTypes strategyType;
 
   /**
@@ -113,7 +116,12 @@ private:
    */
   void ConnectionFailed(Ptr<Socket> socket);
 
-  void InitSocket(Ptr<NetDevice> device, Address &from, Address &destinationAddress, RateErrorModel &errorModel);
+  void InitSocket(
+    Ptr<NetDevice> device,
+    Address &from,
+    Address &destinationAddress,
+    RateErrorModel &errorModel,
+    uint32_t cost);
 
   bool HasAlreadyInitSocket(Address &from);
 

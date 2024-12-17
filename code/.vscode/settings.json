@@ -74,7 +74,8 @@
         "variant": "cpp",
         "*.inc": "cpp",
         "forward_list": "cpp",
-        "span": "cpp"
+        "span": "cpp",
+        "alignedvector3": "cpp"
     },
     "C_Cpp.errorSquiggles": "enabled"
 }

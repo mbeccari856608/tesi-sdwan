@@ -131,11 +131,12 @@ void SenderApplication::StartApplication() // Called at time specified by Start
             std::cout << "Send Interface " << i << " IP Address " << j << ": " << addr << std::endl;
             Address address = InetSocketAddress(addr, Utils::ConnectionPort);
             Address destinationAddress = this->addresses->at(i - 1);
+            uint32_t cost = this->costs->at(i - 1);
             Ptr<NetDevice> device = node->GetDevice(j);
             PointerValue errorModelValue;
             device->GetAttribute("ReceiveErrorModel", errorModelValue);
             Ptr<RateErrorModel> errorModel = errorModelValue.Get<RateErrorModel>();
-            InitSocket(device, address, destinationAddress, *errorModel);
+            InitSocket(device, address, destinationAddress, *errorModel, cost);
         }
     }
 
@@ -173,7 +174,8 @@ void SenderApplication::InitSocket(
     Ptr<NetDevice> device,
     Address &from,
     Address &destinationAddress,
-    RateErrorModel &errorModel)
+    RateErrorModel &errorModel,
+    uint32_t cost)
 {
 
 
@@ -181,7 +183,7 @@ void SenderApplication::InitSocket(
     if (!this->HasAlreadyInitSocket(from))
     {
         Ptr<Socket> maybeSocket = Socket::CreateSocket(GetNode(), TcpSocketFactory::GetTypeId());
-        ISPInterface interface(device, from, maybeSocket, destinationAddress, errorModel);
+        ISPInterface interface(device, from, maybeSocket, destinationAddress, errorModel, cost);
         //matchingInterface = std::make_shared<ISPInterface>(interface);
         this->availableInterfaces.emplace_back(std::make_shared<ISPInterface>(interface));
         int ret = -1;

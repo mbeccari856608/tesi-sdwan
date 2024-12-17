@@ -46,7 +46,8 @@ target_link_libraries(Simulator
     ${libcsma}
     ${libapplications}
     ${libcore}
-    ${libapplications})
+    ${libapplications}
+    ortools)
 
 
 set_target_properties(Simulator PROPERTIES

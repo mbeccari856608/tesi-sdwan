@@ -22,10 +22,13 @@ public:
     SDWanStaticApplication(
         ns3::DataRateValue requiredDataRate,
         uint32_t requiredDelay,
-        uint32_t errorRate);
+        uint32_t errorRate,
+        uint32_t amountOfPacketsToSend);
 
     virtual void OnUpdate();
     virtual bool getHasStoppedGeneratingData();
+
+    const uint32_t amountOfPacketsToSend;
 
 protected:
     virtual void OnApplicationStart();

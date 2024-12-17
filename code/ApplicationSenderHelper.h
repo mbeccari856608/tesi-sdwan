@@ -25,6 +25,7 @@ class ApplicationSenderHelper : public ns3::ApplicationHelper
     ApplicationSenderHelper(
       std::vector<ns3::Address>& destinations,
       std::vector<std::shared_ptr<SDWanApplication>>& applications,
+      std::vector<uint32_t> &costs,
       StrategyTypes strategy);
 
     /**
@@ -36,6 +37,7 @@ class ApplicationSenderHelper : public ns3::ApplicationHelper
     private:
       std::vector<ns3::Address>& addresses;
       std::vector<std::shared_ptr<SDWanApplication>>& applications;
+      std::vector<uint32_t>& costs;
       StrategyTypes strategy;
 };
 
