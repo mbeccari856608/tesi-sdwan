@@ -127,16 +127,16 @@ void SenderApplication::StartApplication() // Called at time specified by Start
     {
         for (uint32_t j = 0; j < ipv4Node->GetNAddresses(i); ++j)
         {
+            Ptr<NetDevice> device = ipv4Node->GetNetDevice(i);
             Ipv4Address addr = ipv4Node->GetAddress(i, j).GetLocal();
             std::cout << "Send Interface " << i << " IP Address " << j << ": " << addr << std::endl;
             Address address = InetSocketAddress(addr, Utils::ConnectionPort);
             Address destinationAddress = this->addresses->at(i - 1);
             uint32_t cost = this->costs->at(i - 1);
-            Ptr<NetDevice> device = node->GetDevice(j);
             PointerValue errorModelValue;
             device->GetAttribute("ReceiveErrorModel", errorModelValue);
             Ptr<RateErrorModel> errorModel = errorModelValue.Get<RateErrorModel>();
-            InitSocket(device, address, destinationAddress, *errorModel, cost);
+            InitSocket(device, address, destinationAddress, *errorModel, cost); // 0x555555699b80
         }
     }
 
@@ -178,13 +178,12 @@ void SenderApplication::InitSocket(
     uint32_t cost)
 {
 
-
     // Create the socket if not already
     if (!this->HasAlreadyInitSocket(from))
     {
         Ptr<Socket> maybeSocket = Socket::CreateSocket(GetNode(), TcpSocketFactory::GetTypeId());
         ISPInterface interface(device, from, maybeSocket, destinationAddress, errorModel, cost);
-        //matchingInterface = std::make_shared<ISPInterface>(interface);
+        // matchingInterface = std::make_shared<ISPInterface>(interface);
         this->availableInterfaces.emplace_back(std::make_shared<ISPInterface>(interface));
         int ret = -1;
 
@@ -239,7 +238,7 @@ void SenderApplication::InitSocket(
         auto currentInterface = std::find_if(this->availableInterfaces.begin(), this->availableInterfaces.end(), [from](std::shared_ptr<ISPInterface> interface)
                                              { return interface->outgoingAddress == from; });
 
-        //matchingInterface = *currentInterface;
+        // matchingInterface = *currentInterface;
     }
 
     // if (matchingInterface->connected)
@@ -256,8 +255,6 @@ void SenderApplication::InitInterfaceEventLoop(std::shared_ptr<ISPInterface> int
 
 void SenderApplication::SendPacket(std::shared_ptr<ISPInterface> interface)
 {
-    std::cout << "SendPacket" << "\n";
-
     if (this->strategy->getAllDataHasBeenSent())
     {
         return;
@@ -309,7 +306,7 @@ void SenderApplication::SendData(std::shared_ptr<ISPInterface> interface)
     }
 
     Ptr<Packet> packet = interface->getNextPacket();
-    std::cout << "Ci sono pacchetti rimasti?  " << interface->getHasAnyAvailablePackage() << "\n";
+    // std::cout << "Ci sono pacchetti rimasti?  " << interface->getHasAnyAvailablePackage() << "\n";
     uint32_t toSend = packet->GetSize();
 
     if (interface->errorModel.IsCorrupt(packet))

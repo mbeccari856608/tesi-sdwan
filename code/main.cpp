@@ -37,35 +37,41 @@ int main(int argc, char *argv[])
     nodes.Add(sinkNode);
 
     std::vector<uint32_t> costs;
+    std::string errorModelType = "ns3::RateErrorModel";
+    ObjectFactory factory;
+    factory.SetTypeId(errorModelType);
 
     CsmaHelper slowInterfaceHelper;
     ns3::DataRateValue slowSpeed = Utils::ConvertPacketsPerSecondToBitPerSecond(10);
     slowInterfaceHelper.SetChannelAttribute("DataRate", slowSpeed);
-    slowInterfaceHelper.SetChannelAttribute("Delay", TimeValue(MilliSeconds(200)));
-    NetDeviceContainer devices = slowInterfaceHelper.Install(nodes);
-    costs.push_back(3);
+    slowInterfaceHelper.SetChannelAttribute("Delay", TimeValue(MilliSeconds(300)));
+    NetDeviceContainer slowDevices = slowInterfaceHelper.Install(nodes);
+    costs.push_back(10);
 
-    std::string errorModelType = "ns3::RateErrorModel";
-    ObjectFactory factory;
-    factory.SetTypeId(errorModelType);
     Ptr<RateErrorModel> em = factory.Create<RateErrorModel>();
-    em->SetRate(0.5);
+    em->SetRate(0.1);
     em->SetAttribute("ErrorUnit", StringValue("ERROR_UNIT_PACKET"));
-    devices.Get(0)->SetAttribute("ReceiveErrorModel", PointerValue(em));
+    slowDevices.Get(0)->SetAttribute("ReceiveErrorModel", PointerValue(em));
 
     CsmaHelper mediumInterfaceHelper;
     ns3::DataRateValue mediumSpeed = Utils::ConvertPacketsPerSecondToBitPerSecond(20);
-    mediumInterfaceHelper.SetChannelAttribute("DataRate", slowSpeed);
-    mediumInterfaceHelper.SetChannelAttribute("Delay", TimeValue(MilliSeconds(100)));
+    mediumInterfaceHelper.SetChannelAttribute("DataRate", mediumSpeed);
+    mediumInterfaceHelper.SetChannelAttribute("Delay", TimeValue(MilliSeconds(50)));
     NetDeviceContainer mediumDevices = mediumInterfaceHelper.Install(nodes);
-    costs.push_back(10);
+    costs.push_back(30);
+
+    Ptr<RateErrorModel> em2 = factory.Create<RateErrorModel>();
+    em2->SetRate(0.1);
+    em2->SetAttribute("ErrorUnit", StringValue("ERROR_UNIT_PACKET"));
+    mediumDevices.Get(0)->SetAttribute("ReceiveErrorModel", PointerValue(em2));
 
     InternetStackHelper internet;
+
     internet.Install(nodes);
 
     Ipv4AddressHelper ipv4;
     ipv4.SetBase("10.1.1.0", "255.255.255.0");
-    Ipv4InterfaceContainer firstInterfaceContainer = ipv4.Assign(devices);
+    Ipv4InterfaceContainer firstInterfaceContainer = ipv4.Assign(slowDevices);
 
     Ipv4AddressHelper ipv4Other;
     ipv4Other.SetBase("10.1.2.0", "255.255.255.0");
@@ -79,7 +85,7 @@ int main(int argc, char *argv[])
 
     std::vector<std::shared_ptr<SDWanApplication>> applications;
 
-    std::shared_ptr<SDWanApplication> testApplication = std::make_shared<SDWanStaticApplication>(slowSpeedRequirement, 100, 12, 100);
+    std::shared_ptr<SDWanApplication> testApplication = std::make_shared<SDWanStaticApplication>(slowSpeedRequirement, 200, 12, 100);
     applications.push_back(std::move(testApplication));
 
     ApplicationSenderHelper source(destinations, applications, costs, LINEAR);
@@ -108,6 +114,8 @@ int main(int argc, char *argv[])
 
     Ptr<ReceiverApplication> sink1 = DynamicCast<ReceiverApplication>(sinkApps.Get(0));
     std::cout << "Total Bytes Received: " << sink1->GetTotalRx() << std::endl;
+
+    // TODO: migliorare i log
 
     return 0;
 }

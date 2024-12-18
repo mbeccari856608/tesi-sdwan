@@ -29,7 +29,7 @@ void LinearStrategy::Compute()
         std::cout << "Applicazione non valida" << "\n";
         return;
     }
-    std::unique_ptr<operations_research::MPSolver> solver(operations_research::MPSolver::CreateSolver("GLOP"));
+    std::unique_ptr<operations_research::MPSolver> solver(operations_research::MPSolver::CreateSolver("CBC_MIXED_INTEGER_PROGRAMMING"));
     const double infinity = solver->infinity();
     std::vector<operations_research::MPVariable *> interfaces;
     for (unsigned short i = 0; const std::shared_ptr<ISPInterface> &interface : this->availableInterfaces)
@@ -48,8 +48,20 @@ void LinearStrategy::Compute()
         for (std::size_t j = 0; j < this->availableInterfaces.size(); ++j)
         {
             std::shared_ptr<ISPInterface> currentInterface = this->availableInterfaces.at(j);
-            double delayCoefficient = currentInterface->getDelayInMilliseconds() / staticApplication->amountOfPacketsToSend;
+            double milliSecondsInterfaceDelay = ((double)currentInterface->getDelayInMilliseconds());
+            double delayCoefficient = milliSecondsInterfaceDelay / staticApplication->amountOfPacketsToSend;
             constraints.back()->SetCoefficient(interfaces[j], delayCoefficient);
+        }
+    }
+
+    // Vincolo sul numero totale di pacchetti.
+    for (std::size_t i = 0; i < this->availableInterfaces.size(); ++i)
+    {
+        constraints.push_back(
+            solver->MakeRowConstraint(staticApplication->amountOfPacketsToSend, infinity));
+        for (std::size_t j = 0; j < this->availableInterfaces.size(); ++j)
+        {
+            constraints.back()->SetCoefficient(interfaces[j], 1);
         }
     }
 
@@ -68,7 +80,8 @@ void LinearStrategy::Compute()
         std::cout << "The problem does not have an optimal solution!" << "\n";
         if (result_status == MPSolver::FEASIBLE)
         {
-            std::cout << "A potentially suboptimal solution was found" << "\n";;
+            std::cout << "A potentially suboptimal solution was found" << "\n";
+            ;
         }
         else
         {
@@ -77,4 +90,16 @@ void LinearStrategy::Compute()
         }
     }
 
+    for (size_t i = 0; i < interfaces.size(); ++i)
+    {
+        double value = interfaces.at(i)->solution_value();
+        uint32_t flooredValue = static_cast<uint32_t>(std::floor(value));
+        std::cout << "Pacchetti per interfaccia " << i << ": " << flooredValue << "\n";
+        for (size_t j = 0; j < flooredValue; j++)
+        {
+            staticApplication->pendingpackets.pop();
+            this->availableInterfaces.at(i)->enqueuePacket();
+        }
+    }
+    return;
 }
