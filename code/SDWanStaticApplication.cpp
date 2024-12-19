@@ -11,7 +11,7 @@ void SDWanStaticApplication::OnApplicationStart(){
     
 }
 SDWanStaticApplication::SDWanStaticApplication(
-        ns3::DataRateValue requiredDataRate,
+        ns3::DataRate requiredDataRate,
         uint32_t requiredDelay,
         uint32_t errorRate,
         uint32_t amountOfPacketsToSend) : SDWanApplication(requiredDataRate, requiredDelay, errorRate), amountOfPacketsToSend(amountOfPacketsToSend) {

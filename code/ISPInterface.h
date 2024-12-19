@@ -63,6 +63,11 @@ public:
     ns3::DataRate getDataRate();
 
     /**
+     * Gets the maximum rate this interface can send data with, expressed in bit per second.
+     */
+    const uint64_t getDataBitRate();
+
+    /**
      * Gets the delay of the interface when seding packets.
      */
     const uint32_t getDelayInMilliseconds();

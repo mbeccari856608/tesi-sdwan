@@ -54,6 +54,25 @@ void LinearStrategy::Compute()
         }
     }
 
+    // Vincoli sulla banda
+    for (std::size_t i = 0; i < this->availableInterfaces.size(); ++i)
+    {
+        // Convertiamo tutti i requisiti sulla banda in bps
+        uint64_t applicationRequiredBitRate = staticApplication->requiredDataRate.GetBitRate();
+        
+        constraints.push_back(
+            solver->MakeRowConstraint(applicationRequiredBitRate, infinity));
+        for (std::size_t j = 0; j < this->availableInterfaces.size(); ++j)
+        {
+            std::shared_ptr<ISPInterface> currentInterface = this->availableInterfaces.at(j);
+            double interfaceBitRate = ((double)currentInterface->getDataBitRate());
+            double bandWidthCoefficient = interfaceBitRate / staticApplication->amountOfPacketsToSend;
+            constraints.back()->SetCoefficient(interfaces[j], bandWidthCoefficient);
+        }
+    }
+
+
+
     // Vincolo sul numero totale di pacchetti.
     for (std::size_t i = 0; i < this->availableInterfaces.size(); ++i)
     {

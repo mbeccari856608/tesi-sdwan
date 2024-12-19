@@ -17,7 +17,7 @@ SDWanApplication::SDWanApplication() :
       pendingpackets() {}
 
 SDWanApplication::SDWanApplication(
-    ns3::DataRateValue requiredDataRate,
+    ns3::DataRate requiredDataRate,
     uint32_t requiredDelay,
     uint32_t errorRate)
     : requiredDataRate(requiredDataRate),

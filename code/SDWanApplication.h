@@ -24,7 +24,7 @@ public:
 
 
     SDWanApplication(
-        ns3::DataRateValue requiredDataRate,
+        ns3::DataRate requiredDataRate,
         uint32_t requiredDelay,
         uint32_t errorRate);
 
@@ -37,7 +37,7 @@ public:
      * @brief
      * The maximum average required data rate for all the packets sent for the application.
      */
-    const ns3::DataRateValue requiredDataRate;
+    const ns3::DataRate requiredDataRate;
 
     /**
      * @brief

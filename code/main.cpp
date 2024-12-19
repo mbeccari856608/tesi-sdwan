@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
 
     std::vector<std::shared_ptr<SDWanApplication>> applications;
 
-    std::shared_ptr<SDWanApplication> testApplication = std::make_shared<SDWanStaticApplication>(slowSpeedRequirement, 200, 12, 100);
+    std::shared_ptr<SDWanApplication> testApplication = std::make_shared<SDWanStaticApplication>(slowSpeedRequirement.Get(), 200, 12, 100);
     applications.push_back(std::move(testApplication));
 
     ApplicationSenderHelper source(destinations, applications, costs, LINEAR);

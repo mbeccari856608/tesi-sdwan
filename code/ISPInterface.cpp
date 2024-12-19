@@ -67,7 +67,6 @@ const uint32_t ISPInterface::getDelayInMilliseconds()
     auto channel = this->netDevice->GetChannel();
     ns3::Ptr<ns3::CsmaChannel> csmaChannel = ns3::DynamicCast<ns3::CsmaChannel>(channel);
     auto result = csmaChannel->GetDelay().GetMilliSeconds();
-    std::cout << "Delay: " << result << "\n";
     return result;
 }
 
@@ -88,8 +87,13 @@ ns3::Ptr<ns3::Packet> ISPInterface::getNextPacket()
     {
         ns3::Ptr<ns3::Packet> value = this->pendingpackets.front();
         this->pendingpackets.pop();
-        //std::cout << "pop " << "(" << this->pendingpackets.size() << ")" << "\n";
+        // std::cout << "pop " << "(" << this->pendingpackets.size() << ")" << "\n";
         return value;
     }
     return nullptr;
+}
+
+const uint64_t ISPInterface::getDataBitRate()
+{
+    return this->getDataRate().GetBitRate();
 }
