@@ -3,13 +3,14 @@
 #include "ns3/network-module.h"
 #include "Utils.h"
 #include "ns3/csma-module.h"
+#include "ns3/error-model.h"
 
 ISPInterface::ISPInterface(
     ns3::Ptr<ns3::NetDevice> netDevice,
     ns3::Address outgoingAddress,
     ns3::Ptr<ns3::Socket> socketInfo,
     ns3::Address destinationAddress,
-    ns3::RateErrorModel &errorModel,
+    ns3::RateErrorModel errorModel,
     uint32_t cost) : outgoingAddress(outgoingAddress),
                      socketInfo(socketInfo),
                      destinationAddress(destinationAddress),
@@ -60,6 +61,14 @@ ns3::DataRate ISPInterface::getDataRate()
     ns3::DataRateValue dataRateValue;
     channel->GetAttribute("DataRate", dataRateValue);
     return dataRateValue.Get();
+}
+
+const double ISPInterface::getErrorRate()
+{
+    ns3::DoubleValue errorRateValue;
+    this->errorModel.GetAttribute("ErrorRate", errorRateValue);
+    double value = errorRateValue.Get();
+    return value * 100;
 }
 
 const uint32_t ISPInterface::getDelayInMilliseconds()

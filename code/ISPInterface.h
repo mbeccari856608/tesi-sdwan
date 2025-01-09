@@ -23,7 +23,7 @@ public:
         ns3::Address outgoingAddress,
         ns3::Ptr<ns3::Socket> socketInfo,
         ns3::Address destinationAddress,
-        ns3::RateErrorModel &errorModel,
+        ns3::RateErrorModel errorModel,
         uint32_t cost);
 
     ISPInterface(const ISPInterface &other);
@@ -55,7 +55,7 @@ public:
     /**
      * The object used do determine whether or not a package is corrupt.
      */
-    ns3::RateErrorModel &errorModel;
+    ns3::RateErrorModel errorModel;
 
     /**
      * Gets the maximum data rate this interface can send data with.
@@ -71,6 +71,13 @@ public:
      * Gets the delay of the interface when seding packets.
      */
     const uint32_t getDelayInMilliseconds();
+
+    /**
+     * @brief Gets the error rate of this interface.
+     * 
+     * Example: If this value is 3, the error rate is 3%
+     */
+    const double getErrorRate();
 
     uint32_t correctPackages;
 

@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
     costs.push_back(10);
 
     Ptr<RateErrorModel> em = factory.Create<RateErrorModel>();
-    em->SetRate(0.1);
+    em->SetRate(0.2);
     em->SetAttribute("ErrorUnit", StringValue("ERROR_UNIT_PACKET"));
     slowDevices.Get(0)->SetAttribute("ReceiveErrorModel", PointerValue(em));
 
@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
     costs.push_back(30);
 
     Ptr<RateErrorModel> em2 = factory.Create<RateErrorModel>();
-    em2->SetRate(0.1);
+    em2->SetRate(0.01);
     em2->SetAttribute("ErrorUnit", StringValue("ERROR_UNIT_PACKET"));
     mediumDevices.Get(0)->SetAttribute("ReceiveErrorModel", PointerValue(em2));
 
@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
 
     std::vector<std::shared_ptr<SDWanApplication>> applications;
 
-    std::shared_ptr<SDWanApplication> testApplication = std::make_shared<SDWanStaticApplication>(slowSpeedRequirement.Get(), 200, 12, 100);
+    std::shared_ptr<SDWanApplication> testApplication = std::make_shared<SDWanStaticApplication>(slowSpeedRequirement.Get(), 200, 10, 100);
     applications.push_back(std::move(testApplication));
 
     ApplicationSenderHelper source(destinations, applications, costs, LINEAR);
