@@ -165,8 +165,10 @@
    
    MPLS may still be used in a SD-WAN context, a company could decide to use other (usually cheaper) kind of connections for most use cases and reserve a MPLS connection only exceptionally.
    
+   
+   
  
- \section{Load balancing in SD-WANs}
+ \subsubsection{Load balancing and SLA in SD-WANs}
  
  As we previously discussed, in SD-WANs a controller's task is to instruct CPEs on how they should distribute outgoing traffic among the available links. \\
  
@@ -174,13 +176,19 @@
  
  Different applications have usually varying requirements in regards to the acceptable delay and the packet loss that can happen during the transmission of data.
  
- Usually the challenge is in minimizing the overall cost of transmitting a given amount of packets while still guaranteeing a certain level of quality (e.g maintaining the average latency under a given threshold )
+ Two important terms have to be introduced to describe the needs of each network application:
+ \begin{enumerate}
+ 	\item \textit{QoS (Quality of Service)}: a quality indicator used to measure the service level of a given network communication.  It is defined with a series of guarantees that must be respected during a network communication. \\
+ 	In this paper QoS will always be defined in absolute terms (e.g. end to end latency is less than 5 milliseconds,  2\% of packets have been dropped), however it can also be defined in relative tems (i.e how a given traffic flow is   treated with respect to the others)
+ 	\item \textit{SLA (Service Level Agreement)}: the SLA specifies the QoS that has to be guaranteed for a given application. It provides a series of bound on various measurable parameters (i.e the latency \textit{must} be less than 5 milliseconds)
+ \end{enumerate}
+ 
+ Usually the challenge is in minimizing the overall cost of transmitting a given amount of packets while still guaranteeing  the SLA requirements.
  \begin{enumerate}
  	\item Formalizing the problem: how can we define the load balancing problem in a structured away, to then be able to solve it?
- 	\item Evaluating a strategy: what kind of strategy can be used to minimize the cost?
+ 	\item Evaluating a strategy: what kind of strategy can be used to minimize the economic cost? As we previously discussed the most reliable solutions are usually the most expensive and viceversa: if possibile we would live to adopt the more expensive options only when strictly necessary.
  \end{enumerate}
-\pagebreak
-
+ 
 \subsubsection{Problem definition}
 
 As a first step in formalizing the problem,  we can picture a scenario in which we have a CPE sending an arbitrary amount of packets to a sink. \\
@@ -354,7 +362,7 @@ The original paper provides a formulation with a model that may include up to th
 
 For our purposes, we can slightly modify the proposed model.
 
-We want to enfo
+We can ignore the third objective function that may eventually improve the obtained result, as we are only interested in respecting the boundaries.
 
 
 
