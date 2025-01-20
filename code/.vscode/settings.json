@@ -75,7 +75,14 @@
         "*.inc": "cpp",
         "forward_list": "cpp",
         "span": "cpp",
-        "alignedvector3": "cpp"
+        "alignedvector3": "cpp",
+        "any": "cpp",
+        "hash_map": "cpp",
+        "future": "cpp",
+        "scoped_allocator": "cpp",
+        "typeindex": "cpp",
+        "csetjmp": "cpp",
+        "charconv": "cpp"
     },
     "C_Cpp.errorSquiggles": "enabled"
 }

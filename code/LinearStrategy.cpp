@@ -21,6 +21,9 @@ LinearStrategy::LinearStrategy(
 
 void LinearStrategy::Compute()
 {
+    if (this->hasBeenComputed){
+        return;
+    }
     using namespace operations_research;
     std::shared_ptr<SDWanApplication> firstApplication = this->applications->at(0);
     std::shared_ptr<SDWanStaticApplication> staticApplication = std::dynamic_pointer_cast<SDWanStaticApplication>(firstApplication);
@@ -132,5 +135,8 @@ void LinearStrategy::Compute()
             this->availableInterfaces.at(i)->enqueuePacket();
         }
     }
+
+    this->hasBeenComputed = true;
+
     return;
 }

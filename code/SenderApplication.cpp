@@ -157,16 +157,26 @@ void SenderApplication::StartApplication() // Called at time specified by Start
     std::for_each(this->strategy->applications->begin(), this->strategy->applications->end(), [](const std::shared_ptr<SDWanApplication> &application)
                   { application->OnApplicationStart(); });
 
-    this->strategy->Compute();
-
     for (std::shared_ptr<ISPInterface> &e : this->strategy->availableInterfaces)
     {
         InitInterfaceEventLoop(e);
     }
-    Simulator::Schedule(Seconds(0), [this]()
-                        {
-                            // TODO: trasformare in loop
-                        });
+
+    this->ComputeStrategyAndContinue();
+}
+
+void SenderApplication::ComputeStrategyAndContinue()
+{
+
+    this->strategy->Compute();
+
+    if (!this->strategy->getAllDataHasBeenSent())
+    {
+        Time tNext(Seconds(1));
+        Simulator::Schedule(tNext, &SenderApplication::ComputeStrategyAndContinue, this);
+        return;
+    }
+
 }
 
 // Todo rinominare in initdevice
@@ -237,20 +247,12 @@ void SenderApplication::InitSocket(
     {
         auto currentInterface = std::find_if(this->availableInterfaces.begin(), this->availableInterfaces.end(), [from](std::shared_ptr<ISPInterface> interface)
                                              { return interface->outgoingAddress == from; });
-
-        // matchingInterface = *currentInterface;
     }
-
-    // if (matchingInterface->connected)
-    // {
-
-    //     matchingInterface->socketInfo->GetSockName(from);
-    // }
 }
 
 void SenderApplication::InitInterfaceEventLoop(std::shared_ptr<ISPInterface> interface)
 {
-    Simulator::Schedule(Seconds(1), &SenderApplication::SendPacket, this, interface);
+    Simulator::Schedule(Seconds(0), &SenderApplication::SendPacket, this, interface);
 }
 
 void SenderApplication::SendPacket(std::shared_ptr<ISPInterface> interface)

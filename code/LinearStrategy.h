@@ -11,7 +11,7 @@
 class LinearStrategy : public Strategy
 {
 private:
-    /* data */
+    bool hasBeenComputed = false;
 public:
     LinearStrategy(
         std::shared_ptr<std::vector<std::shared_ptr<SDWanApplication>>> applications,

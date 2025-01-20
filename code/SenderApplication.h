@@ -82,6 +82,9 @@ private:
   void StartApplication() override;
   void StopApplication() override;
 
+
+  void ComputeStrategyAndContinue();
+
   void SendData(std::shared_ptr<ISPInterface> interface);
 
   void InitInterfaceEventLoop(std::shared_ptr<ISPInterface> interface);
