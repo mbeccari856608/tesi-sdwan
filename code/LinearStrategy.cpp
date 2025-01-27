@@ -21,7 +21,8 @@ LinearStrategy::LinearStrategy(
 
 void LinearStrategy::Compute()
 {
-    if (this->hasBeenComputed){
+    if (this->hasBeenComputed)
+    {
         return;
     }
     using namespace operations_research;
@@ -131,8 +132,19 @@ void LinearStrategy::Compute()
         std::cout << "Pacchetti per interfaccia " << i << ": " << flooredValue << "\n";
         for (size_t j = 0; j < flooredValue; j++)
         {
-            staticApplication->pendingpackets.pop();
-            this->availableInterfaces.at(i)->enqueuePacket();
+            if (!staticApplication->pendingpackets.empty())
+            {
+                staticApplication->pendingpackets.pop();
+                ns3::Time currentTime = ns3::Simulator::Now();
+                uint32_t applicationId = staticApplication->applicationId;
+
+                SendPacketInfo packetInfo;
+
+                packetInfo.dateEnqueued = currentTime;
+                packetInfo.originatedFrom = applicationId;
+
+                this->availableInterfaces.at(i)->enqueuePacket(packetInfo);
+            }
         }
     }
 

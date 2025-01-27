@@ -11,6 +11,9 @@
 class LinearStrategy : public Strategy
 {
 private:
+    /**
+     * Linear strategy is computed only once
+     */
     bool hasBeenComputed = false;
 public:
     LinearStrategy(

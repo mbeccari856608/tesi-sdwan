@@ -44,7 +44,11 @@ add_executable(Simulator
     StrategyTypes.h
     PI.h
     SinGenerator.h
-    SinGenerator.cpp)
+    SinGenerator.cpp
+    ReceivedPacketInfo.h
+    ReceivedPacketInfo.cpp
+    SendPacketInfo.h
+    SendPacketInfo.cpp)
 
 
 target_link_libraries(Simulator

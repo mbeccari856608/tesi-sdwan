@@ -20,6 +20,13 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("Demo");
 
+uint32_t initialId = 0;
+
+uint32_t getNextApplicationId(){
+    initialId++;
+    return initialId;
+}
+
 int main(int argc, char *argv[])
 {
     auto timeSinceEpoch = std::chrono::high_resolution_clock::now().time_since_epoch();
@@ -85,7 +92,7 @@ int main(int argc, char *argv[])
 
     std::vector<std::shared_ptr<SDWanApplication>> applications;
 
-    std::shared_ptr<SDWanApplication> testApplication = std::make_shared<SDWanStaticApplication>(slowSpeedRequirement.Get(), 200, 10, 100);
+    std::shared_ptr<SDWanApplication> testApplication = std::make_shared<SDWanStaticApplication>(getNextApplicationId(), slowSpeedRequirement.Get(), 200, 10, 100);
     applications.push_back(std::move(testApplication));
 
     ApplicationSenderHelper source(destinations, applications, costs, LINEAR);

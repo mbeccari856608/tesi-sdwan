@@ -1,4 +1,3 @@
-
 #ifndef SENDER_APPLICATION_H
 #define SENDER_APPLICATION_H
 

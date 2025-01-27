@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <queue>
 #include "ns3/internet-module.h"
+#include "SendPacketInfo.h"
 
 /**
  * @brief Class used to represent a network interface in an SD-WAN context.
@@ -83,11 +84,19 @@ public:
 
     uint32_t corruptPackages;
 
-    void enqueuePacket();
+    void enqueuePacket(SendPacketInfo packetInfo);
 
     bool getHasAnyAvailablePackage();
 
-    ns3::Ptr<ns3::Packet> getNextPacket();
+    SendPacketInfo getNextPacket();
+
+    /**
+     * @brief Gets the average waiting time for a packet before it is sent through the interface.
+     * This delay is calculated using the number of packets in the sistem divided by the average arrival
+     * rate of new packages.
+     * 
+     */
+    double getAverageWaitingTimeInMilliseconds();
 
     uint32_t cost;
 
@@ -95,7 +104,8 @@ private:
     /**
      * @brief Queue containing the packets waiting to be sent through this interface.
      */
-    std::queue<ns3::Ptr<ns3::Packet>> pendingpackets;
+    std::queue<SendPacketInfo> pendingpackets;
+
 };
 
 #endif // ISP_INTERFACE_H

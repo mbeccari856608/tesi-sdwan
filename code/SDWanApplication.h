@@ -24,6 +24,7 @@ public:
 
 
     SDWanApplication(
+        uint32_t id,
         ns3::DataRate requiredDataRate,
         uint32_t requiredDelay,
         uint32_t errorRate);
@@ -32,6 +33,13 @@ public:
     SDWanApplication& operator=(const SDWanApplication &data);
     SDWanApplication(SDWanApplication &&data);
     SDWanApplication& operator=(SDWanApplication &&data);
+
+    /**
+     * @brief
+     * 
+     * Id used to track which packets were generated from this application.
+     */
+    const uint32_t applicationId;
 
     /**
      * @brief

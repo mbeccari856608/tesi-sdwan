@@ -9,6 +9,7 @@
 #include "ns3/inet-socket-address.h"
 #include "ns3/inet6-socket-address.h"
 #include "ns3/ptr.h"
+#include "ReceivedPacketInfo.h"
 #include "ns3/traced-callback.h"
 #include <map>
 #include <unordered_map>
@@ -139,7 +140,7 @@ class ReceiverApplication : public Application
     };
 
 
-
+    std::vector<ReceivedPacketInfo> receivedPacketInfo; // !< Array containing information on received packets
     std::unordered_map<Address, Ptr<Packet>, AddressHash> m_buffer; //!< Buffer for received packets
     std::map<Address, Ptr<Socket>> listeningSocketInfo; //!< Map the associates the IP address of an interface with the socket.
     std::list<Ptr<Socket>> m_socketList; //!< the accepted sockets

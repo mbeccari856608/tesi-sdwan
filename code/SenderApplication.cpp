@@ -176,7 +176,6 @@ void SenderApplication::ComputeStrategyAndContinue()
         Simulator::Schedule(tNext, &SenderApplication::ComputeStrategyAndContinue, this);
         return;
     }
-
 }
 
 // Todo rinominare in initdevice
@@ -308,6 +307,8 @@ void SenderApplication::SendData(std::shared_ptr<ISPInterface> interface)
     }
 
     Ptr<Packet> packet = interface->getNextPacket();
+
+ 
     // std::cout << "Ci sono pacchetti rimasti?  " << interface->getHasAnyAvailablePackage() << "\n";
     uint32_t toSend = packet->GetSize();
 
@@ -318,6 +319,11 @@ void SenderApplication::SendData(std::shared_ptr<ISPInterface> interface)
     }
     else
     {
+        // TimestampTag timestamp;
+        // timestamp.SetTimestamp(Simulator::Now());
+        // packet->AddByteTag(timestamp);
+        // Recupero del TimestampTag dal pacchetto
+
         int actual = m_socket->Send(packet);
         if ((unsigned)actual == Utils::PacketSizeBit)
         {

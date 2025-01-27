@@ -30,6 +30,8 @@
 #include "ns3/tcp-socket-factory.h"
 #include "ns3/trace-source-accessor.h"
 #include "ns3/uinteger.h"
+#include "ns3/core-module.h"
+#include "ns3/network-module.h"
 
 namespace ns3
 {
@@ -121,7 +123,6 @@ namespace ns3
 
         Ptr<Node> node = this->GetNode();
         Ptr<ns3::Ipv4> ipv4Node = node->GetObject<ns3::Ipv4>();
-        
 
         // Saltiamo la prima interfaccia di rete perchè è quella di loopback
 
@@ -231,6 +232,20 @@ namespace ns3
                 break;
             }
             m_totalRx += packet->GetSize();
+
+            // Recupero del TimestampTag dal pacchetto
+            TimestampTag timestamp;
+            // Should never not be found since the sender is adding it, but
+            // you never know.
+            if (packet->FindFirstMatchingByteTag(timestamp))
+            {
+                Time tx = timestamp.GetTimestamp();
+
+                std::cout << "Timestamp ricevuto: "
+                          << timestamp.GetTimestamp().GetNanoSeconds()
+                          << " ns" << std::endl;
+            }
+
             if (InetSocketAddress::IsMatchingType(from))
             {
                 NS_LOG_INFO("At time " << Simulator::Now().As(Time::S) << " packet sink received "
@@ -273,12 +288,20 @@ namespace ns3
                     PacketReceived(packet, from, localAddress);
                 }
             }
+
+            // Recupero del TimestampTag dal pacchetto
+            auto iterator = packet->GetPacketTagIterator();
+            while (iterator.HasNext())
+            {
+                std::cout << "Tag" << "\n";
+            }
         }
     }
 
     void
     ReceiverApplication::PacketReceived(const Ptr<Packet> &p, const Address &from, const Address &localAddress)
     {
+
         SeqTsSizeHeader header;
         Ptr<Packet> buffer;
 

@@ -4,6 +4,7 @@
 #include "Utils.h"
 #include "ns3/csma-module.h"
 #include "ns3/error-model.h"
+#include "ns3/simulator.h"
 
 ISPInterface::ISPInterface(
     ns3::Ptr<ns3::NetDevice> netDevice,
@@ -79,9 +80,8 @@ const uint32_t ISPInterface::getDelayInMilliseconds()
     return result;
 }
 
-void ISPInterface::enqueuePacket()
+void ISPInterface::enqueuePacket(SendPacketInfo packet)
 {
-    ns3::Ptr<ns3::Packet> packet = ns3::Create<ns3::Packet>(Utils::PacketSizeBit);
     this->pendingpackets.push(packet);
 }
 
@@ -90,13 +90,22 @@ bool ISPInterface::getHasAnyAvailablePackage()
     return !this->pendingpackets.empty();
 }
 
-ns3::Ptr<ns3::Packet> ISPInterface::getNextPacket()
+SendPacketInfo ISPInterface::getNextPacket()
 {
+
+    // TODO cambiare in STD::optional e continuare (finire) con i tag
     if (this->getHasAnyAvailablePackage())
     {
-        ns3::Ptr<ns3::Packet> value = this->pendingpackets.front();
+        SendPacketInfo value = this->pendingpackets.front();
         this->pendingpackets.pop();
-        // std::cout << "pop " << "(" << this->pendingpackets.size() << ")" << "\n";
+                            // Recupero del TimestampTag dal pacchetto
+                ns3::TimestampTag receivedTag;
+                if (value->PeekPacketTag(receivedTag))
+                {
+                    std::cout << "Timestamp alla generazione: " 
+                              << receivedTag.GetTimestamp().GetNanoSeconds() 
+                              << " ns" << std::endl;
+                }
         return value;
     }
     return nullptr;
@@ -105,4 +114,19 @@ ns3::Ptr<ns3::Packet> ISPInterface::getNextPacket()
 const uint64_t ISPInterface::getDataBitRate()
 {
     return this->getDataRate().GetBitRate();
+}
+
+double ISPInterface::getAverageWaitingTimeInMilliseconds()
+{
+    // The current number of packets is based on the ammount of packets in the queue.
+    uint32_t currentPackets = this->pendingpackets.size();
+
+    double currentTime = ns3::Simulator::Now().GetSeconds();
+    double totalAmountOfPackets = this->correctPackages + this->corruptPackages;
+    double arrivalRate = totalAmountOfPackets / currentTime;
+
+
+
+    return (double) currentPackets / arrivalRate;
+
 }

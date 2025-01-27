@@ -7,6 +7,7 @@
 #include "ns3/network-module.h"
 #include "ns3/packet-sink.h"
 #include "ns3/csma-module.h"
+
 #include "SDWanApplication.h"
 #include "ns3/point-to-point-module.h"
 
@@ -20,6 +21,7 @@ public:
     SDWanStaticApplication();
 
     SDWanStaticApplication(
+        uint32_t id,
         ns3::DataRate requiredDataRate,
         uint32_t requiredDelay,
         uint32_t errorRate,

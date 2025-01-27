@@ -1,26 +1,31 @@
 #include "SDWanApplication.h"
+#include "Utils.h"
 #include "SDWanStaticApplication.h"
+#include "ns3/flow-id-tag.h"
+#include "ns3/timestamp-tag.h"
 
-void SDWanStaticApplication::OnApplicationStart(){
+void SDWanStaticApplication::OnApplicationStart()
+{
     uint8_t amountOfPackets = this->amountOfPacketsToSend;
     for (size_t i = 0; i < amountOfPackets; i++)
     {
         this->pendingpackets.push(i);
     }
     this->allPacketsGenerated = true;
-    
 }
 SDWanStaticApplication::SDWanStaticApplication(
-        ns3::DataRate requiredDataRate,
-        uint32_t requiredDelay,
-        uint32_t errorRate,
-        uint32_t amountOfPacketsToSend) : SDWanApplication(requiredDataRate, requiredDelay, errorRate), amountOfPacketsToSend(amountOfPacketsToSend) {
-
+    uint32_t applicationId,
+    ns3::DataRate requiredDataRate,
+    uint32_t requiredDelay,
+    uint32_t errorRate,
+    uint32_t amountOfPacketsToSend) : SDWanApplication(applicationId, requiredDataRate, requiredDelay, errorRate), amountOfPacketsToSend(amountOfPacketsToSend)
+{
 }
 
-void SDWanStaticApplication::OnUpdate(){
-
+void SDWanStaticApplication::OnUpdate()
+{
 }
-bool SDWanStaticApplication::getHasStoppedGeneratingData(){
+bool SDWanStaticApplication::getHasStoppedGeneratingData()
+{
     return this->pendingpackets.empty() && this->allPacketsGenerated;
 }
