@@ -19,10 +19,10 @@ public:
     virtual ~Strategy() = default;
     Strategy(
         std::shared_ptr<std::vector<std::shared_ptr<SDWanApplication>>> applications,
-        std::vector<std::shared_ptr<ISPInterface>> &availableInterfaces);
+        std::shared_ptr<std::vector<std::shared_ptr<ISPInterface>>> availableInterfaces);
 
     std::shared_ptr<std::vector<std::shared_ptr<SDWanApplication>>> applications;
-    std::vector<std::shared_ptr<ISPInterface>> &availableInterfaces;
+    std::shared_ptr<std::vector<std::shared_ptr<ISPInterface>>> availableInterfaces;
     
     bool getAllDataHasBeenSent();
 

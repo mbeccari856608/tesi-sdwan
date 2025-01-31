@@ -74,6 +74,10 @@ public:
    */
   std::shared_ptr<std::vector<std::shared_ptr<SDWanApplication>>> application;
 
+
+   
+  std::shared_ptr<std::vector<std::shared_ptr<ISPInterface>>> getInterfaces();
+
 protected:
   void DoDispose() override;
 
@@ -88,7 +92,7 @@ private:
 
   void InitInterfaceEventLoop(std::shared_ptr<ISPInterface> interface);
 
-  std::vector<std::shared_ptr<ISPInterface>> availableInterfaces; //!< List of the interfaces that can be used to send data.
+  std::shared_ptr<std::vector<std::shared_ptr<ISPInterface>>> availableInterfaces; //!< List of the interfaces that can be used to send data.
   uint8_t m_tos;                                 //!< The packets Type of Service
   uint64_t amountOfPacketsToSend;                //!< Limit total number of bytes sent
   uint64_t m_totBytes;                           //!< Total bytes sent so far

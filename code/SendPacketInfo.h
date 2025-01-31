@@ -1,7 +1,7 @@
 #ifndef SEND_PACKET_INFO_H
 #define SEND_PACKET_INFO_H
-
 #include "ns3/core-module.h"
+
 #include "ns3/network-module.h"
 #include "ns3/simulator.h"
 

@@ -8,7 +8,7 @@
 #include <queue>
 #include "ns3/internet-module.h"
 #include "SendPacketInfo.h"
-
+#include <optional>
 /**
  * @brief Class used to represent a network interface in an SD-WAN context.
  *
@@ -20,6 +20,8 @@ class ISPInterface
 
 public:
     ISPInterface(
+        uint32_t interfaceId,
+        std::string interfaceName,
         ns3::Ptr<ns3::NetDevice> netDevice,
         ns3::Address outgoingAddress,
         ns3::Ptr<ns3::Socket> socketInfo,
@@ -88,7 +90,11 @@ public:
 
     bool getHasAnyAvailablePackage();
 
-    SendPacketInfo getNextPacket();
+    /**
+     * @returns A pair which a value indicating whether there is a next package
+     * and the info about the package.
+     */
+    std::pair<bool, SendPacketInfo> getNextPacket();
 
     /**
      * @brief Gets the average waiting time for a packet before it is sent through the interface.
@@ -97,6 +103,10 @@ public:
      * 
      */
     double getAverageWaitingTimeInMilliseconds();
+
+    std::string interfaceName;
+
+    uint32_t interfaceId;
 
     uint32_t cost;
 

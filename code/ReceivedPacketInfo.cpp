@@ -1,11 +1,11 @@
-
 #include "ReceivedPacketInfo.h"
 #include "ns3/address.h"
+#include "memory"
 
-
-ReceivedPacketInfo::ReceivedPacketInfo(ns3::Address fromAddress, uint32_t sentFrom, uint32_t delayInMiliseconds) :
-    address(fromAddress),
-    sentFrom(sentFrom),
-    delayInMiliseconds(delayInMiliseconds){
+ReceivedPacketInfo::ReceivedPacketInfo(
+        std::shared_ptr<ISPInterface> interface,
+        uint32_t fromApplication) :
+    fromInterface(interface),
+    fromApplication(fromApplication) {
 
 }

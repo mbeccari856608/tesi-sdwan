@@ -5,16 +5,15 @@
 namespace ns3
 {
 
-ReceiverApplicationHelper::ReceiverApplicationHelper(std::vector<ns3::Address>& sources)
-    : ApplicationHelper("ReceiverApplication"), sources(sources)
-{
-}
-
+  ReceiverApplicationHelper::ReceiverApplicationHelper(std::shared_ptr<std::vector<std::shared_ptr<ISPInterface>>> interfaces)
+      : ApplicationHelper("ReceiverApplication"), interfaces(interfaces)
+  {
+  }
 
   ns3::Ptr<Application> ReceiverApplicationHelper::DoInstall(Ptr<Node> node)
   {
     ns3::Ptr<ReceiverApplication> baseApplication = DynamicCast<ReceiverApplication>(ApplicationHelper::DoInstall(node));
-    baseApplication->sources = std::make_unique<std::vector<Address>>(this->sources);
+    baseApplication->interfaces = this->interfaces;
     return baseApplication;
   }
 

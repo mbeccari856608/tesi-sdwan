@@ -43,6 +43,13 @@ NS_LOG_COMPONENT_DEFINE("SenderApplication");
 
 NS_OBJECT_ENSURE_REGISTERED(SenderApplication);
 
+uint32_t initialInterfaceId = 100;
+
+uint32_t getNextInterfaceId(){
+    initialInterfaceId++;
+    return initialInterfaceId;
+}
+
 TypeId
 SenderApplication::GetTypeId()
 {
@@ -78,6 +85,7 @@ SenderApplication::SenderApplication() : m_totBytes(0),
                                          availableInterfaces(),
                                          strategyType(LINEAR)
 {
+    this->availableInterfaces = std::make_shared<std::vector<std::shared_ptr<ISPInterface>>>(0);
     NS_LOG_FUNCTION(this);
 }
 
@@ -96,7 +104,7 @@ void SenderApplication::DoDispose()
 {
     NS_LOG_FUNCTION(this);
 
-    for (const auto &interface : availableInterfaces)
+    for (const auto &interface : *availableInterfaces)
     {
         interface->socketInfo->Close();
     }
@@ -106,9 +114,14 @@ void SenderApplication::DoDispose()
     Application::DoDispose();
 }
 
+std::shared_ptr<std::vector<std::shared_ptr<ISPInterface>>> SenderApplication::getInterfaces()
+{
+    return this->availableInterfaces;
+}
+
 bool SenderApplication::HasAlreadyInitSocket(Address &from)
 {
-    return std::any_of(this->availableInterfaces.begin(), availableInterfaces.end(), [from](std::shared_ptr<ISPInterface> interface)
+    return std::any_of(this->availableInterfaces->begin(), availableInterfaces->end(), [from](std::shared_ptr<ISPInterface> interface)
                        { return interface->outgoingAddress == from; });
 }
 
@@ -116,6 +129,7 @@ bool SenderApplication::HasAlreadyInitSocket(Address &from)
 void SenderApplication::StartApplication() // Called at time specified by Start
 {
     NS_LOG_FUNCTION(this);
+
 
     Ptr<Node> node = this->GetNode();
     Ptr<Ipv4> ipv4Node = node->GetObject<ns3::Ipv4>();
@@ -157,7 +171,7 @@ void SenderApplication::StartApplication() // Called at time specified by Start
     std::for_each(this->strategy->applications->begin(), this->strategy->applications->end(), [](const std::shared_ptr<SDWanApplication> &application)
                   { application->OnApplicationStart(); });
 
-    for (std::shared_ptr<ISPInterface> &e : this->strategy->availableInterfaces)
+    for (std::shared_ptr<ISPInterface> &e : *(this->strategy->availableInterfaces))
     {
         InitInterfaceEventLoop(e);
     }
@@ -191,9 +205,12 @@ void SenderApplication::InitSocket(
     if (!this->HasAlreadyInitSocket(from))
     {
         Ptr<Socket> maybeSocket = Socket::CreateSocket(GetNode(), TcpSocketFactory::GetTypeId());
-        ISPInterface interface(device, from, maybeSocket, destinationAddress, errorModel, cost);
+        uint32_t interfaceId = getNextInterfaceId();
+        std::string interfaceName = "Interfaccia " + std::to_string(interfaceId);
+        ISPInterface interface(interfaceId, interfaceName, device, from, maybeSocket, destinationAddress, errorModel, cost);
         // matchingInterface = std::make_shared<ISPInterface>(interface);
-        this->availableInterfaces.emplace_back(std::make_shared<ISPInterface>(interface));
+        this->availableInterfaces->emplace_back(std::make_shared<ISPInterface>(interface));
+
         int ret = -1;
 
         // Fatal error if socket type is not NS3_SOCK_STREAM or NS3_SOCK_SEQPACKET
@@ -244,7 +261,7 @@ void SenderApplication::InitSocket(
     }
     else
     {
-        auto currentInterface = std::find_if(this->availableInterfaces.begin(), this->availableInterfaces.end(), [from](std::shared_ptr<ISPInterface> interface)
+        auto currentInterface = std::find_if(this->availableInterfaces->begin(), this->availableInterfaces->end(), [from](std::shared_ptr<ISPInterface> interface)
                                              { return interface->outgoingAddress == from; });
     }
 }
@@ -270,10 +287,10 @@ void SenderApplication::StopApplication() // Called at time specified by Stop
 
     std::vector<std::shared_ptr<ISPInterface>>::iterator interface;
 
-    if (interface != this->availableInterfaces.end())
+    if (interface != this->availableInterfaces->end())
     {
 
-        for (interface = this->availableInterfaces.begin(); interface != this->availableInterfaces.end(); interface++)
+        for (interface = this->availableInterfaces->begin(); interface != this->availableInterfaces->end(); interface++)
         {
             Ptr<Socket> socket = (*interface)->socketInfo;
 
@@ -306,9 +323,14 @@ void SenderApplication::SendData(std::shared_ptr<ISPInterface> interface)
         return;
     }
 
-    Ptr<Packet> packet = interface->getNextPacket();
+    auto packetInfo = interface->getNextPacket().second;
 
- 
+    Ptr<Packet> packet = Create<Packet>(Utils::PacketSizeBit);
+
+    FlowIdTag flowTag;
+    flowTag.SetFlowId(packetInfo.originatedFrom);
+    packet->AddByteTag(flowTag);
+
     // std::cout << "Ci sono pacchetti rimasti?  " << interface->getHasAnyAvailablePackage() << "\n";
     uint32_t toSend = packet->GetSize();
 
@@ -319,10 +341,6 @@ void SenderApplication::SendData(std::shared_ptr<ISPInterface> interface)
     }
     else
     {
-        // TimestampTag timestamp;
-        // timestamp.SetTimestamp(Simulator::Now());
-        // packet->AddByteTag(timestamp);
-        // Recupero del TimestampTag dal pacchetto
 
         int actual = m_socket->Send(packet);
         if ((unsigned)actual == Utils::PacketSizeBit)
@@ -363,7 +381,7 @@ void SenderApplication::SendData(std::shared_ptr<ISPInterface> interface)
 
 std::vector<std::shared_ptr<ISPInterface>>::iterator SenderApplication::GetMatchingInterface(Ptr<Socket> socket)
 {
-    return std::find_if(this->availableInterfaces.begin(), this->availableInterfaces.end(), [socket](std::shared_ptr<ISPInterface> interface)
+    return std::find_if(this->availableInterfaces->begin(), this->availableInterfaces->end(), [socket](std::shared_ptr<ISPInterface> interface)
                         { return interface->socketInfo == socket; });
 }
 

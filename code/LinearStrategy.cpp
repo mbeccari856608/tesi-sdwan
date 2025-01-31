@@ -15,7 +15,7 @@
 
 LinearStrategy::LinearStrategy(
     std::shared_ptr<std::vector<std::shared_ptr<SDWanApplication>>> applications,
-    std::vector<std::shared_ptr<ISPInterface>> &availableInterfaces) : Strategy(applications, availableInterfaces)
+    std::shared_ptr<std::vector<std::shared_ptr<ISPInterface>>> availableInterfaces) : Strategy(applications, availableInterfaces)
 {
 }
 
@@ -36,7 +36,7 @@ void LinearStrategy::Compute()
     std::unique_ptr<operations_research::MPSolver> solver(operations_research::MPSolver::CreateSolver("CBC_MIXED_INTEGER_PROGRAMMING"));
     const double infinity = solver->infinity();
     std::vector<operations_research::MPVariable *> interfaces;
-    for (unsigned short i = 0; const std::shared_ptr<ISPInterface> &interface : this->availableInterfaces)
+    for (unsigned short i = 0; const std::shared_ptr<ISPInterface> &interface : *(this->availableInterfaces))
     {
         std::string interfaceName = "Interfaccia " + std::to_string(i);
         interfaces.push_back(solver->MakeIntVar(0.0, infinity, interfaceName));
@@ -45,13 +45,13 @@ void LinearStrategy::Compute()
 
     std::vector<MPConstraint *> constraints;
     // Vincoli sul delay
-    for (std::size_t i = 0; i < this->availableInterfaces.size(); ++i)
+    for (std::size_t i = 0; i < this->availableInterfaces->size(); ++i)
     {
         constraints.push_back(
             solver->MakeRowConstraint(0, staticApplication->requiredDelay));
-        for (std::size_t j = 0; j < this->availableInterfaces.size(); ++j)
+        for (std::size_t j = 0; j < this->availableInterfaces->size(); ++j)
         {
-            std::shared_ptr<ISPInterface> currentInterface = this->availableInterfaces.at(j);
+            std::shared_ptr<ISPInterface> currentInterface = this->availableInterfaces->at(j);
             double milliSecondsInterfaceDelay = ((double)currentInterface->getDelayInMilliseconds());
             double delayCoefficient = milliSecondsInterfaceDelay / staticApplication->amountOfPacketsToSend;
             constraints.back()->SetCoefficient(interfaces[j], delayCoefficient);
@@ -59,16 +59,16 @@ void LinearStrategy::Compute()
     }
 
     // Vincoli sulla banda
-    for (std::size_t i = 0; i < this->availableInterfaces.size(); ++i)
+    for (std::size_t i = 0; i < this->availableInterfaces->size(); ++i)
     {
         // Convertiamo tutti i requisiti sulla banda in bps
         uint64_t applicationRequiredBitRate = staticApplication->requiredDataRate.GetBitRate();
 
         constraints.push_back(
             solver->MakeRowConstraint(applicationRequiredBitRate, infinity));
-        for (std::size_t j = 0; j < this->availableInterfaces.size(); ++j)
+        for (std::size_t j = 0; j < this->availableInterfaces->size(); ++j)
         {
-            std::shared_ptr<ISPInterface> currentInterface = this->availableInterfaces.at(j);
+            std::shared_ptr<ISPInterface> currentInterface = this->availableInterfaces->at(j);
             double interfaceBitRate = ((double)currentInterface->getDataBitRate());
             double bandWidthCoefficient = interfaceBitRate / staticApplication->amountOfPacketsToSend;
             constraints.back()->SetCoefficient(interfaces[j], bandWidthCoefficient);
@@ -76,13 +76,13 @@ void LinearStrategy::Compute()
     }
 
     // Vincolo sulla percentuale di errore
-    for (std::size_t i = 0; i < this->availableInterfaces.size(); ++i)
+    for (std::size_t i = 0; i < this->availableInterfaces->size(); ++i)
     {
         constraints.push_back(
             solver->MakeRowConstraint(0, staticApplication->errorRate));
-        for (std::size_t j = 0; j < this->availableInterfaces.size(); ++j)
+        for (std::size_t j = 0; j < this->availableInterfaces->size(); ++j)
         {
-            std::shared_ptr<ISPInterface> currentInterface = this->availableInterfaces.at(j);
+            std::shared_ptr<ISPInterface> currentInterface = this->availableInterfaces->at(j);
             double errorRate = currentInterface->getErrorRate();
             double errorCoefficient = errorRate / staticApplication->amountOfPacketsToSend;
             constraints.back()->SetCoefficient(interfaces[j], errorCoefficient);
@@ -90,11 +90,11 @@ void LinearStrategy::Compute()
     }
 
     // Vincolo sul numero totale di pacchetti.
-    for (std::size_t i = 0; i < this->availableInterfaces.size(); ++i)
+    for (std::size_t i = 0; i < this->availableInterfaces->size(); ++i)
     {
         constraints.push_back(
             solver->MakeRowConstraint(staticApplication->amountOfPacketsToSend, infinity));
-        for (std::size_t j = 0; j < this->availableInterfaces.size(); ++j)
+        for (std::size_t j = 0; j < this->availableInterfaces->size(); ++j)
         {
             constraints.back()->SetCoefficient(interfaces[j], 1);
         }
@@ -103,7 +103,7 @@ void LinearStrategy::Compute()
     MPObjective *const objective = solver->MutableObjective();
     for (size_t i = 0; i < interfaces.size(); ++i)
     {
-        objective->SetCoefficient(interfaces[i], this->availableInterfaces.at(i)->cost);
+        objective->SetCoefficient(interfaces[i], this->availableInterfaces->at(i)->cost);
     }
     objective->SetMinimization();
 
@@ -143,7 +143,7 @@ void LinearStrategy::Compute()
                 packetInfo.dateEnqueued = currentTime;
                 packetInfo.originatedFrom = applicationId;
 
-                this->availableInterfaces.at(i)->enqueuePacket(packetInfo);
+                this->availableInterfaces->at(i)->enqueuePacket(packetInfo);
             }
         }
     }

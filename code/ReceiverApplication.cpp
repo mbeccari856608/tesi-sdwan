@@ -69,7 +69,8 @@ namespace ns3
     }
 
     ReceiverApplication::ReceiverApplication()
-        : listeningSocketInfo()
+        : listeningSocketInfo(),
+          receivedPacketInfo()
     {
         NS_LOG_FUNCTION(this);
         m_totalRx = 0;
@@ -225,6 +226,7 @@ namespace ns3
         Ptr<Packet> packet;
         Address from;
         Address localAddress;
+        uint32_t originFlowId;
         while ((packet = socket->RecvFrom(from)))
         {
             if (packet->GetSize() == 0)
@@ -233,17 +235,16 @@ namespace ns3
             }
             m_totalRx += packet->GetSize();
 
-            // Recupero del TimestampTag dal pacchetto
             TimestampTag timestamp;
-            // Should never not be found since the sender is adding it, but
-            // you never know.
             if (packet->FindFirstMatchingByteTag(timestamp))
             {
                 Time tx = timestamp.GetTimestamp();
+            }
 
-                std::cout << "Timestamp ricevuto: "
-                          << timestamp.GetTimestamp().GetNanoSeconds()
-                          << " ns" << std::endl;
+            FlowIdTag origin;
+            if (packet->FindFirstMatchingByteTag(origin))
+            {
+               originFlowId = origin.GetFlowId();
             }
 
             if (InetSocketAddress::IsMatchingType(from))
@@ -289,12 +290,23 @@ namespace ns3
                 }
             }
 
-            // Recupero del TimestampTag dal pacchetto
-            auto iterator = packet->GetPacketTagIterator();
-            while (iterator.HasNext())
+        // for (size_t i = 0; i < this->interfaces->size(); i++)
+        // {
+        //      std::cout << localAddress << std::endl;
+        //      std::cout << this->interfaces->at(i)->destinationAddress << std::endl;
+        //      std::cout << (localAddress == this->interfaces->at(i)->destinationAddress) << std::endl;
+        // }
+        
+            auto interface = std::find_if(this->interfaces->begin(), this->interfaces->end(), [socket, from](const std::shared_ptr<ISPInterface> &i)
+                                   { return i->outgoingAddress == from; });
+
+            if (interface != this->interfaces->end())
             {
-                std::cout << "Tag" << "\n";
+
+                auto sentPacketInfo = ReceivedPacketInfo(*interface, originFlowId);
+                this->receivedPacketInfo.push_back(sentPacketInfo);
             }
+
         }
     }
 

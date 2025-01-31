@@ -2,6 +2,11 @@
 #define RECEIVED_PACKET_INFO_H
 #include <stdint.h>
 #include "ns3/address.h"
+#include "memory.h"
+#include "ISPInterface.h"
+#include "SDWanApplication.h"
+#include <boost/range/algorithm/sort.hpp>
+
 /**
  * This class is used to track information about packets received from a given application.
  * 
@@ -10,28 +15,11 @@ class ReceivedPacketInfo{
 
 public:
     ReceivedPacketInfo(
-        ns3::Address fromAddress,
-        uint32_t sentFrom,
-        uint32_t delayInMiliseconds);
+        std::shared_ptr<ISPInterface> interface,
+        uint32_t fromApplication);
 
-
-    /**
-     * The address of the interface from which the packet was received
-     * 
-     */
-    ns3::Address address;
-
-    /**
-     * Identifier used to track the application that created the packet.
-     * 
-     */
-    uint32_t sentFrom;
-
-    /**
-     * Total delay experienced by the packet, calcolated from the time it was first queued.
-     */
-    uint32_t delayInMiliseconds;
-
+    std::shared_ptr<ISPInterface> fromInterface;
+    uint32_t fromApplication;
 };
 
 

@@ -2,7 +2,8 @@
 #define RECEIVER_APPLICATION_HELPER_H
 
 #include <ns3/application-helper.h>
-
+#include <memory>
+#include "ISPInterface.h"
 namespace ns3
 {
 
@@ -12,10 +13,10 @@ namespace ns3
     /**
      * Create a DestinationHelper to make it easier to work with ReceiverApplicaiton
      *
-     * \param address the addresses of the interfaces that can receive data
+     * \param interfaces the ISP interfaces from which data can arrive
      *
      */
-    ReceiverApplicationHelper(std::vector<ns3::Address> &sources);
+    ReceiverApplicationHelper(std::shared_ptr<std::vector<std::shared_ptr<ISPInterface>>> interfaces);
 
     /**
      * Due to how ns3 works we may need to do some manual tweaking when adding the application
@@ -24,7 +25,7 @@ namespace ns3
     Ptr<Application> DoInstall(Ptr<Node> node) override;
 
   private:
-    std::vector<Address> &sources;
+    std::shared_ptr<std::vector<std::shared_ptr<ISPInterface>>> interfaces;
   };
 
 } // namespace ns3

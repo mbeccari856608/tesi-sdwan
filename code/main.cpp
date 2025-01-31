@@ -12,6 +12,7 @@
 #include "ReceiverApplication.h"
 #include "Utils.h"
 #include "SDWanStaticApplication.h"
+#include "SenderApplication.h"
 
 #include <fstream>
 #include <iostream>
@@ -20,12 +21,14 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("Demo");
 
-uint32_t initialId = 0;
+uint32_t initialApplicationId = 0;
 
 uint32_t getNextApplicationId(){
-    initialId++;
-    return initialId;
+    initialApplicationId++;
+    return initialApplicationId;
 }
+
+
 
 int main(int argc, char *argv[])
 {
@@ -99,11 +102,14 @@ int main(int argc, char *argv[])
 
     ApplicationContainer sourceApps = source.Install(nodes.Get(0));
     sourceApps.Start(Seconds(0.0));
+    
+
+    Ptr<SenderApplication> senderApplication = DynamicCast<SenderApplication>(sourceApps.Get(0));
 
     //
     // Create a PacketSinkApplication and install it on node 1
     //
-    ReceiverApplicationHelper sink(destinations);
+    ReceiverApplicationHelper sink(senderApplication->getInterfaces());
     ApplicationContainer sinkApps = sink.Install(nodes.Get(1));
     sinkApps.Start(Seconds(0.0));
 

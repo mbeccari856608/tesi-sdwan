@@ -13,7 +13,8 @@
 #include "ns3/traced-callback.h"
 #include <map>
 #include <unordered_map>
-
+#include "ISPInterface.h"
+#include <memory>
 namespace ns3
 {
 
@@ -46,9 +47,9 @@ class ReceiverApplication : public Application
 
     
     /**
-     * \brief Pointer to array containing all the available addressed on which data can arrive
+     * \brief Pointer to array containing all the available interfaces from which data can arrive
      */
-    std::unique_ptr<std::vector<Address>> sources;
+    std::shared_ptr<std::vector<std::shared_ptr<ISPInterface>>> interfaces;
 
     /**
      * TracedCallback signature for a reception with addresses and SeqTsSizeHeader

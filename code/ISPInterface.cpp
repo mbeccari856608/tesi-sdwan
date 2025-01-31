@@ -7,6 +7,8 @@
 #include "ns3/simulator.h"
 
 ISPInterface::ISPInterface(
+    uint32_t interfaceId,
+    std::string interfaceName,
     ns3::Ptr<ns3::NetDevice> netDevice,
     ns3::Address outgoingAddress,
     ns3::Ptr<ns3::Socket> socketInfo,
@@ -21,7 +23,9 @@ ISPInterface::ISPInterface(
                      connected(false),
                      netDevice(netDevice),
                      pendingpackets(),
-                     cost(cost)
+                     cost(cost),
+                     interfaceId(interfaceId),
+                     interfaceName(interfaceName)
 {
 }
 ISPInterface::ISPInterface(const ISPInterface &other)
@@ -34,7 +38,9 @@ ISPInterface::ISPInterface(const ISPInterface &other)
       connected(other.connected),
       netDevice(other.netDevice),
       pendingpackets(other.pendingpackets),
-      cost(other.cost)
+      cost(other.cost),
+      interfaceId(other.interfaceId),
+      interfaceName(other.interfaceName)
 {
     std::cout << "Copiato" << "\n";
 }
@@ -52,6 +58,8 @@ ISPInterface &ISPInterface::operator=(const ISPInterface &other)
         connected = other.connected;
         netDevice = other.netDevice;
         pendingpackets = other.pendingpackets;
+        interfaceId = other.interfaceId;
+        interfaceName = other.interfaceName;
     }
     return *this;
 }
@@ -90,25 +98,16 @@ bool ISPInterface::getHasAnyAvailablePackage()
     return !this->pendingpackets.empty();
 }
 
-SendPacketInfo ISPInterface::getNextPacket()
+std::pair<bool, SendPacketInfo> ISPInterface::getNextPacket()
 {
-
-    // TODO cambiare in STD::optional e continuare (finire) con i tag
     if (this->getHasAnyAvailablePackage())
     {
         SendPacketInfo value = this->pendingpackets.front();
         this->pendingpackets.pop();
-                            // Recupero del TimestampTag dal pacchetto
-                ns3::TimestampTag receivedTag;
-                if (value->PeekPacketTag(receivedTag))
-                {
-                    std::cout << "Timestamp alla generazione: " 
-                              << receivedTag.GetTimestamp().GetNanoSeconds() 
-                              << " ns" << std::endl;
-                }
-        return value;
+        return {true, value};
     }
-    return nullptr;
+    SendPacketInfo empty;
+    return {false, empty};
 }
 
 const uint64_t ISPInterface::getDataBitRate()
@@ -125,8 +124,5 @@ double ISPInterface::getAverageWaitingTimeInMilliseconds()
     double totalAmountOfPackets = this->correctPackages + this->corruptPackages;
     double arrivalRate = totalAmountOfPackets / currentTime;
 
-
-
-    return (double) currentPackets / arrivalRate;
-
+    return (double)currentPackets / arrivalRate;
 }
