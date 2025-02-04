@@ -48,7 +48,9 @@ add_executable(Simulator
     ReceivedPacketInfo.h
     ReceivedPacketInfo.cpp
     SendPacketInfo.h
-    SendPacketInfo.cpp)
+    SendPacketInfo.cpp
+    SinApplication.h
+    SinApplication.cpp)
 
 
 target_link_libraries(Simulator

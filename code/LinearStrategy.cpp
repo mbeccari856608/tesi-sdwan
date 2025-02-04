@@ -62,7 +62,7 @@ void LinearStrategy::Compute()
     for (std::size_t i = 0; i < this->availableInterfaces->size(); ++i)
     {
         // Convertiamo tutti i requisiti sulla banda in bps
-        uint64_t applicationRequiredBitRate = staticApplication->requiredDataRate.GetBitRate();
+        uint64_t applicationRequiredBitRate = staticApplication->getRequiredDataRate().GetBitRate();
 
         constraints.push_back(
             solver->MakeRowConstraint(applicationRequiredBitRate, infinity));

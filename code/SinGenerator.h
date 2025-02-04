@@ -3,7 +3,8 @@
 
 #include <vector>
 #include <tuple>
+#include <cstdint>
 
-std::vector<std::tuple<double, double>> generateValues(double shift, int noise);
+std::vector<std::tuple<uint32_t, uint32_t>> generateValues(double shift, int noise);
 
 #endif /* SIN_GENERATOR_H */

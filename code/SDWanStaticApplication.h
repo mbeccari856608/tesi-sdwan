@@ -29,6 +29,7 @@ public:
 
     virtual void OnUpdate();
     virtual bool getHasStoppedGeneratingData();
+    virtual ns3::DataRate getRequiredDataRate();
 
     const uint32_t amountOfPacketsToSend;
 
@@ -37,6 +38,7 @@ protected:
 
 private:
     bool allPacketsGenerated;
+    ns3::DataRate requiredDataRate;
 };
 
 #endif /* SD_WAN_STATIC_APPLICATION_H */

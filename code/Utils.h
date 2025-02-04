@@ -20,6 +20,10 @@ namespace Utils
     constexpr uint32_t PacketSizeByte = PacketSizeBit / 8;
 
 
+    
+    const uint32_t SimulationDurationInSeconds = 1200;
+
+
     /**
      *  The port used to create sockets
      */

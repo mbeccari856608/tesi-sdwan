@@ -25,7 +25,6 @@ public:
 
     SDWanApplication(
         uint32_t id,
-        ns3::DataRate requiredDataRate,
         uint32_t requiredDelay,
         uint32_t errorRate);
 
@@ -46,12 +45,6 @@ public:
      * 
      */
     uint32_t generatedPackets;
-
-    /**
-     * @brief
-     * The maximum average required data rate for all the packets sent for the application.
-     */
-    const ns3::DataRate requiredDataRate;
 
     /**
      * @brief
@@ -87,6 +80,15 @@ public:
             this->OnUpdate();
         }
     }
+
+public:
+    
+    /**
+     * @brief
+     * The maximum average required data rate for all the packets sent for the application.
+     */
+    virtual ns3::DataRate getRequiredDataRate() = 0;
+
 
 protected:
     virtual void OnUpdate() = 0;

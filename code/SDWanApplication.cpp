@@ -11,7 +11,6 @@ SDWanApplication::~SDWanApplication()
 {
 }
 SDWanApplication::SDWanApplication() : applicationId(),
-                                       requiredDataRate(),
                                        requiredDelay(),
                                        errorRate(),
                                        pendingpackets(),
@@ -19,10 +18,8 @@ SDWanApplication::SDWanApplication() : applicationId(),
 
 SDWanApplication::SDWanApplication(
     uint32_t id,
-    ns3::DataRate requiredDataRate,
     uint32_t requiredDelay,
-    uint32_t errorRate)
-    : requiredDataRate(requiredDataRate),
+    uint32_t errorRate) :
       applicationId(id),
       requiredDelay(requiredDelay),
       errorRate(errorRate),
@@ -30,7 +27,7 @@ SDWanApplication::SDWanApplication(
       generatedPackets(0) {}
 
 SDWanApplication::SDWanApplication(const SDWanApplication &data)
-    : requiredDataRate(data.requiredDataRate),
+    :
       errorRate(data.errorRate),
       applicationId(data.applicationId),
       requiredDelay(data.requiredDelay),
@@ -41,8 +38,7 @@ SDWanApplication &SDWanApplication::operator=(const SDWanApplication &data)
   return *this;
 }
 
-SDWanApplication::SDWanApplication(SDWanApplication &&data)
-    : requiredDataRate(data.requiredDataRate),
+SDWanApplication::SDWanApplication(SDWanApplication &&data)   :
       errorRate(data.errorRate),
       applicationId(data.applicationId),
       requiredDelay(data.requiredDelay),
