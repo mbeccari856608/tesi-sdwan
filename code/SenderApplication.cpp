@@ -205,6 +205,7 @@ void SenderApplication::InitSocket(
     if (!this->HasAlreadyInitSocket(from))
     {
         Ptr<Socket> maybeSocket = Socket::CreateSocket(GetNode(), TcpSocketFactory::GetTypeId());
+
         uint32_t interfaceId = getNextInterfaceId();
         std::string interfaceName = "Interfaccia " + std::to_string(interfaceId);
         ISPInterface interface(interfaceId, interfaceName, device, from, maybeSocket, destinationAddress, errorModel, cost);
@@ -315,7 +316,7 @@ void SenderApplication::SendData(std::shared_ptr<ISPInterface> interface)
     NS_LOG_LOGIC("sending packet at " << Simulator::Now());
 
     ns3::DataRate dataRate = interface->getDataRate();
-    Time tNext(Seconds(Utils::PacketSizeBit * 8 / static_cast<double>(dataRate.GetBitRate())));
+    Time tNext(Seconds((Utils::PacketSizeBit) / static_cast<double>(dataRate.GetBitRate())));
 
     if (!interface->getHasAnyAvailablePackage())
     {
@@ -325,7 +326,7 @@ void SenderApplication::SendData(std::shared_ptr<ISPInterface> interface)
 
     auto packetInfo = interface->getNextPacket().second;
 
-    Ptr<Packet> packet = Create<Packet>(Utils::PacketSizeBit);
+    Ptr<Packet> packet = Create<Packet>(Utils::PacketSizeByte);
 
     FlowIdTag flowTag;
     flowTag.SetFlowId(packetInfo.originatedFrom);
@@ -343,33 +344,12 @@ void SenderApplication::SendData(std::shared_ptr<ISPInterface> interface)
     {
 
         int actual = m_socket->Send(packet);
-        if ((unsigned)actual == Utils::PacketSizeBit)
+        if ((unsigned)actual == Utils::PacketSizeByte)
         {
             interface->correctPackages++;
             m_totBytes += actual;
             m_txTrace(packet);
             m_unsentPacket = nullptr;
-        }
-        else if (actual == -1)
-        {
-            // We exit this loop when actual < toSend as the send side
-            // buffer is full. The "DataSent" callback will pop when
-            // some buffer space has freed up.
-            NS_LOG_DEBUG("Unable to send packet; caching for later attempt");
-            m_unsentPacket = packet;
-        }
-        else if (actual > 0 && (unsigned)actual < toSend)
-        {
-            // A Linux socket (non-blocking, such as in DCE) may return
-            // a quantity less than the packet size.  Split the packet
-            // into two, trace the sent packet, save the unsent packet
-            NS_LOG_DEBUG("Packet size: " << packet->GetSize() << "; sent: " << actual
-                                         << "; fragment saved: " << toSend - (unsigned)actual);
-            Ptr<Packet> sent = packet->CreateFragment(0, actual);
-            Ptr<Packet> unsent = packet->CreateFragment(actual, (toSend - (unsigned)actual));
-            m_totBytes += actual;
-            m_txTrace(sent);
-            m_unsentPacket = unsent;
         }
         else
         {

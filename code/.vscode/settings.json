@@ -82,7 +82,8 @@
         "scoped_allocator": "cpp",
         "typeindex": "cpp",
         "csetjmp": "cpp",
-        "charconv": "cpp"
+        "charconv": "cpp",
+        "ranges": "cpp"
     },
     "C_Cpp.errorSquiggles": "enabled"
 }

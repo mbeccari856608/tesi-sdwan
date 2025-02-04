@@ -13,6 +13,9 @@
 #include "Utils.h"
 #include "SDWanStaticApplication.h"
 #include "SenderApplication.h"
+#include <boost/range/algorithm/sort.hpp>
+#include <ranges>
+#include <unordered_map>
 
 #include <fstream>
 #include <iostream>
@@ -23,12 +26,11 @@ NS_LOG_COMPONENT_DEFINE("Demo");
 
 uint32_t initialApplicationId = 0;
 
-uint32_t getNextApplicationId(){
+uint32_t getNextApplicationId()
+{
     initialApplicationId++;
     return initialApplicationId;
 }
-
-
 
 int main(int argc, char *argv[])
 {
@@ -102,7 +104,6 @@ int main(int argc, char *argv[])
 
     ApplicationContainer sourceApps = source.Install(nodes.Get(0));
     sourceApps.Start(Seconds(0.0));
-    
 
     Ptr<SenderApplication> senderApplication = DynamicCast<SenderApplication>(sourceApps.Get(0));
 
@@ -119,7 +120,7 @@ int main(int argc, char *argv[])
     NS_LOG_INFO("Run Simulation.");
     Simulator::Run();
     auto finalTime = Simulator::Now().GetMinutes();
-    Simulator::Destroy();
+    Simulator::Stop();
 
     std::cout << "Finito " << Simulator::IsFinished() << std::endl;
 
@@ -128,7 +129,71 @@ int main(int argc, char *argv[])
     Ptr<ReceiverApplication> sink1 = DynamicCast<ReceiverApplication>(sinkApps.Get(0));
     std::cout << "Total Bytes Received: " << sink1->GetTotalRx() << std::endl;
 
-    // TODO: migliorare i log
+    auto allPackets = sink1->getReceivedPacketInfo();
+
+    std::cout << "Totale pacchetti ricevuti: " << std::to_string(allPackets.size()) << std::endl;
+
+    // Raggruppiamo per applicazione
+    std::ranges::sort(allPackets, {}, &ReceivedPacketInfo::fromApplication);
+
+    std::map<uint32_t, std::vector<ReceivedPacketInfo>> flowGroups;
+
+    // Raggruppa per età
+    for (const auto &pInfo : allPackets)
+    {
+        flowGroups[pInfo.fromApplication].push_back(pInfo);
+    }
+
+    // Iterazione con range-based for
+    for (const auto &groupOfPackets : flowGroups)
+    {
+        uint32_t applicationId = groupOfPackets.first;
+        std::cout << "Informazione per l'applicazione " << std::to_string(applicationId) << " " << "\n";
+
+
+        auto maybeApplication = std::find_if(applications.begin(), applications.end(), [applicationId](const std::shared_ptr<SDWanApplication> item) {
+            return item->applicationId == applicationId;
+        });
+
+        if (maybeApplication == applications.end()) {
+            std::cout << "Applicazione non trovata" << std::endl;
+            continue;
+        }
+
+        std::shared_ptr<SDWanApplication> currentApplication = *maybeApplication;
+
+
+        // Ritardo Medio:
+        double totalDelay = 0.0;
+        for (size_t i = 0; i < groupOfPackets.second.size(); i++)
+        {
+             totalDelay += (double)groupOfPackets.second.at(i).getDelayInMilliSeconds();
+        }
+ 
+        double averageDelay = totalDelay / groupOfPackets.second.size();
+        std::cout << "Average delay: " << averageDelay << "ms" << std::endl;
+
+
+        double totalBandwidth = 0.0;
+        for (size_t i = 0; i < groupOfPackets.second.size(); i++)
+        {
+             totalBandwidth += (double)groupOfPackets.second.at(i).getDataRateInPacketPerSeconds();
+        }
+
+        double averageBandwidth = totalBandwidth / groupOfPackets.second.size();
+        std::cout << "Average bandwidth: " << averageBandwidth << " packets/s " << std::endl;
+
+        double generatedPackages = (double)currentApplication->generatedPackets;
+        double receivedPackages = sink1->GetTotalRx() / Utils::PacketSizeBit;
+        double successRate = ( receivedPackages / generatedPackages) * 100;
+        double errorRate = 100 - successRate;
+
+        std::cout << "Error rate: " << std::to_string(errorRate) << "% " << std::endl;
+ 
+
+    }
+
+    Simulator::Destroy();
 
     return 0;
 }

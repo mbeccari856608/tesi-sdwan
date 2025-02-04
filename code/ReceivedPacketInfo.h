@@ -20,6 +20,10 @@ public:
 
     std::shared_ptr<ISPInterface> fromInterface;
     uint32_t fromApplication;
+
+    uint32_t getDelayInMilliSeconds() const ;
+
+    uint32_t getDataRateInPacketPerSeconds() const ;
 };
 
 

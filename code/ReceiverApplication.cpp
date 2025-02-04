@@ -147,6 +147,8 @@ namespace ns3
         {
 
             m_socket = Socket::CreateSocket(GetNode(), TcpSocketFactory::GetTypeId());
+            // m_socket->SetAttribute("RcvBufSize", ns3::UintegerValue((Utils::PacketSizeBit / 8) * 2));
+
             this->listeningSocketInfo.insert_or_assign(interfaceAddress, m_socket);
             NS_ABORT_MSG_IF(interfaceAddress.IsInvalid(), "'Local' attribute not properly set");
             if (m_socket->Bind(interfaceAddress) == -1)
@@ -227,12 +229,17 @@ namespace ns3
         Address from;
         Address localAddress;
         uint32_t originFlowId;
-        while ((packet = socket->RecvFrom(from)))
+        while ((socket->GetRxAvailable()) >= (Utils::PacketSizeByte))
         {
+            uint8_t buffer[Utils::PacketSizeByte];
+            packet = socket->RecvFrom(Utils::PacketSizeByte, 0, from); // Legge esattamente 128 byte
+            packet->CopyData(buffer, Utils::PacketSizeByte);
+
             if (packet->GetSize() == 0)
             { // EOF
                 break;
             }
+
             m_totalRx += packet->GetSize();
 
             TimestampTag timestamp;
@@ -244,7 +251,7 @@ namespace ns3
             FlowIdTag origin;
             if (packet->FindFirstMatchingByteTag(origin))
             {
-               originFlowId = origin.GetFlowId();
+                originFlowId = origin.GetFlowId();
             }
 
             if (InetSocketAddress::IsMatchingType(from))
@@ -290,15 +297,8 @@ namespace ns3
                 }
             }
 
-        // for (size_t i = 0; i < this->interfaces->size(); i++)
-        // {
-        //      std::cout << localAddress << std::endl;
-        //      std::cout << this->interfaces->at(i)->destinationAddress << std::endl;
-        //      std::cout << (localAddress == this->interfaces->at(i)->destinationAddress) << std::endl;
-        // }
-        
             auto interface = std::find_if(this->interfaces->begin(), this->interfaces->end(), [socket, from](const std::shared_ptr<ISPInterface> &i)
-                                   { return i->outgoingAddress == from; });
+                                          { return i->outgoingAddress == from; });
 
             if (interface != this->interfaces->end())
             {
@@ -306,8 +306,12 @@ namespace ns3
                 auto sentPacketInfo = ReceivedPacketInfo(*interface, originFlowId);
                 this->receivedPacketInfo.push_back(sentPacketInfo);
             }
-
         }
+    }
+
+    std::vector<ReceivedPacketInfo> &ReceiverApplication::getReceivedPacketInfo()
+    {
+        return this->receivedPacketInfo;
     }
 
     void

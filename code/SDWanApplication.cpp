@@ -14,7 +14,8 @@ SDWanApplication::SDWanApplication() : applicationId(),
                                        requiredDataRate(),
                                        requiredDelay(),
                                        errorRate(),
-                                       pendingpackets() {}
+                                       pendingpackets(),
+                                       generatedPackets(0) {}
 
 SDWanApplication::SDWanApplication(
     uint32_t id,
@@ -25,13 +26,15 @@ SDWanApplication::SDWanApplication(
       applicationId(id),
       requiredDelay(requiredDelay),
       errorRate(errorRate),
-      pendingpackets() {}
+      pendingpackets(),
+      generatedPackets(0) {}
 
 SDWanApplication::SDWanApplication(const SDWanApplication &data)
     : requiredDataRate(data.requiredDataRate),
       errorRate(data.errorRate),
       applicationId(data.applicationId),
-      requiredDelay(data.requiredDelay) {}
+      requiredDelay(data.requiredDelay),
+      generatedPackets(data.generatedPackets) {}
 
 SDWanApplication &SDWanApplication::operator=(const SDWanApplication &data)
 {
@@ -42,7 +45,8 @@ SDWanApplication::SDWanApplication(SDWanApplication &&data)
     : requiredDataRate(data.requiredDataRate),
       errorRate(data.errorRate),
       applicationId(data.applicationId),
-      requiredDelay(data.requiredDelay)
+      requiredDelay(data.requiredDelay),
+      generatedPackets(data.generatedPackets)
 {
 }
 

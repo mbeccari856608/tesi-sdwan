@@ -45,6 +45,7 @@ class ReceiverApplication : public Application
      */
     std::list<Ptr<Socket>> GetAcceptedSockets() const;
 
+    std::vector<ReceivedPacketInfo>& getReceivedPacketInfo();
     
     /**
      * \brief Pointer to array containing all the available interfaces from which data can arrive

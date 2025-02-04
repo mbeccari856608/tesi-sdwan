@@ -10,6 +10,7 @@ void SDWanStaticApplication::OnApplicationStart()
     for (size_t i = 0; i < amountOfPackets; i++)
     {
         this->pendingpackets.push(i);
+        this->generatedPackets++;
     }
     this->allPacketsGenerated = true;
 }

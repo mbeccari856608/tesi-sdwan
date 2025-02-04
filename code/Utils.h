@@ -12,7 +12,13 @@ namespace Utils
     /**
      * Fixed sizes of a packet, in bits.
      */
-    const uint32_t PacketSizeBit = 128;
+    const uint32_t PacketSizeBit = 1024;
+
+    /**
+     * Fixed sizes of a packet, in bytes.
+     */
+    constexpr uint32_t PacketSizeByte = PacketSizeBit / 8;
+
 
     /**
      *  The port used to create sockets
