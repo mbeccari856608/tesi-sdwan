@@ -1,22 +1,3 @@
-/*
- * Copyright (c) 2010 Georgia Institute of Technology
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation;
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- * Author: George F. Riley <riley@ece.gatech.edu>
- */
-
 #include "SenderApplication.h"
 
 #include "ns3/address.h"
@@ -36,6 +17,7 @@
 #include "Strategy.h"
 #include "StrategyTypes.h"
 #include "LinearStrategy.h"
+#include "RandomStrategy.h"
 
 using namespace ns3;
 
@@ -45,7 +27,8 @@ NS_OBJECT_ENSURE_REGISTERED(SenderApplication);
 
 uint32_t initialInterfaceId = 100;
 
-uint32_t getNextInterfaceId(){
+uint32_t getNextInterfaceId()
+{
     initialInterfaceId++;
     return initialInterfaceId;
 }
@@ -130,7 +113,6 @@ void SenderApplication::StartApplication() // Called at time specified by Start
 {
     NS_LOG_FUNCTION(this);
 
-
     Ptr<Node> node = this->GetNode();
     Ptr<Ipv4> ipv4Node = node->GetObject<ns3::Ipv4>();
 
@@ -158,6 +140,8 @@ void SenderApplication::StartApplication() // Called at time specified by Start
     {
     case LINEAR:
         this->strategy = std::make_unique<LinearStrategy>(this->application, this->availableInterfaces);
+    case RANDOM:
+        this->strategy = std::make_unique<RandomStrategy>(this->application, this->availableInterfaces);
     default:
         break;
     }
@@ -181,6 +165,9 @@ void SenderApplication::StartApplication() // Called at time specified by Start
 
 void SenderApplication::ComputeStrategyAndContinue()
 {
+
+    std::for_each(this->strategy->applications->begin(), this->strategy->applications->end(), [](const std::shared_ptr<SDWanApplication> &application)
+                  { application->Update(); });
 
     this->strategy->Compute();
 
@@ -324,6 +311,12 @@ void SenderApplication::SendData(std::shared_ptr<ISPInterface> interface)
         return;
     }
 
+    if (m_socket->GetTxAvailable() < Utils::PacketSizeByte)
+    {
+        Simulator::Schedule(tNext, &SenderApplication::SendPacket, this, interface);
+        return;
+    }
+
     auto packetInfo = interface->getNextPacket().second;
 
     Ptr<Packet> packet = Create<Packet>(Utils::PacketSizeByte);
@@ -332,12 +325,11 @@ void SenderApplication::SendData(std::shared_ptr<ISPInterface> interface)
     flowTag.SetFlowId(packetInfo.originatedFrom);
     packet->AddByteTag(flowTag);
 
-    // std::cout << "Ci sono pacchetti rimasti?  " << interface->getHasAnyAvailablePackage() << "\n";
     uint32_t toSend = packet->GetSize();
 
     if (interface->errorModel.IsCorrupt(packet))
     {
-        std::cout << "Pacchetto corrotto: non verrà inviato" << std::endl;
+        // std::cout << "Pacchetto corrotto: non verrà inviato" << std::endl;
         interface->corruptPackages++;
     }
     else
@@ -353,6 +345,11 @@ void SenderApplication::SendData(std::shared_ptr<ISPInterface> interface)
         }
         else
         {
+            std::cout << "Actual: " << actual << std::endl;
+            std::cout << "toSend: " << toSend << std::endl;
+            std::cout << "Errore: " << m_socket->GetErrno() << std::endl;
+            std::cout << "Byte mandabili : " << m_socket->GetTxAvailable() << std::endl;
+            std::cout << "Bytes totali: " << m_totBytes << std::endl;
             NS_FATAL_ERROR("Unexpected return value from m_socket->Send ()");
         }
     }

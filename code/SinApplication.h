@@ -6,7 +6,7 @@
 #include <vector>
 
 /**
- * Extension of {@link SdWanApplication} used to represent an application
+ * @brief Extension of {@link SdWanApplication} used to represent an application
  * that just generates data in a sinusoidal pattern thoughout its lifetime.
  */
 class SinApplication : public SDWanApplication
@@ -22,6 +22,7 @@ public:
 
     virtual void OnUpdate();
     virtual bool getHasStoppedGeneratingData();
+    virtual ns3::DataRate getRequiredDataRate();
 
 protected:
     virtual void OnApplicationStart();

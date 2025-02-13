@@ -38,6 +38,10 @@ namespace Utils
      */
     ns3::DataRateValue ConvertPacketsPerSecondToBitPerSecond(uint32_t packetsPerSecond);
 
+
+    ns3::DataRate ConvertPacketsPerSecondToBitPerSecondToDataRate(uint32_t packetsPerSecond);
+
+
     template <typename K, typename V>
     typename std::map<K, V>::const_iterator getNextElement(
         const std::map<K, V> &m,

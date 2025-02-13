@@ -16,7 +16,7 @@
 #include <boost/range/algorithm/sort.hpp>
 #include <ranges>
 #include <unordered_map>
-
+#include "SinApplication.h"
 #include <fstream>
 #include <iostream>
 
@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
     costs.push_back(30);
 
     Ptr<RateErrorModel> em2 = factory.Create<RateErrorModel>();
-    em2->SetRate(0.01);
+    em2->SetRate(0.1);
     em2->SetAttribute("ErrorUnit", StringValue("ERROR_UNIT_PACKET"));
     mediumDevices.Get(0)->SetAttribute("ReceiveErrorModel", PointerValue(em2));
 
@@ -96,13 +96,19 @@ int main(int argc, char *argv[])
     ns3::DataRateValue slowSpeedRequirement = Utils::ConvertPacketsPerSecondToBitPerSecond(1);
 
     std::vector<std::shared_ptr<SDWanApplication>> applications;
+    std::unique_ptr<ApplicationSenderHelper> source;
 
-    std::shared_ptr<SDWanApplication> testApplication = std::make_shared<SDWanStaticApplication>(getNextApplicationId(), slowSpeedRequirement.Get(), 200, 10, 100);
+    // std::shared_ptr<SDWanApplication> testApplication = std::make_shared<SDWanStaticApplication>(getNextApplicationId(), slowSpeedRequirement.Get(), 200, 10, 100);
+
+    std::shared_ptr<SDWanApplication> testApplication = std::make_shared<SinApplication>(getNextApplicationId(), 200, 10, 12);
+    std::shared_ptr<SDWanApplication> sinApplication = std::make_shared<SinApplication>(getNextApplicationId(), 150, 20, 4);
+
     applications.push_back(std::move(testApplication));
+    applications.push_back(std::move(sinApplication));
 
-    ApplicationSenderHelper source(destinations, applications, costs, LINEAR);
+    source = std::make_unique<ApplicationSenderHelper>(destinations, applications, costs, RANDOM);
 
-    ApplicationContainer sourceApps = source.Install(nodes.Get(0));
+    ApplicationContainer sourceApps = source->Install(nodes.Get(0));
     sourceApps.Start(Seconds(0.0));
 
     Ptr<SenderApplication> senderApplication = DynamicCast<SenderApplication>(sourceApps.Get(0));
@@ -148,49 +154,46 @@ int main(int argc, char *argv[])
     for (const auto &groupOfPackets : flowGroups)
     {
         uint32_t applicationId = groupOfPackets.first;
+
+        std::cout << std::string(20, '-') << std::endl;
         std::cout << "Informazione per l'applicazione " << std::to_string(applicationId) << " " << "\n";
 
+        auto maybeApplication = std::find_if(applications.begin(), applications.end(), [applicationId](const std::shared_ptr<SDWanApplication> item)
+                                             { return item->applicationId == applicationId; });
 
-        auto maybeApplication = std::find_if(applications.begin(), applications.end(), [applicationId](const std::shared_ptr<SDWanApplication> item) {
-            return item->applicationId == applicationId;
-        });
-
-        if (maybeApplication == applications.end()) {
+        if (maybeApplication == applications.end())
+        {
             std::cout << "Applicazione non trovata" << std::endl;
             continue;
         }
 
         std::shared_ptr<SDWanApplication> currentApplication = *maybeApplication;
 
-
         // Ritardo Medio:
         double totalDelay = 0.0;
         for (size_t i = 0; i < groupOfPackets.second.size(); i++)
         {
-             totalDelay += (double)groupOfPackets.second.at(i).getDelayInMilliSeconds();
+            totalDelay += (double)groupOfPackets.second.at(i).getDelayInMilliSeconds();
         }
- 
+
         double averageDelay = totalDelay / groupOfPackets.second.size();
         std::cout << "Average delay: " << averageDelay << "ms" << std::endl;
-
 
         double totalBandwidth = 0.0;
         for (size_t i = 0; i < groupOfPackets.second.size(); i++)
         {
-             totalBandwidth += (double)groupOfPackets.second.at(i).getDataRateInPacketPerSeconds();
+            totalBandwidth += (double)groupOfPackets.second.at(i).getDataRateInPacketPerSeconds();
         }
 
         double averageBandwidth = totalBandwidth / groupOfPackets.second.size();
         std::cout << "Average bandwidth: " << averageBandwidth << " packets/s " << std::endl;
 
         double generatedPackages = (double)currentApplication->generatedPackets;
-        double receivedPackages = sink1->GetTotalRx() / Utils::PacketSizeBit;
-        double successRate = ( receivedPackages / generatedPackages) * 100;
+        double receivedPackages = groupOfPackets.second.size();
+        double successRate = (receivedPackages / generatedPackages) * 100;
         double errorRate = 100 - successRate;
 
         std::cout << "Error rate: " << std::to_string(errorRate) << "% " << std::endl;
- 
-
     }
 
     Simulator::Destroy();

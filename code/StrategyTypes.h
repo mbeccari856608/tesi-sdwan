@@ -2,7 +2,8 @@
 #define STRATEGY_TYPES_H
 
 enum StrategyTypes {
-    LINEAR
+    LINEAR,
+    RANDOM
 };
 
 

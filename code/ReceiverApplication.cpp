@@ -235,10 +235,10 @@ namespace ns3
             packet = socket->RecvFrom(Utils::PacketSizeByte, 0, from); // Legge esattamente 128 byte
             packet->CopyData(buffer, Utils::PacketSizeByte);
 
-            if (packet->GetSize() == 0)
-            { // EOF
-                break;
-            }
+            // if (packet->GetSize() == 0)
+            // { // EOF
+            //     break;
+            // }
 
             m_totalRx += packet->GetSize();
 

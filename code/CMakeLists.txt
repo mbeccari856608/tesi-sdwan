@@ -50,7 +50,9 @@ add_executable(Simulator
     SendPacketInfo.h
     SendPacketInfo.cpp
     SinApplication.h
-    SinApplication.cpp)
+    SinApplication.cpp
+    RandomStrategy.h
+    RandomStrategy.cpp)
 
 
 target_link_libraries(Simulator

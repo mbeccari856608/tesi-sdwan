@@ -2,7 +2,7 @@
 #include "SinGenerator.h"
 #include "Utils.h"
 
-SinApplication::SinApplication() : SDWanApplication(), currentSample(0)
+SinApplication::SinApplication() : SDWanApplication(), currentSample(0), allPacketsGenerated(false)
 {
 }
 
@@ -10,8 +10,9 @@ SinApplication::SinApplication(
     uint32_t id,
     uint32_t requiredDelay,
     uint32_t errorRate,
-    double shift) : SDWanApplication(applicationId, requiredDelay, errorRate),
-                    currentSample(0)
+    double shift) : SDWanApplication(id, requiredDelay, errorRate),
+                    currentSample(0),
+                    allPacketsGenerated(false)
 {
     this->sinValues = generateValues(shift, 1);
 }
@@ -19,6 +20,17 @@ SinApplication::SinApplication(
 void SinApplication::OnUpdate()
 {
     this->enqueuePacketsForCurrentSample();
+}
+
+ns3::DataRate SinApplication::getRequiredDataRate()
+{
+    auto maxTuple = *std::max_element(this->sinValues.begin(), this->sinValues.end(),
+                                      [](const auto &a, const auto &b)
+                                      {
+                                          return std::get<1>(a) < std::get<1>(b);
+                                      });
+    uint32_t maxValue = std::get<1>(maxTuple);
+    return Utils::ConvertPacketsPerSecondToBitPerSecondToDataRate(maxValue);
 }
 
 bool SinApplication::getHasStoppedGeneratingData()
@@ -33,7 +45,11 @@ void SinApplication::OnApplicationStart()
 
 void SinApplication::enqueuePacketsForCurrentSample()
 {
-        auto packetsStart = this->sinValues.at(this->currentSample);
+    if (this->allPacketsGenerated)
+    {
+        return;
+    }
+    auto packetsStart = this->sinValues.at(this->currentSample);
     auto amountOfPackets = std::get<1>(packetsStart);
 
     for (size_t i = 0; i < amountOfPackets; i++)

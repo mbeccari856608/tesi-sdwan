@@ -19,7 +19,6 @@ std::vector<std::tuple<uint32_t, uint32_t>> generateValues(double shift, int noi
             if (std::rand() % 2 == 0) {
                 random_offset *= -1;
             }
-            std::cout << random_offset << "\n";
             y += random_offset;
         }
 
