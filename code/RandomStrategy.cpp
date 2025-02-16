@@ -44,6 +44,7 @@ void RandomStrategy::Compute()
         ns3::Time currentTime = ns3::Simulator::Now();
         uint32_t applicationId = currentApplication->applicationId;
 
+        std::srand(std::time(nullptr));
         while (!currentApplication->pendingpackets.empty())
         {
             currentApplication->pendingpackets.pop();
@@ -52,7 +53,6 @@ void RandomStrategy::Compute()
             packetInfo.dateEnqueued = currentTime;
             packetInfo.originatedFrom = applicationId;
 
-            std::srand(std::time(nullptr));
             uint32_t amountOfInterfaces = this->availableInterfaces->size();
             uint32_t randomIndex = std::rand() % this->availableInterfaces->size();
             this->availableInterfaces->at(randomIndex)->enqueuePacket(packetInfo);
