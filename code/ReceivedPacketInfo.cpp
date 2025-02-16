@@ -15,6 +15,10 @@ uint32_t ReceivedPacketInfo::getDelayInMilliSeconds() const
     return this->fromInterface->getDelayInMilliseconds();
 }
 
+uint32_t ReceivedPacketInfo::getCost() const{
+    return this->fromInterface->cost;
+}
+
 uint32_t ReceivedPacketInfo::getDataRateInPacketPerSeconds() const
 {
     return this->fromInterface->getDataBitRate() / Utils::PacketSizeBit;

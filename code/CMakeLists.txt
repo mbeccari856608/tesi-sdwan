@@ -52,7 +52,9 @@ add_executable(Simulator
     SinApplication.h
     SinApplication.cpp
     RandomStrategy.h
-    RandomStrategy.cpp)
+    RandomStrategy.cpp
+    RoundRobinStrategy.h
+    RoundRobinStrategy.cpp)
 
 
 target_link_libraries(Simulator

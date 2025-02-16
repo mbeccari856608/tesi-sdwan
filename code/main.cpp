@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 {
     auto timeSinceEpoch = std::chrono::high_resolution_clock::now().time_since_epoch();
 
-    RngSeedManager::SetSeed(1);
+    RngSeedManager::SetSeed(timeSinceEpoch.count());
 
     bool tracing = false;
     uint32_t maxBytes = 0;
@@ -77,21 +77,39 @@ int main(int argc, char *argv[])
     em2->SetAttribute("ErrorUnit", StringValue("ERROR_UNIT_PACKET"));
     mediumDevices.Get(0)->SetAttribute("ReceiveErrorModel", PointerValue(em2));
 
+    CsmaHelper fastInterfaceHelper;
+    ns3::DataRateValue fastSpeed = Utils::ConvertPacketsPerSecondToBitPerSecond(30);
+    fastInterfaceHelper.SetChannelAttribute("DataRate", fastSpeed);
+    fastInterfaceHelper.SetChannelAttribute("Delay", TimeValue(MilliSeconds(30)));
+    NetDeviceContainer fastDevices = fastInterfaceHelper.Install(nodes);
+    costs.push_back(100);
+
+    Ptr<RateErrorModel> em3 = factory.Create<RateErrorModel>();
+    em3->SetRate(0.01);
+    em3->SetAttribute("ErrorUnit", StringValue("ERROR_UNIT_PACKET"));
+    fastDevices.Get(0)->SetAttribute("ReceiveErrorModel", PointerValue(em3));
+
     InternetStackHelper internet;
 
     internet.Install(nodes);
 
-    Ipv4AddressHelper ipv4;
-    ipv4.SetBase("10.1.1.0", "255.255.255.0");
-    Ipv4InterfaceContainer firstInterfaceContainer = ipv4.Assign(slowDevices);
+    Ipv4AddressHelper ipv4First;
+    ipv4First.SetBase("10.1.1.0", "255.255.255.0");
+    Ipv4InterfaceContainer firstInterfaceContainer = ipv4First.Assign(slowDevices);
 
-    Ipv4AddressHelper ipv4Other;
-    ipv4Other.SetBase("10.1.2.0", "255.255.255.0");
-    Ipv4InterfaceContainer secondInterfaceContainer = ipv4Other.Assign(mediumDevices);
+    Ipv4AddressHelper ipv4Second;
+    ipv4Second.SetBase("10.1.2.0", "255.255.255.0");
+    Ipv4InterfaceContainer secondInterfaceContainer = ipv4Second.Assign(mediumDevices);
+
+    Ipv4AddressHelper ipv4Third;
+    ipv4Third.SetBase("10.1.3.0", "255.255.255.0");
+    Ipv4InterfaceContainer thirdInterfaceContainer = ipv4Third.Assign(fastDevices);
 
     std::vector<ns3::Address> destinations;
     destinations.push_back(InetSocketAddress(firstInterfaceContainer.GetAddress(1), Utils::ConnectionPort));
     destinations.push_back(InetSocketAddress(secondInterfaceContainer.GetAddress(1), Utils::ConnectionPort));
+    destinations.push_back(InetSocketAddress(thirdInterfaceContainer.GetAddress(1), Utils::ConnectionPort));
+
 
     ns3::DataRateValue slowSpeedRequirement = Utils::ConvertPacketsPerSecondToBitPerSecond(1);
 
@@ -100,11 +118,13 @@ int main(int argc, char *argv[])
 
     // std::shared_ptr<SDWanApplication> testApplication = std::make_shared<SDWanStaticApplication>(getNextApplicationId(), slowSpeedRequirement.Get(), 200, 10, 100);
 
-    std::shared_ptr<SDWanApplication> testApplication = std::make_shared<SinApplication>(getNextApplicationId(), 200, 10, 12);
-    std::shared_ptr<SDWanApplication> sinApplication = std::make_shared<SinApplication>(getNextApplicationId(), 150, 20, 4);
+    std::shared_ptr<SDWanApplication> firstSinApplication = std::make_shared<SinApplication>(getNextApplicationId(), 200, 10, 12);
+    std::shared_ptr<SDWanApplication> secondSinApplication = std::make_shared<SinApplication>(getNextApplicationId(), 200, 10, 8);
+    std::shared_ptr<SDWanApplication> thirdSinApplication = std::make_shared<SinApplication>(getNextApplicationId(), 150, 20, 4);
 
-    applications.push_back(std::move(testApplication));
-    applications.push_back(std::move(sinApplication));
+    applications.push_back(std::move(firstSinApplication));
+    applications.push_back(std::move(secondSinApplication));
+    applications.push_back(std::move(thirdSinApplication));
 
     source = std::make_unique<ApplicationSenderHelper>(destinations, applications, costs, RANDOM);
 
@@ -139,21 +159,24 @@ int main(int argc, char *argv[])
 
     std::cout << "Totale pacchetti ricevuti: " << std::to_string(allPackets.size()) << std::endl;
 
-    // Raggruppiamo per applicazione
     std::ranges::sort(allPackets, {}, &ReceivedPacketInfo::fromApplication);
 
     std::map<uint32_t, std::vector<ReceivedPacketInfo>> flowGroups;
 
-    // Raggruppa per età
+
     for (const auto &pInfo : allPackets)
     {
         flowGroups[pInfo.fromApplication].push_back(pInfo);
     }
 
-    // Iterazione con range-based for
     for (const auto &groupOfPackets : flowGroups)
     {
         uint32_t applicationId = groupOfPackets.first;
+
+        if (groupOfPackets.second.size() < 1){
+            std::cout << "Nessun paccketto inviato per l'applicazione " << applicationId << "\n";
+            continue;
+        }
 
         std::cout << std::string(20, '-') << std::endl;
         std::cout << "Informazione per l'applicazione " << std::to_string(applicationId) << " " << "\n";
@@ -188,12 +211,41 @@ int main(int argc, char *argv[])
         double averageBandwidth = totalBandwidth / groupOfPackets.second.size();
         std::cout << "Average bandwidth: " << averageBandwidth << " packets/s " << std::endl;
 
+
+
+
         double generatedPackages = (double)currentApplication->generatedPackets;
         double receivedPackages = groupOfPackets.second.size();
+
+
+        
         double successRate = (receivedPackages / generatedPackages) * 100;
         double errorRate = 100 - successRate;
-
+        
         std::cout << "Error rate: " << std::to_string(errorRate) << "% " << std::endl;
+        
+        
+        double totalCost = 0.0;
+        for (size_t i = 0; i < groupOfPackets.second.size(); i++)
+        {
+            totalCost += (double)groupOfPackets.second.at(i).getCost();
+        }
+        
+        std::cout << "Costo della trasmissione: " << totalCost << std::endl;
+        
+        std::map<std::shared_ptr<ISPInterface>, std::vector<ReceivedPacketInfo>> packets;
+        for (size_t i = 0; i < groupOfPackets.second.size(); i++)
+        {
+            packets[groupOfPackets.second.at(i).fromInterface].push_back(groupOfPackets.second.at(i));
+        }
+        
+        std::cout << "Totale pacchetti ricevuti: " << receivedPackages << std::endl;
+        for (const auto &fromInterfaceInfo : packets)
+        {
+            std::cout << "\t Pacchetti dall'interfaccia " << fromInterfaceInfo.first->interfaceId << ": " << fromInterfaceInfo.second.size() << std::endl;
+
+        }
+
     }
 
     Simulator::Destroy();

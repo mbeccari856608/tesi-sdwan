@@ -53,7 +53,8 @@ void RandomStrategy::Compute()
             packetInfo.originatedFrom = applicationId;
 
             std::srand(std::time(nullptr));
-            uint32_t randomIndex = std::rand() % this->applications->size();
+            uint32_t amountOfInterfaces = this->availableInterfaces->size();
+            uint32_t randomIndex = std::rand() % this->availableInterfaces->size();
             this->availableInterfaces->at(randomIndex)->enqueuePacket(packetInfo);
         }
     }

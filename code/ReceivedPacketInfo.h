@@ -9,9 +9,10 @@
 
 /**
  * This class is used to track information about packets received from a given application.
- * 
+ *
  */
-class ReceivedPacketInfo{
+class ReceivedPacketInfo
+{
 
 public:
     ReceivedPacketInfo(
@@ -21,11 +22,11 @@ public:
     std::shared_ptr<ISPInterface> fromInterface;
     uint32_t fromApplication;
 
-    uint32_t getDelayInMilliSeconds() const ;
+    uint32_t getCost() const;
 
-    uint32_t getDataRateInPacketPerSeconds() const ;
+    uint32_t getDelayInMilliSeconds() const;
+
+    uint32_t getDataRateInPacketPerSeconds() const;
 };
-
-
 
 #endif // RECEIVED_PACKET_INFO_H
