@@ -3,7 +3,8 @@
 
 enum StrategyTypes {
     LINEAR,
-    RANDOM
+    RANDOM,
+    ROUND_ROBIN
 };
 
 

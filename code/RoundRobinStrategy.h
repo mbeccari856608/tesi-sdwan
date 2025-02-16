@@ -1,5 +1,5 @@
-#ifndef RANDOM_STRATEGY_H
-#define RANDOM_STRATEGY_H
+#ifndef ROUND_ROBIN_STRATEGY_H
+#define ROUND_ROBIN_STRATEGY_H
 
 #include <memory>
 #include <vector>

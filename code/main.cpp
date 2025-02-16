@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
     applications.push_back(std::move(secondSinApplication));
     applications.push_back(std::move(thirdSinApplication));
 
-    source = std::make_unique<ApplicationSenderHelper>(destinations, applications, costs, RANDOM);
+    source = std::make_unique<ApplicationSenderHelper>(destinations, applications, costs, ROUND_ROBIN);
 
     ApplicationContainer sourceApps = source->Install(nodes.Get(0));
     sourceApps.Start(Seconds(0.0));

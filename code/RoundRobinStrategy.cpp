@@ -34,7 +34,7 @@ void RoundRobinStrategy::Compute()
             packetInfo.originatedFrom = applicationId;
 
             this->availableInterfaces->at(currentIndex)->enqueuePacket(packetInfo);
-            currentIndex = (currentIndex + 1) % totalInterfacesAmount; // We want to loop over the interfaces, if we have three interfaces we want to go 0 1 2 0 1 2 ...
+            currentIndex = (currentIndex + 1) % totalInterfacesAmount;
         }
     }
 }
