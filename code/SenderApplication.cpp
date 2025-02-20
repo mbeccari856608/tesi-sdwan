@@ -19,6 +19,7 @@
 #include "LinearStrategy.h"
 #include "RandomStrategy.h"
 #include "RoundRobinStrategy.h"
+#include "ReactiveStrategy.h"
 
 using namespace ns3;
 
@@ -145,6 +146,8 @@ void SenderApplication::StartApplication() // Called at time specified by Start
         this->strategy = std::make_unique<RandomStrategy>(this->application, this->availableInterfaces);
     case ROUND_ROBIN:
         this->strategy = std::make_unique<RoundRobinStrategy>(this->application, this->availableInterfaces);
+    case REACTIVE:
+        this->strategy = std::make_unique<ReactiveStrategy>(this->application, this->availableInterfaces);
     default:
         break;
     }

@@ -11,10 +11,15 @@ ReactiveStrategy::ReactiveStrategy(
     : Strategy(applications, availableInterfaces), applicationToInterfacesMap()
 {
 }
-
+static int count = 0;
 void ReactiveStrategy::Compute()
 {
+
     ComputeOptimization(this->applications, this->availableInterfaces);
+    count++;
+    if (count > 30){
+        throw std::exception();
+    }
 }
 
 void ReactiveStrategy::ComputeOptimization(
@@ -27,11 +32,11 @@ void ReactiveStrategy::ComputeOptimization(
 
     std::unique_ptr<operations_research::MPSolver> solver(operations_research::MPSolver::CreateSolver("CBC_MIXED_INTEGER_PROGRAMMING"));
     const double infinity = solver->infinity();
-    std::vector<operations_research::MPVariable *> amountOfPacketForInterface;
+    std::vector<operations_research::MPVariable *> amountOfPacketForApplicationOverInterface;
     for (unsigned short i = 0; const std::shared_ptr<ISPInterface> &interface : *(currentInterfaces))
     {
         std::string interfaceName = "Interfaccia " + std::to_string(i);
-        amountOfPacketForInterface.push_back(solver->MakeIntVar(0.0, infinity, interfaceName));
+        amountOfPacketForApplicationOverInterface.push_back(solver->MakeIntVar(0.0, infinity, interfaceName));
         i++;
     }
 
@@ -45,7 +50,7 @@ void ReactiveStrategy::ComputeOptimization(
             solver->MakeRowConstraint(0, currentInterface->getPackageRate()));
         for (std::size_t i = 0; i < currentApplications->size(); ++i)
         {
-            constraints.back()->SetCoefficient(amountOfPacketForInterface[j], 1);
+            constraints.back()->SetCoefficient(amountOfPacketForApplicationOverInterface[j], 1);
         }
     }
 
@@ -65,7 +70,6 @@ void ReactiveStrategy::ComputeOptimization(
             currentValues.push_back(currentEstimation);
         }
     }
-
 
     for (std::size_t i = 0; i < currentInterfaces->size(); ++i)
     {
@@ -92,22 +96,28 @@ void ReactiveStrategy::ComputeOptimization(
     //     }
     // }
 
-    // Vincolo sul numero totale di pacchetti.
+    uint32_t totalPendingPackets = 0;
     for (std::size_t i = 0; i < currentApplications->size(); ++i)
     {
         auto currentApplication = currentApplications->at(i);
+        std::cout << "Pacchetti in attesa: " << currentApplication->pendingpackets.size() << "\n";
+        totalPendingPackets += currentApplication->pendingpackets.size();
+    }
+
+    for (std::size_t i = 0; i < this->availableInterfaces->size(); ++i)
+    {
         constraints.push_back(
-            solver->MakeRowConstraint(currentApplication->pendingpackets.size(), infinity));
-        for (std::size_t j = 0; j < availableInterfaces->size(); ++j)
+            solver->MakeRowConstraint(totalPendingPackets, infinity));
+        for (std::size_t j = 0; j < this->availableInterfaces->size(); ++j)
         {
-            constraints.back()->SetCoefficient(amountOfPacketForInterface[j], 1);
+            constraints.back()->SetCoefficient(amountOfPacketForApplicationOverInterface[j], 1);
         }
     }
 
     MPObjective *const objective = solver->MutableObjective();
-    for (size_t i = 0; i < amountOfPacketForInterface.size(); ++i)
+    for (size_t i = 0; i < amountOfPacketForApplicationOverInterface.size(); ++i)
     {
-        objective->SetCoefficient(amountOfPacketForInterface[i], this->availableInterfaces->at(i)->cost);
+        objective->SetCoefficient(amountOfPacketForApplicationOverInterface[i], this->availableInterfaces->at(i)->cost);
     }
     objective->SetMinimization();
 
@@ -128,4 +138,35 @@ void ReactiveStrategy::ComputeOptimization(
             return;
         }
     }
+
+    
+    for (size_t i = 0; i < availableInterfaces.size(); ++i)
+    {
+        double value = interfaces.at(i)->solution_value();
+        uint32_t flooredValue = static_cast<uint32_t>(std::floor(value));
+        std::cout << "Pacchetti per interfaccia " << i << ": " << flooredValue << "\n";
+        for (size_t j = 0; j < flooredValue; j++)
+        {
+            if (!staticApplication->pendingpackets.empty())
+            {
+                staticApplication->pendingpackets.pop();
+                ns3::Time currentTime = ns3::Simulator::Now();
+                uint32_t applicationId = staticApplication->applicationId;
+
+                SendPacketInfo packetInfo;
+
+                packetInfo.dateEnqueued = currentTime;
+                packetInfo.originatedFrom = applicationId;
+
+                this->availableInterfaces->at(i)->enqueuePacket(packetInfo);
+            }
+        }
+    }
+}
+
+uint32_t ReactiveStrategy::DelayEstimator(
+    std::shared_ptr<SDWanApplication> application,
+    std::shared_ptr<ISPInterface> interface)
+{
+    return interface->getAverageWaitingTimeInMilliseconds();
 }
