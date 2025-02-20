@@ -71,6 +71,11 @@ public:
     const uint64_t getDataBitRate();
 
     /**
+     * Gets the maximum rate this interface can send data with, expressed in packages per second.
+     */
+    const uint64_t getPackageRate();
+
+    /**
      * Gets the delay of the interface when seding packets.
      */
     const uint32_t getDelayInMilliseconds();

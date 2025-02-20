@@ -115,14 +115,28 @@ const uint64_t ISPInterface::getDataBitRate()
     return this->getDataRate().GetBitRate();
 }
 
+const uint64_t ISPInterface::getPackageRate()
+{
+    return this->getDataRate().GetBitRate() / Utils::PacketSizeBit;
+}
+
 double ISPInterface::getAverageWaitingTimeInMilliseconds()
 {
     // The current number of packets is based on the ammount of packets in the queue.
     uint32_t currentPackets = this->pendingpackets.size();
 
     double currentTime = ns3::Simulator::Now().GetSeconds();
+
+    if (currentTime == 0){
+        return 0;
+    }
+
     double totalAmountOfPackets = this->correctPackages + this->corruptPackages;
     double arrivalRate = totalAmountOfPackets / currentTime;
+
+    if (arrivalRate == 0){
+        return 0;
+    }
 
     return (double)currentPackets / arrivalRate;
 }

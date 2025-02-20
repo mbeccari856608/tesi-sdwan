@@ -54,7 +54,9 @@ add_executable(Simulator
     RandomStrategy.h
     RandomStrategy.cpp
     RoundRobinStrategy.h
-    RoundRobinStrategy.cpp)
+    RoundRobinStrategy.cpp
+    ReactiveStrategy.h
+    ReactiveStrategy.cpp)
 
 
 target_link_libraries(Simulator
