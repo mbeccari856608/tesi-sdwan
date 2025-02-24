@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
     CsmaHelper slowInterfaceHelper;
     ns3::DataRateValue slowSpeed = Utils::ConvertPacketsPerSecondToBitPerSecond(10);
     slowInterfaceHelper.SetChannelAttribute("DataRate", slowSpeed);
-    slowInterfaceHelper.SetChannelAttribute("Delay", TimeValue(MilliSeconds(300)));
+    slowInterfaceHelper.SetChannelAttribute("Delay", TimeValue(MilliSeconds(100)));
     NetDeviceContainer slowDevices = slowInterfaceHelper.Install(nodes);
     costs.push_back(10);
 
@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
     mediumInterfaceHelper.SetChannelAttribute("DataRate", mediumSpeed);
     mediumInterfaceHelper.SetChannelAttribute("Delay", TimeValue(MilliSeconds(50)));
     NetDeviceContainer mediumDevices = mediumInterfaceHelper.Install(nodes);
-    costs.push_back(30);
+    costs.push_back(15);
 
     Ptr<RateErrorModel> em2 = factory.Create<RateErrorModel>();
     em2->SetRate(0.1);
@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
     fastInterfaceHelper.SetChannelAttribute("DataRate", fastSpeed);
     fastInterfaceHelper.SetChannelAttribute("Delay", TimeValue(MilliSeconds(30)));
     NetDeviceContainer fastDevices = fastInterfaceHelper.Install(nodes);
-    costs.push_back(100);
+    costs.push_back(20);
 
     Ptr<RateErrorModel> em3 = factory.Create<RateErrorModel>();
     em3->SetRate(0.01);

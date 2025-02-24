@@ -31,6 +31,7 @@ SDWanApplication::SDWanApplication(const SDWanApplication &data)
       errorRate(data.errorRate),
       applicationId(data.applicationId),
       requiredDelay(data.requiredDelay),
+      pendingpackets(data.pendingpackets),
       generatedPackets(data.generatedPackets) {}
 
 SDWanApplication &SDWanApplication::operator=(const SDWanApplication &data)
@@ -42,6 +43,7 @@ SDWanApplication::SDWanApplication(SDWanApplication &&data)   :
       errorRate(data.errorRate),
       applicationId(data.applicationId),
       requiredDelay(data.requiredDelay),
+      pendingpackets(data.pendingpackets),
       generatedPackets(data.generatedPackets)
 {
 }

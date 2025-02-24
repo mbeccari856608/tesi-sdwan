@@ -125,7 +125,7 @@ double ISPInterface::getAverageWaitingTimeInMilliseconds()
     // The current number of packets is based on the ammount of packets in the queue.
     uint32_t currentPackets = this->pendingpackets.size();
 
-    double currentTime = ns3::Simulator::Now().GetSeconds();
+    double currentTime = ns3::Simulator::Now().GetMilliSeconds();
 
     if (currentTime == 0){
         return 0;
@@ -138,5 +138,11 @@ double ISPInterface::getAverageWaitingTimeInMilliseconds()
         return 0;
     }
 
-    return (double)currentPackets / arrivalRate;
+    auto result =  (double)currentPackets / arrivalRate; 
+    
+    if (result > 400){
+        int a = 4;
+    }
+    
+    return result;
 }
