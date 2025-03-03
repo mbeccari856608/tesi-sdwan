@@ -56,7 +56,9 @@ add_executable(Simulator
     RoundRobinStrategy.h
     RoundRobinStrategy.cpp
     ReactiveStrategy.h
-    ReactiveStrategy.cpp)
+    ReactiveStrategy.cpp
+    ComputeOptimizationResult.h
+    ComputeOptimizationResult.cpp)
 
 
 target_link_libraries(Simulator

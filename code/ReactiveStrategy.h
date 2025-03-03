@@ -8,6 +8,7 @@
 
 #include "Strategy.h"
 #include "SDWanApplication.h"
+#include "ComputeOptimizationResult.h"
 #include "ISPInterface.h"
 #include <random>
 
@@ -18,27 +19,28 @@ class ReactiveStrategy : public Strategy
 {
 
 public:
-ReactiveStrategy(
+    ReactiveStrategy(
         std::shared_ptr<std::vector<std::shared_ptr<SDWanApplication>>> applications,
         std::shared_ptr<std::vector<std::shared_ptr<ISPInterface>>> availableInterfaces);
 
     virtual void Compute();
 
 private:
+    std::vector<uint32_t> costs;
+
     std::map<std::shared_ptr<SDWanApplication>, std::vector<std::shared_ptr<ISPInterface>>> applicationToInterfacesMap;
 
     /**
      * @brief Computes the linear optimization problem for a given subset of applications across all the available interfaces.
+     *
+     *
      */
-    void ComputeOptimization(std::shared_ptr<std::vector<std::shared_ptr<SDWanApplication>>> currentApplications,
-        std::shared_ptr<std::vector<std::shared_ptr<ISPInterface>>> currentInterfaces);
-
+    std::shared_ptr<ComputeOptimizationResult> ComputeOptimization(std::shared_ptr<std::vector<std::shared_ptr<SDWanApplication>>> currentApplications,
+                                                                   std::shared_ptr<std::vector<std::shared_ptr<ISPInterface>>> currentInterfaces);
 
     uint32_t DelayEstimator(
         std::shared_ptr<SDWanApplication> application,
         std::shared_ptr<ISPInterface> interface);
 };
-
-
 
 #endif /* REACTIVE_STRATEGY_H */

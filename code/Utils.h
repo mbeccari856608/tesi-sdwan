@@ -42,6 +42,22 @@ namespace Utils
     ns3::DataRate ConvertPacketsPerSecondToBitPerSecondToDataRate(uint32_t packetsPerSecond);
 
 
+    /**
+     * Created a vector built from the binary represntation
+     * of the input.
+     * 
+     * @example if the input is 13, its binary representation is 1101
+     * This method will return am array containing:
+     * true, true, false, true
+     * 
+     */
+    std::vector<bool> getBoolVectorFromInt(uint32_t num, uint32_t bit_size);
+
+
+    uint32_t maxIntWithNBits(uint32_t n);
+
+
+
     template <typename K, typename V>
     typename std::map<K, V>::const_iterator getNextElement(
         const std::map<K, V> &m,

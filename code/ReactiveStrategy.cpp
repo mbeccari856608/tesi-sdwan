@@ -1,5 +1,6 @@
 #include "ReactiveStrategy.h"
 #include "absl/flags/flag.h"
+#include "Utils.h"
 #include "absl/log/flags.h"
 #include "ortools/base/init_google.h"
 #include "ortools/base/logging.h"
@@ -8,27 +9,118 @@
 ReactiveStrategy::ReactiveStrategy(
     std::shared_ptr<std::vector<std::shared_ptr<SDWanApplication>>> applications,
     std::shared_ptr<std::vector<std::shared_ptr<ISPInterface>>> availableInterfaces)
-    : Strategy(applications, availableInterfaces), applicationToInterfacesMap()
+    : Strategy(applications, availableInterfaces), applicationToInterfacesMap(), costs()
 {
 }
-static int count = 0;
+
 void ReactiveStrategy::Compute()
 {
 
-    ComputeOptimization(this->applications, this->availableInterfaces);
-    count++;
+    uint32_t amountOfInterfaces = this->availableInterfaces->size();
+    uint32_t counter = Utils::maxIntWithNBits(amountOfInterfaces);
+    std::vector<std::vector<std::shared_ptr<ISPInterface>>> interfaceSet;
+     for (uint32_t i = 1; i <= counter; i++)
+    {
+        std::vector<bool> interfacesToUse = Utils::getBoolVectorFromInt(i, amountOfInterfaces);
+        std::vector<std::shared_ptr<ISPInterface>> currentSet;
+        for (uint32_t j = 0; j < interfacesToUse.size(); j++)
+        {
+            bool currentValue = interfacesToUse.at(j);
+            if (currentValue || true)
+            {
+                currentSet.push_back(this->availableInterfaces->at(j));
+            }
+        }
+        interfaceSet.push_back(currentSet);
+    }
+
+    std::vector<std::shared_ptr<ComputeOptimizationResult>> results;
+
+    std::cout << std::string(20, '-') << std::endl;
+    for (uint32_t i = 0; i < interfaceSet.size(); i++)
+    {
+        auto data = std::make_shared<std::vector<std::shared_ptr<ISPInterface>>>(interfaceSet.at(i));
+        auto result = ComputeOptimization(this->applications, data);
+        std::cout << "Costo se si utilizzano " << data->size() << " interfacce: " << result->getTotalCost() << "\n";
+        results.push_back(result);
+    }
+    std::cout << std::string(20, '-') << std::endl;
+
+    std::shared_ptr<ComputeOptimizationResult> bestSolution = nullptr;
+
+    auto it = std::max_element(results.begin(), results.end(), [](const std::shared_ptr<ComputeOptimizationResult> &a, const std::shared_ptr<ComputeOptimizationResult> &b)
+                               {
+        if (!a->getIsFeasible()) return true;
+        if (!b->getIsFeasible()) return false;
+        return a->getTotalCost() > b->getTotalCost(); });
+
+    if (it != results.end() && (*it)->getIsFeasible())
+    {
+        bestSolution = (*it);
+        std::cout << "Utilizziamo la soluzione che costa :" << bestSolution->getTotalCost() << "\n";
+        uint32_t totalCostUntilNow = costs.size() == 0 ?   bestSolution->getTotalCost() : costs.back() + bestSolution->getTotalCost();
+        costs.push_back(totalCostUntilNow);
+    }
+    else
+    {
+        throw new std::runtime_error("Nessuna soluzione trovata");
+    }
+
+
+
+    auto &solutionValues = bestSolution->getSolutionValues();
+    for (uint32_t i = 0; i < solutionValues.size(); i++)
+    {
+        auto currentApplication = this->applications->at(i);
+        std::vector<uint32_t> packetsForApplication = solutionValues.at(i);
+        for (uint32_t j = 0; j < bestSolution->interfaces->size(); j++)
+        {
+            std::shared_ptr<ISPInterface> currentInteface = bestSolution->interfaces->at(j);
+            auto packetsForApplicationAndInterface = packetsForApplication.at(j);
+            while (packetsForApplicationAndInterface > 0)
+            {
+                if (currentApplication->pendingpackets.size() == 0)
+                {
+                    throw new std::runtime_error("Nessun pacchetto");
+                }
+                currentApplication->pendingpackets.pop();
+                ns3::Time currentTime = ns3::Simulator::Now();
+                uint32_t applicationId = currentApplication->applicationId;
+
+                SendPacketInfo packetInfo;
+
+                packetInfo.dateEnqueued = currentTime;
+                packetInfo.originatedFrom = applicationId;
+                currentInteface->enqueuePacket(packetInfo);
+                packetsForApplicationAndInterface--;
+            }
+        }
+    }
+
+    if (this->getAllDataHasBeenSent()){
+        std::ofstream file("output.csv");
+    
+        if (!file) {
+            throw std::runtime_error("Impossibile aprire il file");
+        }
+        
+        file << "Indice,Valore" << std::endl;
+        for (size_t i = 0; i < costs.size(); ++i) {
+            file << i << "," << costs[i] << std::endl;
+        }
+        
+        file.close();
+    }
 }
 
-void ReactiveStrategy::ComputeOptimization(
+std::shared_ptr<ComputeOptimizationResult> ReactiveStrategy::ComputeOptimization(
     std::shared_ptr<std::vector<std::shared_ptr<SDWanApplication>>> currentApplications,
     std::shared_ptr<std::vector<std::shared_ptr<ISPInterface>>> currentInterfaces)
 {
     // At each step we want to minimize the packet cost for the overall transmission.
 
-    if ( ns3::Simulator::Now().GetSeconds() == 105){
-        auto x = 4;
-    }
-
+    uint32_t amountOfApplications = currentApplications->size();
+    uint32_t amountOfInterfaces = currentInterfaces->size();
     using namespace operations_research;
 
     std::unique_ptr<operations_research::MPSolver> solver(operations_research::MPSolver::CreateSolver("CBC_MIXED_INTEGER_PROGRAMMING"));
@@ -58,9 +150,7 @@ void ReactiveStrategy::ComputeOptimization(
 
         for (std::size_t i = 0; i < currentApplications->size(); ++i)
         {
-            {
-                constraints.back()->SetCoefficient(amountOfPacketForApplicationOverInterface[i * 3 + j], 1);
-            }
+            constraints.back()->SetCoefficient(amountOfPacketForApplicationOverInterface[i + (j * amountOfApplications)], 1);
         }
     }
 
@@ -91,10 +181,11 @@ void ReactiveStrategy::ComputeOptimization(
 
         for (std::size_t i = 0; i < currentInterfaces->size(); ++i)
         {
-            std::shared_ptr<ISPInterface> currentInterface = this->availableInterfaces->at(i);
-            double milliSecondsInterfaceDelay = ((double)currentInterface->getDelayInMilliseconds())  + delays.at(j).at(i);
+            std::shared_ptr<ISPInterface> currentInterface = currentInterfaces->at(i);
+            double milliSecondsInterfaceDelay = ((double)currentInterface->getDelayInMilliseconds()) + delays.at(j).at(i);
             double delayCoefficient = totalPackagesForApplication > 0 ? milliSecondsInterfaceDelay / totalPackagesForApplication : 0;
-            constraints.back()->SetCoefficient(amountOfPacketForApplicationOverInterface[i + (j * 2) + j], delayCoefficient);
+
+            constraints.back()->SetCoefficient(amountOfPacketForApplicationOverInterface[j + (i * amountOfApplications)], delayCoefficient);
         }
     }
 
@@ -121,7 +212,8 @@ void ReactiveStrategy::ComputeOptimization(
 
         for (std::size_t i = 0; i < currentInterfaces->size(); ++i)
         {
-            constraints.back()->SetCoefficient(amountOfPacketForApplicationOverInterface[i + (j * 2) + j], 1);
+
+            constraints.back()->SetCoefficient(amountOfPacketForApplicationOverInterface[j + (i * amountOfApplications)], 1);
         }
     }
 
@@ -130,7 +222,8 @@ void ReactiveStrategy::ComputeOptimization(
     {
         for (size_t i = 0; i < currentInterfaces->size(); ++i)
         {
-            objective->SetCoefficient(amountOfPacketForApplicationOverInterface[i + (j * 2) + j], this->availableInterfaces->at(i)->cost);
+
+            objective->SetCoefficient(amountOfPacketForApplicationOverInterface[j + (i * amountOfApplications)], availableInterfaces->at(i)->cost);
         }
     }
     objective->SetMinimization();
@@ -140,65 +233,38 @@ void ReactiveStrategy::ComputeOptimization(
     // Check that the problem has an optimal solution.
     if (result_status != MPSolver::OPTIMAL)
     {
-
-        std::cout << "The problem does not have an optimal solution!" << "\n";
-        std::cout << ns3::Simulator::Now().GetSeconds() << "\n";
-        for (std::size_t j = 0; j < currentApplications->size(); ++j)
-        {
-            std::cout << "Pacchetti in coda: " << currentApplications->at(j)->pendingpackets.size() << "\n";
-        }
-        throw new std::exception();
-        if (result_status == MPSolver::FEASIBLE)
-        {
-            std::cout << "A potentially suboptimal solution was found" << "\n";
-            ;
-        }
-        else
-        {
-            std::cout << "The solver could not solve the problem." << "\n";
-            return;
-        }
+        ComputeOptimizationResult result(false, std::vector<std::vector<uint32_t>>(), nullptr, 0);
+        return std::make_shared<ComputeOptimizationResult>(result);
     }
 
-    for (size_t i = 0; i < currentInterfaces->size(); ++i)
-    {
-        for (std::size_t j = 0; j < currentApplications->size(); ++j)
-        {
-            auto currentApplication = currentApplications->at(j);
-            double value = amountOfPacketForApplicationOverInterface.at(i + j)->solution_value();
-            uint32_t flooredValue = static_cast<uint32_t>(std::floor(value));
-            std::cout << "Pacchetti per l'applicazione " << j << " da mandare sull'interfaccia " << i << ": " << flooredValue << "\n ";
-        }
-    }
+    // for (size_t i = 0; i < currentInterfaces->size(); ++i)
+    // {
+    //     for (std::size_t j = 0; j < currentApplications->size(); ++j)
+    //     {
+    //         auto currentApplication = currentApplications->at(j);
+    //         double value = amountOfPacketForApplicationOverInterface.at(i + j)->solution_value();
+    //         uint32_t flooredValue = static_cast<uint32_t>(std::floor(value));
+    //         std::cout << "Pacchetti per l'applicazione " << j << " da mandare sull'interfaccia " << i << ": " << flooredValue << "\n ";
+    //     }
+    // }
 
+    std::vector<std::vector<uint32_t>> solutionValues;
     for (std::size_t j = 0; j < currentApplications->size(); ++j)
     {
         auto currentApplication = currentApplications->at(j);
+        std::vector<uint32_t> currentApplicationValues;
         for (size_t i = 0; i < currentInterfaces->size(); ++i)
         {
 
-            double value = amountOfPacketForApplicationOverInterface.at(i + (j * 2) + j)->solution_value();
+            double value = amountOfPacketForApplicationOverInterface.at(j + (i * amountOfApplications))->solution_value();
             uint32_t flooredValue = static_cast<uint32_t>(std::floor(value));
-            while (flooredValue > 0)
-            {
-                if (currentApplication->pendingpackets.size() == 0)
-                {
-                    throw new std::runtime_error("Nessun pacchetto");
-                }
-                currentApplication->pendingpackets.pop();
-                ns3::Time currentTime = ns3::Simulator::Now();
-                uint32_t applicationId = currentApplication->applicationId;
-
-                SendPacketInfo packetInfo;
-
-                packetInfo.dateEnqueued = currentTime;
-                packetInfo.originatedFrom = applicationId;
-                std::cout << "Pacchetto accodato sull'interfaccia " << i << "\n";
-                this->availableInterfaces->at(i)->enqueuePacket(packetInfo);
-                flooredValue--;
-            }
+            currentApplicationValues.push_back(flooredValue);
         }
+        solutionValues.push_back(currentApplicationValues);
     }
+
+    ComputeOptimizationResult result(true, solutionValues, currentInterfaces, std::floor(objective->Value()));
+    return std::make_shared<ComputeOptimizationResult>(result);
 }
 
 uint32_t ReactiveStrategy::DelayEstimator(
@@ -207,3 +273,22 @@ uint32_t ReactiveStrategy::DelayEstimator(
 {
     return interface->getAverageWaitingTimeInMilliseconds();
 }
+
+// while (flooredValue > 0)
+// {
+//     if (currentApplication->pendingpackets.size() == 0)
+//     {
+//         throw new std::runtime_error("Nessun pacchetto");
+//     }
+//     currentApplication->pendingpackets.pop();
+//     ns3::Time currentTime = ns3::Simulator::Now();
+//     uint32_t applicationId = currentApplication->applicationId;
+
+//     SendPacketInfo packetInfo;
+
+//     packetInfo.dateEnqueued = currentTime;
+//     packetInfo.originatedFrom = applicationId;
+//     std::cout << "Pacchetto accodato sull'interfaccia " << i << "\n";
+//     this->availableInterfaces->at(i)->enqueuePacket(packetInfo);
+//     flooredValue--;
+// }

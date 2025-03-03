@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 {
     auto timeSinceEpoch = std::chrono::high_resolution_clock::now().time_since_epoch();
 
-    RngSeedManager::SetSeed(timeSinceEpoch.count());
+    RngSeedManager::SetSeed(1);
 
     bool tracing = false;
     uint32_t maxBytes = 0;
