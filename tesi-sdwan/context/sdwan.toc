@@ -1,0 +1,18 @@
+\contentsline {chapter}{\numberline {1}Introduction}{1}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Types of connectivity}{1}{section.1.1}%
+\contentsline {section}{\numberline {1.2}Software defined networking}{1}{section.1.2}%
+\contentsline {subsection}{\numberline {1.2.1}Networking devices}{1}{subsection.1.2.1}%
+\contentsline {subsection}{\numberline {1.2.2}Definition}{1}{subsection.1.2.2}%
+\contentsline {subsection}{\numberline {1.2.3}Openflow}{2}{subsection.1.2.3}%
+\contentsline {subsubsection}{Configuring the tables}{2}{subsubsection*.2}%
+\contentsline {subsection}{\numberline {1.2.4}SD-WAN}{3}{subsection.1.2.4}%
+\contentsline {subsubsection}{WANs}{3}{subsubsection*.3}%
+\contentsline {subsubsection}{SD-WAN}{3}{subsubsection*.4}%
+\contentsline {subsubsection}{Load balancing and SLA in SD-WANs}{3}{subsubsection*.5}%
+\contentsline {subsubsection}{Problem definition}{4}{subsubsection*.6}%
+\contentsline {subsubsection}{Measuring the cost of links}{4}{subsubsection*.7}%
+\contentsline {subsubsection}{The problem as a linear optimization problem}{5}{subsubsection*.8}%
+\contentsline {subsection}{\numberline {1.2.5}Extending the problem}{5}{subsection.1.2.5}%
+\contentsline {section}{\numberline {1.3}Existing strategies}{6}{section.1.3}%
+\contentsline {subsection}{\numberline {1.3.1}Intent-Based Routing Policy}{6}{subsection.1.3.1}%
+\contentsline {subsubsection}{The linear optimization problem}{6}{subsubsection*.9}%
