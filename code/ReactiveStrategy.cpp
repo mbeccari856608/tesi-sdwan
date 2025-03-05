@@ -19,14 +19,14 @@ void ReactiveStrategy::Compute()
     uint32_t amountOfInterfaces = this->availableInterfaces->size();
     uint32_t counter = Utils::maxIntWithNBits(amountOfInterfaces);
     std::vector<std::vector<std::shared_ptr<ISPInterface>>> interfaceSet;
-     for (uint32_t i = 1; i <= counter; i++)
+    for (uint32_t i = 1; i <= counter; i++)
     {
         std::vector<bool> interfacesToUse = Utils::getBoolVectorFromInt(i, amountOfInterfaces);
         std::vector<std::shared_ptr<ISPInterface>> currentSet;
         for (uint32_t j = 0; j < interfacesToUse.size(); j++)
         {
             bool currentValue = interfacesToUse.at(j);
-            if (currentValue || true)
+            if (currentValue)
             {
                 currentSet.push_back(this->availableInterfaces->at(j));
             }
@@ -41,7 +41,16 @@ void ReactiveStrategy::Compute()
     {
         auto data = std::make_shared<std::vector<std::shared_ptr<ISPInterface>>>(interfaceSet.at(i));
         auto result = ComputeOptimization(this->applications, data);
-        std::cout << "Costo se si utilizzano " << data->size() << " interfacce: " << result->getTotalCost() << "\n";
+        if (result->getIsFeasible())
+        {
+            std::cout << "Costo se si utilizzano " << data->size() << " interfacce: " << result->getTotalCost() << "\n";
+            std::cout << "Utilizzo delle interfacce:";
+            for (uint32_t i = 0; i < result->interfaces->size(); i++)
+            {
+                std::cout << result->interfaces->at(i)->interfaceName << " ";
+            }
+            std::cout << "\n";
+        }
         results.push_back(result);
     }
     std::cout << std::string(20, '-') << std::endl;
@@ -58,15 +67,13 @@ void ReactiveStrategy::Compute()
     {
         bestSolution = (*it);
         std::cout << "Utilizziamo la soluzione che costa :" << bestSolution->getTotalCost() << "\n";
-        uint32_t totalCostUntilNow = costs.size() == 0 ?   bestSolution->getTotalCost() : costs.back() + bestSolution->getTotalCost();
+        uint32_t totalCostUntilNow = costs.size() == 0 ? bestSolution->getTotalCost() : costs.back() + bestSolution->getTotalCost();
         costs.push_back(totalCostUntilNow);
     }
     else
     {
         throw new std::runtime_error("Nessuna soluzione trovata");
     }
-
-
 
     auto &solutionValues = bestSolution->getSolutionValues();
     for (uint32_t i = 0; i < solutionValues.size(); i++)
@@ -97,18 +104,21 @@ void ReactiveStrategy::Compute()
         }
     }
 
-    if (this->getAllDataHasBeenSent()){
+    if (this->getAllDataHasBeenSent())
+    {
         std::ofstream file("output.csv");
-    
-        if (!file) {
+
+        if (!file)
+        {
             throw std::runtime_error("Impossibile aprire il file");
         }
-        
+
         file << "Indice,Valore" << std::endl;
-        for (size_t i = 0; i < costs.size(); ++i) {
+        for (size_t i = 0; i < costs.size(); ++i)
+        {
             file << i << "," << costs[i] << std::endl;
         }
-        
+
         file.close();
     }
 }
@@ -223,7 +233,7 @@ std::shared_ptr<ComputeOptimizationResult> ReactiveStrategy::ComputeOptimization
         for (size_t i = 0; i < currentInterfaces->size(); ++i)
         {
 
-            objective->SetCoefficient(amountOfPacketForApplicationOverInterface[j + (i * amountOfApplications)], availableInterfaces->at(i)->cost);
+            objective->SetCoefficient(amountOfPacketForApplicationOverInterface[j + (i * amountOfApplications)], currentInterfaces->at(i)->cost);
         }
     }
     objective->SetMinimization();
