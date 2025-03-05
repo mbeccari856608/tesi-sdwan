@@ -1,0 +1,79 @@
+
+\chapter{Implementation}
+
+\section{Emulating a network of computers}
+
+
+To test the strategy we defined we setup a simple network with two nodes:
+\begin{enumerate}
+	\item A source node representing the LAN adopting a SD-WAN connectivity
+	\item An arbitrary node to which the data is sent: in a real life scenario it would be another LAN (e.g another branch); in our case it will be a sink node used to collect data about the strategy (i.e how many packets were received, from which application they were generated)  
+\end{enumerate}
+
+The two nodes will then have an arbitrary amount of links connecting them: each link represent an element $l \in L$ of.
+
+Once the nodes are connected we have to define the application set $A$.
+Each application is a piece of code that may generate any amount of packets at any point in time, until it finally stops.\\
+
+At a very high level the code for the simulation is:
+
+\begin{algorithm}
+	\caption{The simulation algorithm}\label{alg:simulation}
+	\begin{algorithmic}
+		\While{$ShouldBeRunning$}
+		\State $Result \gets executeStrategy(A, L)$
+		\State $enqueuePackages(Result)$
+		\If{there are no longer pending packages and all applications have stopped}
+		\State $ShouldBeRunning \gets false$
+		\EndIf
+		\EndWhile
+	\end{algorithmic}
+\end{algorithm}
+
+When running the experiments, the applications will stop after having generated a pre-determined amount of traffic. The applications will run (and therefore generate traffic) for a set amount of time and the simulation will stop when all the packets will have been sent.
+
+\subsection{Implementing the simulation}
+
+The simulations will be implemented using the C++ programming language, the ns3 simulator and the or-tools library.
+
+\subsubsection{Discrete event simulation}
+
+Using a discrete-event simulation we can model all events in our system. \\
+With event we generally mean any piece of code that has to be ran at a specific time and alters the state of the emulated system (i.e alters the state of the network). \\
+The simulator keeps track of when each event should be executed and automatically updates the state of system accordingly.
+
+For example, if the event is \textit{send packet on link $l_1$ to the sink}, the simulator updates the state of the system with the information that there is a packet being sent on $l_1$.
+
+The system will then react to the new state: to continue on with our example after the necessary time for the packet to traverse the link will have passed the state of the system will be updated with the information that the sink has received a packet.
+
+It is important to note that the time used by the simulator is more often than not unrelated to actual physical time: we may want to emulate a really slow connection that takes up seconds to send a packet but the actual time to run the simulation will most likely be in milliseconds.
+
+The opposite could also be true, we may want to emulate a really fast connection were gigabytes of data are sent through a link. \\
+
+We could potentially then implement a sink that prints all the received data and takes minutes to do so, but no \textit{simulator} time will have passed (printing data is something that is outside the bounds of the simulation)
+
+Discrete event simulator are usually built to keep an internal timer based only on the events that alter the state of the simulated system.
+
+\subsubsection{NS3}
+One very popular choice for network discrete-event simulation in networks is \textit{NS3} \cite{ns3}. \\
+NS3 is a discrete-event simulator written with the C++ programming language which allows for easy simulation of networks.
+Most components that constitute a network can easily be emulated with NS3: in our case we can setup two nodes and connect them using an arbitrary amount of links. \\
+
+All the technical details such as setting up the routing, defining the error rate of a given link, the IP addresses etc... can be handled with the tools offered by NS3. \\
+
+We will be using NS3 for all the experiments: while the setup for our simulation is tailored to meet our use case, it can easily be modified for future works (e.g we use a static percentage-based error rate for our links, but NS3 allows defining any arbitrary error model that can then be applied to a link)
+
+
+\subsubsection{OR Tools}
+As we previously stated, the core of the strategy is solving a linear optimization problem. \\
+A popular tools for handling linear optimization problem is \textit{OR-Tools} \cite{or-tools} \\.
+According to its creators, OR-Tools is a \textit{an open-source, fast and portable software suite for solving combinatorial optimization problems.}.
+Using OR-Tools we can offload the task of solving the linear optimization problem.
+
+\subsubsection{CMake}
+Such as with most moderately complex projects, code from multiple sources has to be organized and then compiled together. \\ 
+Unlike other programming languages, C++ does not have an official tool for defining projects and their dependencies.\\
+One of the most popular software build system is \textit{CMake} \cite{ns3}: we will rely on CMake to combine the custom code (i.e the strategy) and the dependencies (NS3 and or-tools). \\
+
+
+
