@@ -58,7 +58,9 @@ add_executable(Simulator
     ReactiveStrategy.h
     ReactiveStrategy.cpp
     ComputeOptimizationResult.h
-    ComputeOptimizationResult.cpp)
+    ComputeOptimizationResult.cpp
+    StrategyDataPoint.h
+    StrategyDataPoint.cpp)
 
 
 target_link_libraries(Simulator

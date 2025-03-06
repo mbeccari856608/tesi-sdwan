@@ -24,19 +24,21 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("Demo");
 
-uint32_t initialApplicationId = 0;
-
-uint32_t getNextApplicationId()
-{
-    initialApplicationId++;
-    return initialApplicationId;
-}
+void RunSimulation();
 
 int main(int argc, char *argv[])
 {
+    RunSimulation();
+    return 0;
+}
+
+void RunSimulation()
+{
+
+    uint32_t initialApplicationId = 0;
     auto timeSinceEpoch = std::chrono::high_resolution_clock::now().time_since_epoch();
 
-    RngSeedManager::SetSeed(1);
+    RngSeedManager::SetSeed(Utils::SeedForRandomGeneration);
 
     bool tracing = false;
     uint32_t maxBytes = 0;
@@ -56,7 +58,7 @@ int main(int argc, char *argv[])
     CsmaHelper slowInterfaceHelper;
     ns3::DataRateValue slowSpeed = Utils::ConvertPacketsPerSecondToBitPerSecond(10);
     slowInterfaceHelper.SetChannelAttribute("DataRate", slowSpeed);
-    slowInterfaceHelper.SetChannelAttribute("Delay", TimeValue(MilliSeconds(100)));
+    slowInterfaceHelper.SetChannelAttribute("Delay", TimeValue(MilliSeconds(150)));
     NetDeviceContainer slowDevices = slowInterfaceHelper.Install(nodes);
     costs.push_back(10);
 
@@ -68,9 +70,9 @@ int main(int argc, char *argv[])
     CsmaHelper mediumInterfaceHelper;
     ns3::DataRateValue mediumSpeed = Utils::ConvertPacketsPerSecondToBitPerSecond(20);
     mediumInterfaceHelper.SetChannelAttribute("DataRate", mediumSpeed);
-    mediumInterfaceHelper.SetChannelAttribute("Delay", TimeValue(MilliSeconds(50)));
+    mediumInterfaceHelper.SetChannelAttribute("Delay", TimeValue(MilliSeconds(100)));
     NetDeviceContainer mediumDevices = mediumInterfaceHelper.Install(nodes);
-    costs.push_back(15);
+    costs.push_back(20);
 
     Ptr<RateErrorModel> em2 = factory.Create<RateErrorModel>();
     em2->SetRate(0.1);
@@ -82,7 +84,7 @@ int main(int argc, char *argv[])
     fastInterfaceHelper.SetChannelAttribute("DataRate", fastSpeed);
     fastInterfaceHelper.SetChannelAttribute("Delay", TimeValue(MilliSeconds(30)));
     NetDeviceContainer fastDevices = fastInterfaceHelper.Install(nodes);
-    costs.push_back(20);
+    costs.push_back(100);
 
     Ptr<RateErrorModel> em3 = factory.Create<RateErrorModel>();
     em3->SetRate(0.01);
@@ -110,7 +112,6 @@ int main(int argc, char *argv[])
     destinations.push_back(InetSocketAddress(secondInterfaceContainer.GetAddress(1), Utils::ConnectionPort));
     destinations.push_back(InetSocketAddress(thirdInterfaceContainer.GetAddress(1), Utils::ConnectionPort));
 
-
     ns3::DataRateValue slowSpeedRequirement = Utils::ConvertPacketsPerSecondToBitPerSecond(1);
 
     std::vector<std::shared_ptr<SDWanApplication>> applications;
@@ -118,9 +119,9 @@ int main(int argc, char *argv[])
 
     // std::shared_ptr<SDWanApplication> testApplication = std::make_shared<SDWanStaticApplication>(getNextApplicationId(), slowSpeedRequirement.Get(), 200, 10, 100);
 
-    std::shared_ptr<SDWanApplication> firstSinApplication = std::make_shared<SinApplication>(getNextApplicationId(), 200, 10, 12);
-    std::shared_ptr<SDWanApplication> secondSinApplication = std::make_shared<SinApplication>(getNextApplicationId(), 200, 10, 8);
-    std::shared_ptr<SDWanApplication> thirdSinApplication = std::make_shared<SinApplication>(getNextApplicationId(), 150, 20, 4);
+    std::shared_ptr<SDWanApplication> firstSinApplication = std::make_shared<SinApplication>(1, 200, 10, 12, 0, 0);
+    std::shared_ptr<SDWanApplication> secondSinApplication = std::make_shared<SinApplication>(2, 150, 10, 8, 0, 200);
+    std::shared_ptr<SDWanApplication> thirdSinApplication = std::make_shared<SinApplication>(3, 100, 20, 4, 0, 400);
 
     applications.push_back(std::move(firstSinApplication));
     applications.push_back(std::move(secondSinApplication));
@@ -163,17 +164,19 @@ int main(int argc, char *argv[])
 
     std::map<uint32_t, std::vector<ReceivedPacketInfo>> flowGroups;
 
-
     for (const auto &pInfo : allPackets)
     {
         flowGroups[pInfo.fromApplication].push_back(pInfo);
     }
 
+    uint32_t totalCost = 0;
+
     for (const auto &groupOfPackets : flowGroups)
     {
         uint32_t applicationId = groupOfPackets.first;
 
-        if (groupOfPackets.second.size() < 1){
+        if (groupOfPackets.second.size() < 1)
+        {
             std::cout << "Nessun paccketto inviato per l'applicazione " << applicationId << "\n";
             continue;
         }
@@ -211,44 +214,38 @@ int main(int argc, char *argv[])
         double averageBandwidth = totalBandwidth / groupOfPackets.second.size();
         std::cout << "Average bandwidth: " << averageBandwidth << " packets/s " << std::endl;
 
-
-
-
         double generatedPackages = (double)currentApplication->generatedPackets;
         double receivedPackages = groupOfPackets.second.size();
 
-
-        
         double successRate = (receivedPackages / generatedPackages) * 100;
         double errorRate = 100 - successRate;
-        
+
         std::cout << "Error rate: " << std::to_string(errorRate) << "% " << std::endl;
-        
-        
-        double totalCost = 0.0;
+
+        double totalCostForInterface = 0.0;
         for (size_t i = 0; i < groupOfPackets.second.size(); i++)
         {
+            totalCostForInterface += (double)groupOfPackets.second.at(i).getCost();
             totalCost += (double)groupOfPackets.second.at(i).getCost();
+            ;
         }
-        
-        std::cout << "Costo della trasmissione: " << totalCost << std::endl;
-        
+
+        std::cout << "Costo della trasmissione: " << totalCostForInterface << std::endl;
+
         std::map<std::shared_ptr<ISPInterface>, std::vector<ReceivedPacketInfo>> packets;
         for (size_t i = 0; i < groupOfPackets.second.size(); i++)
         {
             packets[groupOfPackets.second.at(i).fromInterface].push_back(groupOfPackets.second.at(i));
         }
-        
+
         std::cout << "Totale pacchetti ricevuti: " << receivedPackages << std::endl;
         for (const auto &fromInterfaceInfo : packets)
         {
             std::cout << "\t Pacchetti dall'interfaccia " << fromInterfaceInfo.first->interfaceId << ": " << fromInterfaceInfo.second.size() << std::endl;
-
         }
-
     }
 
-    Simulator::Destroy();
+    std::cout << "Costo totale: " << totalCost << std::endl;
 
-    return 0;
+    Simulator::Destroy();
 }

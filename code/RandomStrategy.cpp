@@ -2,6 +2,7 @@
 #include <vector>
 #include <algorithm>
 #include "Strategy.h"
+#include "Utils.h"
 #include "RandomStrategy.h"
 #include "SDWanApplication.h"
 #include "SDWanStaticApplication.h"
@@ -14,6 +15,7 @@ RandomStrategy::RandomStrategy(
     std::shared_ptr<std::vector<std::shared_ptr<ISPInterface>>> availableInterfaces)
     : Strategy(applications, availableInterfaces), rng(std::default_random_engine())
 {
+    this->rng.seed(Utils::SeedForRandomGeneration);
 }
 
 void RandomStrategy::Compute()

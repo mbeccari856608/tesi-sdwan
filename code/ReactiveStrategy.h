@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "Strategy.h"
+#include "StrategyDataPoint.h"
 #include "SDWanApplication.h"
 #include "ComputeOptimizationResult.h"
 #include "ISPInterface.h"
@@ -26,7 +27,7 @@ public:
     virtual void Compute();
 
 private:
-    std::vector<uint32_t> costs;
+    std::vector<StrategyDataPoint> strategyData;
 
     std::map<std::shared_ptr<SDWanApplication>, std::vector<std::shared_ptr<ISPInterface>>> applicationToInterfacesMap;
 

@@ -9,7 +9,7 @@
 ReactiveStrategy::ReactiveStrategy(
     std::shared_ptr<std::vector<std::shared_ptr<SDWanApplication>>> applications,
     std::shared_ptr<std::vector<std::shared_ptr<ISPInterface>>> availableInterfaces)
-    : Strategy(applications, availableInterfaces), applicationToInterfacesMap(), costs()
+    : Strategy(applications, availableInterfaces), applicationToInterfacesMap(), strategyData()
 {
 }
 
@@ -26,7 +26,7 @@ void ReactiveStrategy::Compute()
         for (uint32_t j = 0; j < interfacesToUse.size(); j++)
         {
             bool currentValue = interfacesToUse.at(j);
-            if (currentValue)
+            if (currentValue || true)
             {
                 currentSet.push_back(this->availableInterfaces->at(j));
             }
@@ -63,12 +63,20 @@ void ReactiveStrategy::Compute()
         if (!b->getIsFeasible()) return false;
         return a->getTotalCost() > b->getTotalCost(); });
 
+    uint32_t currentPendingPackages = 0;
+    for (size_t i = 0; i < this->applications->size(); i++)
+    {
+        currentPendingPackages += this->applications->at(i)->pendingpackets.size();
+    }
+
     if (it != results.end() && (*it)->getIsFeasible())
     {
         bestSolution = (*it);
-        std::cout << "Utilizziamo la soluzione che costa :" << bestSolution->getTotalCost() << "\n";
-        uint32_t totalCostUntilNow = costs.size() == 0 ? bestSolution->getTotalCost() : costs.back() + bestSolution->getTotalCost();
-        costs.push_back(totalCostUntilNow);
+        uint32_t currentCost = bestSolution->getTotalCost();
+        uint32_t totalCost = strategyData.size() == 0 ? currentCost : strategyData.back().totalCost + currentCost;
+        uint32_t totalAmountOfPackets = strategyData.size() == 0 ? currentPendingPackages : strategyData.back().totalAmountOfPackets + currentPendingPackages;
+        StrategyDataPoint dataPoint = StrategyDataPoint(totalCost, currentCost, totalAmountOfPackets, currentPendingPackages);
+        this->strategyData.push_back(dataPoint);
     }
     else
     {
@@ -113,10 +121,18 @@ void ReactiveStrategy::Compute()
             throw std::runtime_error("Impossibile aprire il file");
         }
 
-        file << "Indice,Valore" << std::endl;
-        for (size_t i = 0; i < costs.size(); ++i)
+        file << "Index,CurrentCost,TotalCost,CurrentPackets,TotalPackets, TrafficIntensity" << std::endl;
+        for (size_t i = 0; i < this->strategyData.size(); ++i)
         {
-            file << i << "," << costs[i] << std::endl;
+            auto dataPoint = this->strategyData.at(i);
+            double trafficIntensity = (double)dataPoint.totalAmountOfPackets / (i + 1);
+            file << i + 1 << ","
+                 << dataPoint.currentCost << ","
+                 << dataPoint.totalCost << ","
+                 << dataPoint.currentAmountOfPackets << ","
+                 << dataPoint.totalAmountOfPackets << ","
+                 << trafficIntensity
+                 << std::endl;
         }
 
         file.close();

@@ -18,7 +18,9 @@ public:
         uint32_t id,
         uint32_t requiredDelay,
         uint32_t errorRate,
-        double shift);
+        uint32_t shift,
+        uint32_t noise,
+        uint32_t horizontalShift);
 
     virtual void OnUpdate();
     virtual bool getHasStoppedGeneratingData();
@@ -31,6 +33,9 @@ private:
     bool allPacketsGenerated;
     std::vector<std::tuple<uint32_t, uint32_t>> sinValues;
     uint32_t currentSample;
+    uint32_t noise;
+    uint32_t shift;
+    uint32_t horizontalShift;
     void enqueuePacketsForCurrentSample();
 };
 
