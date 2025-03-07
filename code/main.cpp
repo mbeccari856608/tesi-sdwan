@@ -43,7 +43,8 @@ int main(int argc, char *argv[])
 
 void RunSimulation(StrategyTypes strategy)
 {
-
+    std::cout << std::string(20, '-') << std::endl;
+    std::cout << "Strategy " << strategy << std::endl;
     uint32_t initialApplicationId = 0;
     auto timeSinceEpoch = std::chrono::high_resolution_clock::now().time_since_epoch();
 

@@ -23,6 +23,8 @@ namespace Utils
 
     const uint32_t SeedForRandomGeneration = 1;
 
+    const uint32_t SeedForNoiseGeneration = 19;
+
     const uint32_t SimulationDurationInSeconds = 1200;
 
 
