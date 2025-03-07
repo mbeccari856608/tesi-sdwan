@@ -10,7 +10,7 @@ std::vector<std::tuple<uint32_t, uint32_t>> generateValues(double shift, int noi
     std::vector<std::tuple<uint32_t, uint32_t>> values;
     double frequency = (2 * M_PI) / 600.0;
     for (uint32_t x = 0; x <= Utils::SimulationDurationInSeconds; x += 1.0) {
-        double y = std::sin(frequency * x) * shift;
+        double y = std::sin(frequency * (x + horizontalShift )) * shift;
         y = std::abs(y);
 
 
@@ -25,7 +25,7 @@ std::vector<std::tuple<uint32_t, uint32_t>> generateValues(double shift, int noi
         if (y < 0) y = 0;
 
 
-        values.emplace_back(x + horizontalShift, std::floor(y));
+        values.emplace_back(x, std::floor(y));
     }
     return values;
 }
