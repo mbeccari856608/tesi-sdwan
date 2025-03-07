@@ -9,7 +9,7 @@
 ReactiveStrategy::ReactiveStrategy(
     std::shared_ptr<std::vector<std::shared_ptr<SDWanApplication>>> applications,
     std::shared_ptr<std::vector<std::shared_ptr<ISPInterface>>> availableInterfaces)
-    : Strategy(applications, availableInterfaces), applicationToInterfacesMap(), strategyData()
+    : Strategy(applications, availableInterfaces), applicationToInterfacesMap()
 {
 }
 
@@ -114,28 +114,8 @@ void ReactiveStrategy::Compute()
 
     if (this->getAllDataHasBeenSent())
     {
-        std::ofstream file("output.csv");
-
-        if (!file)
-        {
-            throw std::runtime_error("Impossibile aprire il file");
-        }
-
-        file << "Index,CurrentCost,TotalCost,CurrentPackets,TotalPackets, TrafficIntensity" << std::endl;
-        for (size_t i = 0; i < this->strategyData.size(); ++i)
-        {
-            auto dataPoint = this->strategyData.at(i);
-            double trafficIntensity = (double)dataPoint.totalAmountOfPackets / (i + 1);
-            file << i + 1 << ","
-                 << dataPoint.currentCost << ","
-                 << dataPoint.totalCost << ","
-                 << dataPoint.currentAmountOfPackets << ","
-                 << dataPoint.totalAmountOfPackets << ","
-                 << trafficIntensity
-                 << std::endl;
-        }
-
-        file.close();
+        std::string fileName = "outputReactive.csv";
+        Utils::printResultsToFile(fileName, this->strategyData);
     }
 }
 
@@ -216,18 +196,23 @@ std::shared_ptr<ComputeOptimizationResult> ReactiveStrategy::ComputeOptimization
     }
 
     // // Vincolo sulla percentuale di errore
-    // for (std::size_t i = 0; i < this->availableInterfaces->size(); ++i)
-    // {
-    //     constraints.push_back(
-    //         solver->MakeRowConstraint(0, staticApplication->errorRate));
-    //     for (std::size_t j = 0; j < this->availableInterfaces->size(); ++j)
-    //     {
-    //         std::shared_ptr<ISPInterface> currentInterface = this->availableInterfaces->at(j);
-    //         double errorRate = currentInterface->getErrorRate();
-    //         double errorCoefficient = errorRate / staticApplication->amountOfPacketsToSend;
-    //         constraints.back()->SetCoefficient(amountOfPacketForInterface[j], errorCoefficient);
-    //     }
-    // }
+    for (std::size_t j = 0; j < currentApplications->size(); ++j)
+    {
+        auto currentApplication = currentApplications->at(j);
+        constraints.push_back(
+            solver->MakeRowConstraint(0, currentApplication->errorRate));
+        auto totalPackagesForApplication = currentApplication->pendingpackets.size();
+
+        for (std::size_t i = 0; i < currentInterfaces->size(); ++i)
+        {
+            std::shared_ptr<ISPInterface> currentInterface = currentInterfaces->at(i);
+            double errorRate = currentInterface->getErrorRate();
+            double errorCoefficient = totalPackagesForApplication > 0 ? errorRate / totalPackagesForApplication : 0;
+
+            constraints.back()->SetCoefficient(amountOfPacketForApplicationOverInterface[j + (i * amountOfApplications)], errorCoefficient);
+        }
+    }
+
 
     for (std::size_t j = 0; j < currentApplications->size(); ++j)
     {

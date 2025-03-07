@@ -6,6 +6,7 @@
 #include <cstdint>
 #include "ns3/core-module.h"
 #include "ns3/internet-module.h"
+#include "StrategyDataPoint.h"
 
 namespace Utils
 {
@@ -56,6 +57,8 @@ namespace Utils
 
 
     uint32_t maxIntWithNBits(uint32_t n);
+
+    void printResultsToFile(std::string fileName, std::vector<StrategyDataPoint>& dataPoints);
 
 
 

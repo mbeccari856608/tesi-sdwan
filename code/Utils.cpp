@@ -34,3 +34,30 @@ uint32_t Utils::maxIntWithNBits(uint32_t n)
         return 0;
     return (1U << n) - 1;
 }
+
+
+void Utils::printResultsToFile(std::string fileName, std::vector<StrategyDataPoint>& dataPoints)
+{
+    std::ofstream file(fileName);
+
+    if (!file)
+    {
+        throw std::runtime_error("Impossibile aprire il file");
+    }
+
+    file << "Index,CurrentCost,TotalCost,CurrentPackets,TotalPackets, TrafficIntensity" << std::endl;
+    for (size_t i = 0; i < dataPoints.size(); ++i)
+    {
+        auto dataPoint = dataPoints.at(i);
+        double trafficIntensity = (double)dataPoint.totalAmountOfPackets / (i + 1);
+        file << i + 1 << ","
+             << dataPoint.currentCost << ","
+             << dataPoint.totalCost << ","
+             << dataPoint.currentAmountOfPackets << ","
+             << dataPoint.totalAmountOfPackets << ","
+             << trafficIntensity
+             << std::endl;
+    }
+
+    file.close();
+}

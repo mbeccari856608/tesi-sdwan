@@ -24,15 +24,24 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("Demo");
 
-void RunSimulation();
+void RunSimulation(StrategyTypes strategy);
 
 int main(int argc, char *argv[])
 {
-    RunSimulation();
+    StrategyTypes strategies[] = {
+        ROUND_ROBIN,
+        REACTIVE,
+        RANDOM
+    };
+
+    for (StrategyTypes strategy : strategies) {
+        RunSimulation(strategy);
+    }
+
     return 0;
 }
 
-void RunSimulation()
+void RunSimulation(StrategyTypes strategy)
 {
 
     uint32_t initialApplicationId = 0;
@@ -120,14 +129,14 @@ void RunSimulation()
     // std::shared_ptr<SDWanApplication> testApplication = std::make_shared<SDWanStaticApplication>(getNextApplicationId(), slowSpeedRequirement.Get(), 200, 10, 100);
 
     std::shared_ptr<SDWanApplication> firstSinApplication = std::make_shared<SinApplication>(1, 200, 10, 12, 0, 0);
-    std::shared_ptr<SDWanApplication> secondSinApplication = std::make_shared<SinApplication>(2, 150, 10, 8, 0, 200);
-    std::shared_ptr<SDWanApplication> thirdSinApplication = std::make_shared<SinApplication>(3, 100, 20, 4, 0, 400);
+    std::shared_ptr<SDWanApplication> secondSinApplication = std::make_shared<SinApplication>(2, 150, 10, 8, 0, 0);
+    std::shared_ptr<SDWanApplication> thirdSinApplication = std::make_shared<SinApplication>(3, 100, 20, 4, 0, 0);
 
     applications.push_back(std::move(firstSinApplication));
     applications.push_back(std::move(secondSinApplication));
     applications.push_back(std::move(thirdSinApplication));
 
-    source = std::make_unique<ApplicationSenderHelper>(destinations, applications, costs, REACTIVE);
+    source = std::make_unique<ApplicationSenderHelper>(destinations, applications, costs, strategy);
 
     ApplicationContainer sourceApps = source->Install(nodes.Get(0));
     sourceApps.Start(Seconds(0.0));

@@ -27,7 +27,6 @@ public:
     virtual void Compute();
 
 private:
-    std::vector<StrategyDataPoint> strategyData;
 
     std::map<std::shared_ptr<SDWanApplication>, std::vector<std::shared_ptr<ISPInterface>>> applicationToInterfacesMap;
 
