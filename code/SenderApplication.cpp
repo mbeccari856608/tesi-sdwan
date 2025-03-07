@@ -27,13 +27,8 @@ NS_LOG_COMPONENT_DEFINE("SenderApplication");
 
 NS_OBJECT_ENSURE_REGISTERED(SenderApplication);
 
-uint32_t initialInterfaceId = 100;
 
-uint32_t getNextInterfaceId()
-{
-    initialInterfaceId++;
-    return initialInterfaceId;
-}
+
 
 TypeId
 SenderApplication::GetTypeId()
@@ -68,7 +63,8 @@ SenderApplication::GetTypeId()
 SenderApplication::SenderApplication() : m_totBytes(0),
                                          m_unsentPacket(nullptr),
                                          availableInterfaces(),
-                                         strategyType(LINEAR)
+                                         strategyType(LINEAR),
+                                         initialInterfaceId(100)
 {
     this->availableInterfaces = std::make_shared<std::vector<std::shared_ptr<ISPInterface>>>(0);
     NS_LOG_FUNCTION(this);
@@ -173,6 +169,11 @@ void SenderApplication::StartApplication() // Called at time specified by Start
     this->ComputeStrategyAndContinue();
 }
 
+uint32_t SenderApplication::getNextInterfaceId(){
+    this->initialInterfaceId++;
+    return this->initialInterfaceId;
+}
+
 void SenderApplication::ComputeStrategyAndContinue()
 {
 
@@ -203,7 +204,7 @@ void SenderApplication::InitSocket(
     {
         Ptr<Socket> maybeSocket = Socket::CreateSocket(GetNode(), TcpSocketFactory::GetTypeId());
 
-        uint32_t interfaceId = getNextInterfaceId();
+        uint32_t interfaceId = this->getNextInterfaceId();
         std::string interfaceName = "Interfaccia " + std::to_string(interfaceId);
         ISPInterface interface(interfaceId, interfaceName, device, from, maybeSocket, destinationAddress, errorModel, cost);
         // matchingInterface = std::make_shared<ISPInterface>(interface);

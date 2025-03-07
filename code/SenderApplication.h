@@ -18,7 +18,7 @@
 
 using namespace ns3;
 
-// todo rename to CPEApplication.
+
 class SenderApplication : public Application
 {
 public:
@@ -130,6 +130,10 @@ private:
     uint32_t cost);
 
   bool HasAlreadyInitSocket(Address &from);
+
+  uint32_t initialInterfaceId;
+
+  uint32_t getNextInterfaceId();
 
   std::vector<std::shared_ptr<ISPInterface>>::iterator GetMatchingInterface(Ptr<Socket> socket);
 };

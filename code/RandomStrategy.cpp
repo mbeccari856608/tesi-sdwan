@@ -60,7 +60,7 @@ void RandomStrategy::Compute()
             packetInfo.originatedFrom = applicationId;
 
             uint32_t amountOfInterfaces = this->availableInterfaces->size();
-            uint32_t randomIndex = std::rand() % this->availableInterfaces->size();
+            uint32_t randomIndex = this->rng() % this->availableInterfaces->size();
             this->availableInterfaces->at(randomIndex)->enqueuePacket(packetInfo);
             currentCost += this->availableInterfaces->at(randomIndex)->cost;
         }
