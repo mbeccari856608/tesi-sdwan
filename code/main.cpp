@@ -29,9 +29,9 @@ void RunSimulation(StrategyTypes strategy);
 int main(int argc, char *argv[])
 {
     StrategyTypes strategies[] = {
-        //ROUND_ROBIN,
-        //RANDOM,
-        //LINEAR
+        ROUND_ROBIN,
+        RANDOM,
+        LINEAR,
         REACTIVE,
     };
 
@@ -138,9 +138,10 @@ void RunSimulation(StrategyTypes strategy)
     uint32_t thirdApplicationRequiredDelay = 100;
     uint32_t thirdApplicationRequiredErrorRate = 20;
 
-    std::shared_ptr<SinApplication> firstSinApplication = std::make_shared<SinApplication>(1, firstApplicationRequiredDelay, firstApplicationRequiredErrorRate, 12, 0, 0);
-    std::shared_ptr<SinApplication> secondSinApplication = std::make_shared<SinApplication>(2, secondApplicationRequiredDelay, secondApplicationRequiredErrorRate, 8, 0, 0);
-    std::shared_ptr<SinApplication> thirdSinApplication = std::make_shared<SinApplication>(3, thirdApplicationRequiredDelay, thirdApplicationRequiredErrorRate, 4, 0, 0);
+    // 200 150 350
+    std::shared_ptr<SinApplication> firstSinApplication = std::make_shared<SinApplication>(1, firstApplicationRequiredDelay, firstApplicationRequiredErrorRate, 12, 3, 0);
+    std::shared_ptr<SinApplication> secondSinApplication = std::make_shared<SinApplication>(2, secondApplicationRequiredDelay, secondApplicationRequiredErrorRate, 8, 2, 0);
+    std::shared_ptr<SinApplication> thirdSinApplication = std::make_shared<SinApplication>(3, thirdApplicationRequiredDelay, thirdApplicationRequiredErrorRate, 4, 1, 0);
 
     if (strategy != LINEAR)
     {

@@ -167,7 +167,6 @@ void LinearStrategy::Compute()
             auto packetsForApplicationAndInterface = packetsForApplication.at(j);
             while (packetsForApplicationAndInterface > 0)
             {
-                std::cout << currentApplication->pendingpackets.size() << std::endl;
                 currentApplication->pendingpackets.pop();
                 ns3::Time currentTime = ns3::Simulator::Now();
                 uint32_t applicationId = currentApplication->applicationId;
