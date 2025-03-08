@@ -149,6 +149,25 @@ std::shared_ptr<ComputeOptimizationResult> ReactiveStrategy::ComputeOptimization
         }
     }
 
+    for (std::size_t j = 0; j < currentApplications->size(); ++j)
+    {
+        auto currentApplication = this->applications->at(j);
+        auto requiredBitRate = currentApplication->getRequiredDataRate().GetBitRate();
+        auto requiredPacketRate =  requiredBitRate/ Utils::PacketSizeBit;
+        constraints.push_back(
+            solver->MakeRowConstraint(requiredBitRate, infinity));
+        auto totalPackagesForApplication = currentApplication->pendingpackets.size();
+
+        for (std::size_t i = 0; i < this->availableInterfaces->size(); ++i)
+        {
+            std::shared_ptr<ISPInterface> currentInterface = this->availableInterfaces->at(i);
+            double bitRate = currentInterface->getDataBitRate();
+            double bandwidthCoefficient = totalPackagesForApplication > 0 ? bitRate / totalPackagesForApplication : 0;
+
+            constraints.back()->SetCoefficient(amountOfPacketForApplicationOverInterface[j + (i * amountOfApplications)], bandwidthCoefficient);
+        }
+    }
+
     // Constraint number three: we need to calculate the delay in milliseconds
     // for each application over each flow group
 
@@ -208,7 +227,7 @@ std::shared_ptr<ComputeOptimizationResult> ReactiveStrategy::ComputeOptimization
         auto currentApplication = currentApplications->at(j);
         auto currentPendingPackages = currentApplication->pendingpackets.size();
         constraints.push_back(
-            solver->MakeRowConstraint(currentPendingPackages, infinity));
+            solver->MakeRowConstraint(currentPendingPackages, currentPendingPackages));
 
         for (std::size_t i = 0; i < currentInterfaces->size(); ++i)
         {

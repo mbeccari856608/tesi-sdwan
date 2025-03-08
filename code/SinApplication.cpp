@@ -25,6 +25,18 @@ void SinApplication::OnUpdate()
     this->enqueuePacketsForCurrentSample();
 }
 
+uint32_t SinApplication::getTotalData(){
+    uint32_t totalResult = 0;
+    for (size_t i = 0; i < this->sinValues.size(); i++)
+    {
+        totalResult += std::get<1>(this->sinValues.at(i));
+    }
+
+    return totalResult;
+}
+
+
+
 ns3::DataRate SinApplication::getRequiredDataRate()
 {
     auto maxTuple = *std::max_element(this->sinValues.begin(), this->sinValues.end(),

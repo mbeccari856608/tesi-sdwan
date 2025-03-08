@@ -25,6 +25,7 @@ public:
     virtual void OnUpdate();
     virtual bool getHasStoppedGeneratingData();
     virtual ns3::DataRate getRequiredDataRate();
+    uint32_t getTotalData();
 
 protected:
     virtual void OnApplicationStart();

@@ -31,10 +31,12 @@ int main(int argc, char *argv[])
     StrategyTypes strategies[] = {
         ROUND_ROBIN,
         REACTIVE,
-        RANDOM
+        RANDOM,
+        LINEAR
     };
 
-    for (StrategyTypes strategy : strategies) {
+    for (StrategyTypes strategy : strategies)
+    {
         RunSimulation(strategy);
     }
 
@@ -127,15 +129,44 @@ void RunSimulation(StrategyTypes strategy)
     std::vector<std::shared_ptr<SDWanApplication>> applications;
     std::unique_ptr<ApplicationSenderHelper> source;
 
-    // std::shared_ptr<SDWanApplication> testApplication = std::make_shared<SDWanStaticApplication>(getNextApplicationId(), slowSpeedRequirement.Get(), 200, 10, 100);
+    uint32_t firstApplicationRequiredDelay = 200;
+    uint32_t firstApplicationRequiredErrorRate = 20;
 
-    std::shared_ptr<SDWanApplication> firstSinApplication = std::make_shared<SinApplication>(1, 200, 10, 12, 0, 0);
-    std::shared_ptr<SDWanApplication> secondSinApplication = std::make_shared<SinApplication>(2, 150, 10, 8, 0, 0);
-    std::shared_ptr<SDWanApplication> thirdSinApplication = std::make_shared<SinApplication>(3, 100, 20, 4, 0, 0);
+    uint32_t secondApplicationRequiredDelay = 150;
+    uint32_t secondApplicationRequiredErrorRate = 10;
 
-    applications.push_back(std::move(firstSinApplication));
-    applications.push_back(std::move(secondSinApplication));
-    applications.push_back(std::move(thirdSinApplication));
+    uint32_t thirdApplicationRequiredDelay = 100;
+    uint32_t thirdApplicationRequiredErrorRate = 20;
+
+    std::shared_ptr<SinApplication> firstSinApplication = std::make_shared<SinApplication>(1, firstApplicationRequiredDelay, firstApplicationRequiredErrorRate, 12, 0, 0);
+    std::shared_ptr<SinApplication> secondSinApplication = std::make_shared<SinApplication>(2, secondApplicationRequiredDelay, secondApplicationRequiredErrorRate, 8, 0, 0);
+    std::shared_ptr<SinApplication> thirdSinApplication = std::make_shared<SinApplication>(3, thirdApplicationRequiredDelay, thirdApplicationRequiredErrorRate, 4, 0, 0);
+
+    if (strategy != LINEAR)
+    {
+
+        applications.push_back(std::move(firstSinApplication));
+        applications.push_back(std::move(secondSinApplication));
+        applications.push_back(std::move(thirdSinApplication));
+    }
+    else
+    {
+        auto firstApplicationRequiredDataRate = firstSinApplication->getRequiredDataRate();
+        auto firstApplicationTotalAmountOfPackages = firstSinApplication->getTotalData();
+        std::shared_ptr<SDWanStaticApplication> firstStaticApplication = std::make_shared<SDWanStaticApplication>(1, firstApplicationRequiredDataRate, firstApplicationRequiredDelay, firstApplicationRequiredErrorRate, firstApplicationTotalAmountOfPackages);
+
+        auto secondApplicationRequiredDataRate = secondSinApplication->getRequiredDataRate();
+        auto secondApplicationTotalAmountOfPackages = secondSinApplication->getTotalData();
+        std::shared_ptr<SDWanStaticApplication> secondStaticApplication = std::make_shared<SDWanStaticApplication>(2, secondApplicationRequiredDataRate, secondApplicationRequiredDelay, secondApplicationRequiredErrorRate, secondApplicationTotalAmountOfPackages);
+    
+        auto thirdApplicationRequiredDataRate = thirdSinApplication->getRequiredDataRate();
+        auto thirdApplicationTotalAmountOfPackages = thirdSinApplication->getTotalData();
+        std::shared_ptr<SDWanStaticApplication> thirdStaticApplication = std::make_shared<SDWanStaticApplication>(3, thirdApplicationRequiredDataRate, thirdApplicationRequiredDelay, thirdApplicationRequiredErrorRate, thirdApplicationTotalAmountOfPackages);
+        
+        applications.push_back(std::move(firstStaticApplication));
+        applications.push_back(std::move(secondStaticApplication));
+        applications.push_back(std::move(thirdStaticApplication));
+    }
 
     source = std::make_unique<ApplicationSenderHelper>(destinations, applications, costs, strategy);
 
