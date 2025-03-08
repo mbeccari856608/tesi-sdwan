@@ -29,10 +29,10 @@ void RunSimulation(StrategyTypes strategy);
 int main(int argc, char *argv[])
 {
     StrategyTypes strategies[] = {
-        ROUND_ROBIN,
+        //ROUND_ROBIN,
+        //RANDOM,
+        //LINEAR
         REACTIVE,
-        RANDOM,
-        LINEAR
     };
 
     for (StrategyTypes strategy : strategies)

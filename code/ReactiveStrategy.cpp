@@ -151,20 +151,21 @@ std::shared_ptr<ComputeOptimizationResult> ReactiveStrategy::ComputeOptimization
 
     for (std::size_t j = 0; j < currentApplications->size(); ++j)
     {
-        auto currentApplication = this->applications->at(j);
+        auto currentApplication = currentApplications->at(j);
         auto requiredBitRate = currentApplication->getRequiredDataRate().GetBitRate();
-        auto requiredPacketRate =  requiredBitRate/ Utils::PacketSizeBit;
+        auto totalPackagesForApplication = currentApplication->pendingpackets.size();
+        if (totalPackagesForApplication == 0){
+            continue;
+        }
         constraints.push_back(
             solver->MakeRowConstraint(requiredBitRate, infinity));
-        auto totalPackagesForApplication = currentApplication->pendingpackets.size();
-
-        for (std::size_t i = 0; i < this->availableInterfaces->size(); ++i)
+        for (std::size_t i = 0; i < currentInterfaces->size(); ++i)
         {
-            std::shared_ptr<ISPInterface> currentInterface = this->availableInterfaces->at(i);
+            std::shared_ptr<ISPInterface> currentInterface = currentInterfaces->at(i);
             double bitRate = currentInterface->getDataBitRate();
             double bandwidthCoefficient = totalPackagesForApplication > 0 ? bitRate / totalPackagesForApplication : 0;
-
-            constraints.back()->SetCoefficient(amountOfPacketForApplicationOverInterface[j + (i * amountOfApplications)], bandwidthCoefficient);
+            constraints.back()->SetCoefficient(
+                amountOfPacketForApplicationOverInterface[j + (i * amountOfApplications)], bandwidthCoefficient);
         }
     }
 
@@ -221,7 +222,6 @@ std::shared_ptr<ComputeOptimizationResult> ReactiveStrategy::ComputeOptimization
         }
     }
 
-
     for (std::size_t j = 0; j < currentApplications->size(); ++j)
     {
         auto currentApplication = currentApplications->at(j);
@@ -255,7 +255,6 @@ std::shared_ptr<ComputeOptimizationResult> ReactiveStrategy::ComputeOptimization
         ComputeOptimizationResult result(false, std::vector<std::vector<uint32_t>>(), nullptr, 0);
         return std::make_shared<ComputeOptimizationResult>(result);
     }
-
 
     std::vector<std::vector<uint32_t>> solutionValues;
     for (std::size_t j = 0; j < currentApplications->size(); ++j)

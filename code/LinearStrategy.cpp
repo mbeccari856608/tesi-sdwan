@@ -180,7 +180,6 @@ void LinearStrategy::Compute()
                 packetsForApplicationAndInterface--;
             }
         }
-        std::cout << "Pacchetti rimasti: " << currentApplication->pendingpackets.size() << std::endl;
     }
 
     this->hasBeenComputed = true;
