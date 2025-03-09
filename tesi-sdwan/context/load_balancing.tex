@@ -1,7 +1,7 @@
 
-\chapter{Problem definition}
+\section{Problem definition}
 
-\section{Load balancing as a linear optimization problem}
+\subsection{Load balancing as a linear optimization problem}
 
 On of the goals of SD-WAN is to minimize costs while still maintaining a set of requirements for a given set of applications. 
 
@@ -209,7 +209,7 @@ This means that when assigning the packet cost to a given link we assign lower c
 	We consider a SD-WAN composed by a CPE sending data to a sink; the network is composed by:
 	\begin{itemize}
 		\item A set of links $L$ with bandwidth $B_l, \ \forall l \in L$
-		\item A set of applications, $A$. For each application $a \in A$, the traffic demand is denoted with $t_a$, the required delay over all links is $\bar{D}_a$ and the required error rate over all links is $\bar{E}_a$
+		\item A set of applications, $A$. For each application $a \in A$, the traffic demand is denoted with $t_a$, the required delay over all links is $\bar{D}_a$, the required bandwidth is $\bar{B}_a$ and the required error rate over all links is $\bar{E}_a$
 	\end{itemize}
 	
 	The modified formulation is:
@@ -233,9 +233,15 @@ This means that when assigning the packet cost to a given link we assign lower c
 			% ^ Computing the estimated error rate
 			& \quad E_a \leq \bar{E}_a, 
 			&& \forall a \in A, \tag{6}  \label{eq:6} \\	
-			% ^ Constraint on the delay
+			% ^ Constraint on the estimated error rate
+			& \quad b^a_l(x) \leq B_a, 
+			&& \forall a \in A, \forall l \in L, \tag{7}  \label{eq:7} \\	
+			% ^ Computing the estimated bandwidth usage
+			& \quad B_a \leq \bar{B}_a, 
+			&& \forall a \in A, \tag{8}  \label{eq:8} \\	
+			% ^ Constraint on the estimated error rate
 			& \quad \sum_{l \in L} x^a_l = 1, 
-			&& \forall a \in A \tag{7}  \label{eq:7}
+			&& \forall a \in A \tag{9}  \label{eq:9}
 		\end{align}
 	\end{center}
 	
@@ -253,6 +259,7 @@ This means that when assigning the packet cost to a given link we assign lower c
 				$D_a$       & $R$ & The maximum delay estimated by application $a$ over all overlay link \\ \hline
 				$f^a_l(x)$       & $R$ & The delay function that provides the delay of application $a$ over overlay link $l$ considering the assignment given by $x$. This function will be discussed in greater detail in the \ref{estimating_the_delay} section.  \\ \hline
 				$e^a_l(x)$       & $R$ & The error rate function that provides the error rate of application $a$ over overlay link $l$ considering the assignment given by $x$. This function will be discussed in greater detail in the \ref{estimating_the_error_rate} section \\ \hline
+				$b^a_l(x)$       & $R$ & The bandwidth function that provides the required bandwidth rate of application $a$ over overlay link $l$ considering the assignment given by $x$. This function will be discussed in greater detail in the \ref{estimating_the_bandwidth_usage} section \\ \hline
 			\end{tabular}
 		\end{table}
 	\end{center}
@@ -268,10 +275,12 @@ The constraints are:
 			Constraint  & Meaning \\ \hline
 			$\eqref{eq:2}$ & Ensures that the capacity of each link is satisfied  \\ \hline
 			$\eqref{eq:3}$ & Computes the delay for each application over each link \\ \hline
-			$\eqref{eq:4}$ & Verifies that satisfaction of SLA delay requirements  \\ \hline
+			$\eqref{eq:4}$ & Verifies the satisfaction of SLA delay requirements  \\ \hline
 			$\eqref{eq:5}$ & Computes the error rate for each application over each link  \\ \hline
-			$\eqref{eq:6}$ & Verifies that satisfaction of SLA error rate requirements  \\ \hline
-			$\eqref{eq:7}$ & Ensures that all pending packets are sent  \\ \hline
+			$\eqref{eq:6}$ & Verifies the satisfaction of SLA error rate requirements  \\ \hline
+			$\eqref{eq:7}$ & Computes the bandwidth usage for each application over each link  \\ \hline
+			$\eqref{eq:8}$ & Verifies the satisfaction of SLA bandwidth requirements  \\ \hline
+			$\eqref{eq:9}$ & Ensures that all pending packets are sent  \\ \hline
 		\end{tabular}
 	\end{table}
 \end{center}
@@ -295,7 +304,7 @@ When estimating the delay of sending $n$ packets on a given link, we can rely on
 Where the arrival rate can be computed by considering how many packets were sent through the link up to a given point in time:
 \[
 	\text{arrival rate} = \frac {\text{total amount of packets}} {\text{current time}}
-\].
+\]
 
 Estimating the delay constitutes a challenge that opens for a lot of possible extensions to the current implementation, this will be further discussed in the future work session.
 
@@ -304,3 +313,10 @@ Estimating the delay constitutes a challenge that opens for a lot of possible ex
 
 Each link has a set error rate, expressed as a percentage, that affects how many packets actually reach the destination. For the scope of this paper the error rate will be fixed for every application and for every link. \\
 However the error rate can potentially be any user-defined function to account for possibile changes in the links (e.g the error rate on a given link could rise when incoming traffic goes over a certain threshold)
+
+
+
+\subsection{Estimating the bandwidth usage} \label{estimating_the_bandwidth_usage}
+
+Each application has a pre-determined bandwidth usage, so we for the purpose of this paper there is no need to estimate what the necessary bandwidth for an application is. (i.e our function always returns a fixed value that is set by the application, in the case of a sinusoidal traffic model we will be considering the peak of the bandwidth usage as the required bandwidth) \\
+However in other scenarios this function could be redefined to try and guess the future required bandwidth of any given application.

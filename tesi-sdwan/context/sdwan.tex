@@ -1,6 +1,5 @@
-\documentclass{report}
+\documentclass{article}
 
-\usepackage[document]{ragged2e}
 \usepackage[paper=a4paper,top=0.5in,bottom=1in,right=1in,left=1in]{geometry}
 \usepackage{layout}
 \usepackage{titlesec, blindtext, color}
@@ -20,7 +19,8 @@
 \usepackage{titlesec}
 \usepackage{algorithm}
 \usepackage{algpseudocode}
-
+\usepackage{booktabs}
+\usepackage{graphicx}
 \graphicspath{ {./images/} }
 \setcellgapes{3pt}
 
@@ -37,8 +37,7 @@
 	urlcolor=blue, % We want blue links
 }
 
-\titleformat{\chapter}[display]
-{\normalfont\bfseries}{}{0pt}{\Large}
+
 
 \begin{document}
 	
@@ -49,11 +48,11 @@
 	\tableofcontents
 	\thispagestyle{empty}
 	\pagebreak
-	\chapter{Introduction}
 	\setcounter{page}{1}
 	\input{intro}
 	\input{load_balancing}
 	\input{implementation}
+	\input{test_results}
 	
 
 \bibliographystyle{unsrt}

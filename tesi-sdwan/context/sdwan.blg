@@ -2,55 +2,63 @@ This is BibTeX, Version 0.99d (TeX Live 2022)
 Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: sdwan.aux
 The style file: unsrt.bst
-Illegal, another \bibstyle command---line 69 of file sdwan.aux
+Illegal, another \bibstyle command---line 72 of file sdwan.aux
  : \bibstyle
  :          {plainurl}
 I'm skipping whatever remains of this command
 Database file #1: bibliography.bib
 Warning--entry type for "ns3" isn't style-file defined
 --line 15 of file bibliography.bib
-Warning--entry type for "or-tools" isn't style-file defined
+Warning--entry type for "cmake" isn't style-file defined
+--line 25 of file bibliography.bib
+Warning--entry type for "Ninja" isn't style-file defined
 --line 35 of file bibliography.bib
+Warning--entry type for "or-tools" isn't style-file defined
+--line 45 of file bibliography.bib
+Warning--entry type for "ubuntu" isn't style-file defined
+--line 55 of file bibliography.bib
+Warning--entry type for "ns3-docs" isn't style-file defined
+--line 65 of file bibliography.bib
 Warning--empty journal in intent_based_routing
-You've used 3 entries,
+You've used 7 entries,
             1791 wiz_defined-function locations,
-            455 strings with 3782 characters,
-and the built_in function-call counts, 344 in all, are:
-= -- 24
-> -- 6
+            467 strings with 4085 characters,
+and the built_in function-call counts, 736 in all, are:
+= -- 52
+> -- 10
 < -- 0
-+ -- 4
++ -- 8
 - -- 1
 * -- 5
-:= -- 48
-add.period$ -- 7
-call.type$ -- 3
-change.case$ -- 3
+:= -- 80
+add.period$ -- 15
+call.type$ -- 7
+change.case$ -- 7
 chr.to.int$ -- 0
-cite$ -- 4
-duplicate$ -- 18
-empty$ -- 51
+cite$ -- 8
+duplicate$ -- 38
+empty$ -- 123
 format.name$ -- 1
-if$ -- 80
+if$ -- 184
 int.to.chr$ -- 0
-int.to.str$ -- 3
+int.to.str$ -- 7
 missing$ -- 1
-newline$ -- 16
+newline$ -- 32
 num.names$ -- 1
-pop$ -- 23
+pop$ -- 59
 preamble$ -- 1
 purify$ -- 0
 quote$ -- 0
-skip$ -- 11
+skip$ -- 27
 stack$ -- 0
 substring$ -- 0
-swap$ -- 2
+swap$ -- 6
 text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
 type$ -- 0
 warning$ -- 1
 while$ -- 1
-width$ -- 4
-write$ -- 25
+width$ -- 8
+write$ -- 53
 (There was 1 error message)

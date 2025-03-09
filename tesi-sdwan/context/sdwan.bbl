@@ -14,4 +14,21 @@ Or-tools.
 \newblock \url{https://developers.google.com/optimization?hl=it}, last accessed
   on 04/03/2025.
 
+\bibitem{cmake}
+Cmake.
+\newblock \url{https://cmake.org/}, last accessed on 04/03/2025.
+
+\bibitem{ninja}
+Ninja.
+\newblock \url{https://ninja-build.org/}, last accessed on 04/03/2025.
+
+\bibitem{ns3-docs}
+Ns3 documentation.
+\newblock \url{https://www.nsnam.org/docs/installation/html/}, last accessed on
+  04/03/2025.
+
+\bibitem{ubuntu}
+Ubuntu.
+\newblock \url{https://ubuntu.com/}, last accessed on 04/03/2025.
+
 \end{thebibliography}
