@@ -1,0 +1,24 @@
+
+
+verificare tracce sfasate anche con tracce randomiche
+
+2 dimensioni:
+	rumore e sfasamento
+	
+per togliere la dimensione temporale
+
+costo vs quantità di traffico complessivo
+
+costo vs intensità di traffico
+
+costo medio per pacchetto
+
+
+random vs roundrobin vs dinamica vs strategia "perfetta" come upper bound
+
+scenari di traffico differente, sempre
+con andamento sinusoidale.
+Verificare impatto del rumore
+
+
+

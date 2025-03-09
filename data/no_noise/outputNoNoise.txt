@@ -1,0 +1,176 @@
+--------------------
+Strategy 2
+Send Interface 1 IP Address 0: 10.1.1.1
+Copiato
+Send Interface 2 IP Address 0: 10.1.2.1
+Copiato
+Send Interface 3 IP Address 0: 10.1.3.1
+Copiato
+Receive Interface 1 IP Address 0: 10.1.1.2
+Receive Interface 2 IP Address 0: 10.1.2.2
+Receive Interface 3 IP Address 0: 10.1.3.2
+Finito 1
+Durata totale 20.3197
+Total Bytes Received: 1860992
+Totale pacchetti ricevuti: 14539
+--------------------
+Informazione per l'applicazione 1 
+Average delay: 95.4944ms
+Average bandwidth: 19.6593 packets/s 
+Error rate: 11.413809% 
+Costo della trasmissione: 312250
+Totale pacchetti ricevuti: 7544
+	 Pacchetti dall'interfaccia 102: 2603
+	 Pacchetti dall'interfaccia 101: 2599
+	 Pacchetti dall'interfaccia 103: 2342
+--------------------
+Informazione per l'applicazione 2 
+Average delay: 85.0175ms
+Average bandwidth: 21.3643 packets/s 
+Error rate: 10.730007% 
+Costo della trasmissione: 243000
+Totale pacchetti ricevuti: 4867
+	 Pacchetti dall'interfaccia 102: 1559
+	 Pacchetti dall'interfaccia 101: 1322
+	 Pacchetti dall'interfaccia 103: 1986
+--------------------
+Informazione per l'applicazione 3 
+Average delay: 82.8806ms
+Average bandwidth: 21.7528 packets/s 
+Error rate: 9.983080% 
+Costo della trasmissione: 108520
+Totale pacchetti ricevuti: 2128
+	 Pacchetti dall'interfaccia 102: 723
+	 Pacchetti dall'interfaccia 101: 516
+	 Pacchetti dall'interfaccia 103: 889
+Costo totale: 663770
+--------------------
+Strategy 1
+Send Interface 1 IP Address 0: 10.1.1.1
+Copiato
+Send Interface 2 IP Address 0: 10.1.2.1
+Copiato
+Send Interface 3 IP Address 0: 10.1.3.1
+Copiato
+Receive Interface 1 IP Address 0: 10.1.1.2
+Receive Interface 2 IP Address 0: 10.1.2.2
+Receive Interface 3 IP Address 0: 10.1.3.2
+Finito 1
+Durata totale 20.6977
+Total Bytes Received: 1877632
+Totale pacchetti ricevuti: 14669
+--------------------
+Informazione per l'applicazione 1 
+Average delay: 89.1739ms
+Average bandwidth: 20.6845 packets/s 
+Error rate: 10.450916% 
+Costo della trasmissione: 355350
+Totale pacchetti ricevuti: 7626
+	 Pacchetti dall'interfaccia 101: 2301
+	 Pacchetti dall'interfaccia 102: 2502
+	 Pacchetti dall'interfaccia 103: 2823
+--------------------
+Informazione per l'applicazione 2 
+Average delay: 88.08ms
+Average bandwidth: 20.8838 packets/s 
+Error rate: 9.721203% 
+Costo della trasmissione: 232010
+Totale pacchetti ricevuti: 4922
+	 Pacchetti dall'interfaccia 101: 1411
+	 Pacchetti dall'interfaccia 102: 1665
+	 Pacchetti dall'interfaccia 103: 1846
+--------------------
+Informazione per l'applicazione 3 
+Average delay: 91.1363ms
+Average bandwidth: 20.3772 packets/s 
+Error rate: 10.279188% 
+Costo della trasmissione: 95020
+Totale pacchetti ricevuti: 2121
+	 Pacchetti dall'interfaccia 101: 660
+	 Pacchetti dall'interfaccia 102: 721
+	 Pacchetti dall'interfaccia 103: 740
+Costo totale: 682380
+--------------------
+Strategy 0
+Send Interface 1 IP Address 0: 10.1.1.1
+Copiato
+Send Interface 2 IP Address 0: 10.1.2.1
+Copiato
+Send Interface 3 IP Address 0: 10.1.3.1
+Copiato
+Receive Interface 1 IP Address 0: 10.1.1.2
+Receive Interface 2 IP Address 0: 10.1.2.2
+Receive Interface 3 IP Address 0: 10.1.3.2
+Finito 1
+Durata totale 18.9558
+Total Bytes Received: 1796224
+Totale pacchetti ricevuti: 14033
+--------------------
+Informazione per l'applicazione 1 
+Average delay: 138.951ms
+Average bandwidth: 12.2098 packets/s 
+Error rate: 18.858619% 
+Costo della trasmissione: 84370
+Totale pacchetti ricevuti: 6910
+	 Pacchetti dall'interfaccia 102: 1527
+	 Pacchetti dall'interfaccia 101: 5383
+--------------------
+Informazione per l'applicazione 2 
+Average delay: 100ms
+Average bandwidth: 20 packets/s 
+Error rate: 10.491563% 
+Costo della trasmissione: 97600
+Totale pacchetti ricevuti: 4880
+	 Pacchetti dall'interfaccia 102: 4880
+--------------------
+Informazione per l'applicazione 3 
+Average delay: 59.4605ms
+Average bandwidth: 25.7914 packets/s 
+Error rate: 5.118443% 
+Costo della trasmissione: 148780
+Totale pacchetti ricevuti: 2243
+	 Pacchetti dall'interfaccia 102: 944
+	 Pacchetti dall'interfaccia 103: 1299
+Costo totale: 330750
+--------------------
+Strategy 3
+Send Interface 1 IP Address 0: 10.1.1.1
+Copiato
+Send Interface 2 IP Address 0: 10.1.2.1
+Copiato
+Send Interface 3 IP Address 0: 10.1.3.1
+Copiato
+Receive Interface 1 IP Address 0: 10.1.1.2
+Receive Interface 2 IP Address 0: 10.1.2.2
+Receive Interface 3 IP Address 0: 10.1.3.2
+Finito 1
+Durata totale 20.6005
+Total Bytes Received: 1812480
+Totale pacchetti ricevuti: 14160
+--------------------
+Informazione per l'applicazione 1 
+Average delay: 135.483ms
+Average bandwidth: 12.9034 packets/s 
+Error rate: 17.977924% 
+Costo della trasmissione: 90130
+Totale pacchetti ricevuti: 6985
+	 Pacchetti dall'interfaccia 101: 4957
+	 Pacchetti dall'interfaccia 102: 2028
+--------------------
+Informazione per l'applicazione 2 
+Average delay: 100ms
+Average bandwidth: 20 packets/s 
+Error rate: 10.528247% 
+Costo della trasmissione: 97560
+Totale pacchetti ricevuti: 4878
+	 Pacchetti dall'interfaccia 102: 4878
+--------------------
+Informazione per l'applicazione 3 
+Average delay: 45.3592ms
+Average bandwidth: 27.8058 packets/s 
+Error rate: 2.834179% 
+Costo della trasmissione: 189380
+Totale pacchetti ricevuti: 2297
+	 Pacchetti dall'interfaccia 103: 1793
+	 Pacchetti dall'interfaccia 102: 504
+Costo totale: 377070

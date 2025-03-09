@@ -1,0 +1,34 @@
+\begin{thebibliography}{1}
+
+\bibitem{intent_based_routing}
+Pham Tran Anh~Quang et~al.
+\newblock Intent-based routing policy optimization in sd-wan.
+\newblock 2022.
+
+\bibitem{ns3}
+Ns3.
+\newblock \url{https://www.nsnam.org/}, last accessed on 04/03/2025.
+
+\bibitem{or-tools}
+Or-tools.
+\newblock \url{https://developers.google.com/optimization?hl=it}, last accessed
+  on 04/03/2025.
+
+\bibitem{cmake}
+Cmake.
+\newblock \url{https://cmake.org/}, last accessed on 04/03/2025.
+
+\bibitem{ninja}
+Ninja.
+\newblock \url{https://ninja-build.org/}, last accessed on 04/03/2025.
+
+\bibitem{ns3-docs}
+Ns3 documentation.
+\newblock \url{https://www.nsnam.org/docs/installation/html/}, last accessed on
+  04/03/2025.
+
+\bibitem{ubuntu}
+Ubuntu.
+\newblock \url{https://ubuntu.com/}, last accessed on 04/03/2025.
+
+\end{thebibliography}
