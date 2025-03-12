@@ -44,6 +44,7 @@ int main(int argc, char *argv[])
     {
         std::vector<RunInfo> results;
         uint32_t innerMost = 0;
+        uint32_t iteration = 0;
         auto noiseCombinations = Utils::getPermutationsWithRepetitionOfKelementsOfLengthN(3, 3);
         auto peakCombinations = Utils::getPermutationsWithRepetitionOfKelementsOfLengthN(3, 12);
         auto shiftCombinations = Utils::getPermutationsWithRepetitionOfKelementsOfLengthN(3, 3);
@@ -55,12 +56,18 @@ int main(int argc, char *argv[])
             {
                 for (uint32_t currentShiftCombination = 0; currentShiftCombination < shiftCombinations->size(); currentShiftCombination++)
                 {
-                    std::uniform_int_distribution<int> dist(1, 100000);
+                    std::uniform_int_distribution<int> dist(1, 20000);
                     innerMost++;
                     if (dist(gen) == 1)
                     {
-                        std::cout << "Progresso corrente: " << ((double) innerMost / totalCount) * 100 << "%" << std::endl;
-                        auto currentPeaks =  peakCombinations->at(currentPeakCombination);
+                        iteration++;
+
+
+                        std::cout << "Progresso corrente: " << ((double)innerMost / totalCount) * 100 << "%" << std::endl;
+                        if (iteration < 0){
+                            continue;
+                        }
+                        auto currentPeaks = peakCombinations->at(currentPeakCombination);
                         auto currentNoises = noiseCombinations->at(currentNoiseCombination);
                         auto currentShifts = shiftCombinations->at(currentShiftCombination);
 
@@ -82,9 +89,8 @@ int main(int argc, char *argv[])
                 }
             }
         }
-    
-        std::string strategyName = "runs_data_" + std::to_string(strategy) + ".csv"; 
-    
+
+        std::string strategyName = "runs_data_" + std::to_string(strategy) + ".csv";
         Utils::printResultsToFile(strategyName, results);
     }
 
@@ -259,12 +265,9 @@ RunInfo RunSimulation(const RunParameters &runParameters)
     auto finalTime = Simulator::Now().GetMinutes();
     Simulator::Stop();
 
-
-
     Ptr<ReceiverApplication> sink1 = DynamicCast<ReceiverApplication>(sinkApps.Get(0));
 
     auto allPackets = sink1->getReceivedPacketInfo();
-
 
     std::ranges::sort(allPackets, {}, &ReceivedPacketInfo::fromApplication);
 
