@@ -7,6 +7,7 @@
 #include "ns3/core-module.h"
 #include "ns3/internet-module.h"
 #include "StrategyDataPoint.h"
+#include "RunInfo.h"
 
 namespace Utils
 {
@@ -61,6 +62,10 @@ namespace Utils
     uint32_t maxIntWithNBits(uint32_t n);
 
     void printResultsToFile(std::string fileName, std::vector<StrategyDataPoint>& dataPoints);
+
+    void printResultsToFile(std::string fileName, std::vector<RunInfo>& results);
+
+    std::unique_ptr<std::vector<std::vector<uint32_t>>> getPermutationsWithRepetitionOfKelementsOfLengthN(uint32_t N, uint32_t k);
 
 
 

@@ -133,7 +133,6 @@ namespace ns3
             for (uint32_t j = 0; j < ipv4Node->GetNAddresses(i); ++j)
             {
                 Ipv4Address addr = ipv4Node->GetAddress(i, j).GetLocal();
-                std::cout << "Receive Interface " << i << " IP Address " << j << ": " << addr << std::endl;
                 Address address = InetSocketAddress(addr, Utils::ConnectionPort);
                 InitReceivingSocket(address);
             }

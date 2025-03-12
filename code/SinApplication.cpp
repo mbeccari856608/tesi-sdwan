@@ -55,34 +55,34 @@ bool SinApplication::getHasStoppedGeneratingData()
 
 void SinApplication::OnApplicationStart()
 {
-    std::string applicationFileName =
-        "sin_application_" +
-        std::to_string(this->applicationId) +
-        "_noise_" +
-        std::to_string(this->noise) +
-        "_shift_" +
-        std::to_string(this->shift) + "_.csv";
+    // std::string applicationFileName =
+    //     "sin_application_" +
+    //     std::to_string(this->applicationId) +
+    //     "_noise_" +
+    //     std::to_string(this->noise) +
+    //     "_shift_" +
+    //     std::to_string(this->shift) + "_.csv";
 
-    std::ofstream file(applicationFileName);
+    // std::ofstream file(applicationFileName);
 
-    // Check if the file is open
-    if (!file.is_open())
-    {
-        throw std::runtime_error("Error opening file");
-    }
+    // // Check if the file is open
+    // if (!file.is_open())
+    // {
+    //     throw std::runtime_error("Error opening file");
+    // }
 
-    // Write the header
-    file << "x,y\n";
+    // // Write the header
+    // file << "x,y\n";
 
-    for (const auto &[x, y] : this->sinValues)
-    {
-        file << std::fixed << std::setprecision(6) << x << "," << y << "\n";
-    }
+    // for (const auto &[x, y] : this->sinValues)
+    // {
+    //     file << std::fixed << std::setprecision(6) << x << "," << y << "\n";
+    // }
 
     this->enqueuePacketsForCurrentSample();
 
     // Close the file
-    file.close();
+    // file.close();
 }
 
 void SinApplication::enqueuePacketsForCurrentSample()

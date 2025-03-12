@@ -42,7 +42,6 @@ ISPInterface::ISPInterface(const ISPInterface &other)
       interfaceId(other.interfaceId),
       interfaceName(other.interfaceName)
 {
-    std::cout << "Copiato" << "\n";
 }
 
 ISPInterface &ISPInterface::operator=(const ISPInterface &other)

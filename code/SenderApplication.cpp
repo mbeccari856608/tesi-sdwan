@@ -123,7 +123,6 @@ void SenderApplication::StartApplication() // Called at time specified by Start
         {
             Ptr<NetDevice> device = ipv4Node->GetNetDevice(i);
             Ipv4Address addr = ipv4Node->GetAddress(i, j).GetLocal();
-            std::cout << "Send Interface " << i << " IP Address " << j << ": " << addr << std::endl;
             Address address = InetSocketAddress(addr, Utils::ConnectionPort);
             Address destinationAddress = this->addresses->at(i - 1);
             uint32_t cost = this->costs->at(i - 1);
