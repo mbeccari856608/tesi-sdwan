@@ -6,6 +6,7 @@
 #include <algorithm>
 #include "SDWanApplication.h"
 #include "ISPInterface.h"
+#include "StrategyDataPoint.h"
 
 /**
  * @brief This class serves as a base for any strategy.
@@ -29,6 +30,8 @@ public:
     virtual void Compute() = 0;
 
 protected:
+    std::vector<StrategyDataPoint> strategyData;
+
 };
 
 #endif /* STRATEGY_H */

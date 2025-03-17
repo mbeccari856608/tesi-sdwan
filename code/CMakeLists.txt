@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.18)
 
+# Nota: al momento la build è stata testata solo su Ubuntu.
 # minimum compiler versions
 set(AppleClang_MinVersion 11.0.0)
 set(Clang_MinVersion 10.0.0)
@@ -12,7 +13,7 @@ SET(BUILD_DEPS ON)
 
 Set(FETCHCONTENT_QUIET FALSE)
 
-
+# Nota è necessario installare ortools sul sistema.
 find_package(ortools)
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/external/ns-allinone-3.42/ns-3.42/) 
@@ -58,7 +59,13 @@ add_executable(Simulator
     ReactiveStrategy.h
     ReactiveStrategy.cpp
     ComputeOptimizationResult.h
-    ComputeOptimizationResult.cpp)
+    ComputeOptimizationResult.cpp
+    StrategyDataPoint.h
+    StrategyDataPoint.cpp
+    RunInfo.h
+    RunInfo.cpp
+    RunParameters.h
+    RunParameters.cpp)
 
 
 target_link_libraries(Simulator

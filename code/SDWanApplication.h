@@ -62,7 +62,7 @@ public:
      * The actual element in the queue is arbitrary: we only want to keep track of the amount of packets.
      *
      */
-    std::queue<uint8_t> pendingpackets;
+    std::queue<uint32_t> pendingpackets;
 
     /**
      * @brief The maximum required error rate, expressed as a percentage

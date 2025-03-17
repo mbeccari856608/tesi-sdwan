@@ -6,8 +6,9 @@
 
 void SDWanStaticApplication::OnApplicationStart()
 {
-    uint8_t amountOfPackets = this->amountOfPacketsToSend;
-    for (size_t i = 0; i < amountOfPackets; i++)
+    uint32_t amountOfPackets = this->amountOfPacketsToSend;
+    
+    for (uint32_t i = 0; i < amountOfPackets; i++)
     {
         this->pendingpackets.push(i);
         this->generatedPackets++;

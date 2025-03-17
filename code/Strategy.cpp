@@ -9,7 +9,8 @@
 
 Strategy::Strategy(
     std::shared_ptr<std::vector<std::shared_ptr<SDWanApplication>>> applications,
-    std::shared_ptr<std::vector<std::shared_ptr<ISPInterface>>> availableInterfaces) : applications(applications), availableInterfaces(availableInterfaces)
+    std::shared_ptr<std::vector<std::shared_ptr<ISPInterface>>> availableInterfaces) :
+     applications(applications), availableInterfaces(availableInterfaces), strategyData()
 {
 }
 

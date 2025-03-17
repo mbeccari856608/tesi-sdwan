@@ -27,13 +27,8 @@ NS_LOG_COMPONENT_DEFINE("SenderApplication");
 
 NS_OBJECT_ENSURE_REGISTERED(SenderApplication);
 
-uint32_t initialInterfaceId = 100;
 
-uint32_t getNextInterfaceId()
-{
-    initialInterfaceId++;
-    return initialInterfaceId;
-}
+
 
 TypeId
 SenderApplication::GetTypeId()
@@ -68,7 +63,8 @@ SenderApplication::GetTypeId()
 SenderApplication::SenderApplication() : m_totBytes(0),
                                          m_unsentPacket(nullptr),
                                          availableInterfaces(),
-                                         strategyType(LINEAR)
+                                         strategyType(LINEAR),
+                                         initialInterfaceId(100)
 {
     this->availableInterfaces = std::make_shared<std::vector<std::shared_ptr<ISPInterface>>>(0);
     NS_LOG_FUNCTION(this);
@@ -127,7 +123,6 @@ void SenderApplication::StartApplication() // Called at time specified by Start
         {
             Ptr<NetDevice> device = ipv4Node->GetNetDevice(i);
             Ipv4Address addr = ipv4Node->GetAddress(i, j).GetLocal();
-            std::cout << "Send Interface " << i << " IP Address " << j << ": " << addr << std::endl;
             Address address = InetSocketAddress(addr, Utils::ConnectionPort);
             Address destinationAddress = this->addresses->at(i - 1);
             uint32_t cost = this->costs->at(i - 1);
@@ -142,12 +137,16 @@ void SenderApplication::StartApplication() // Called at time specified by Start
     {
     case LINEAR:
         this->strategy = std::make_unique<LinearStrategy>(this->application, this->availableInterfaces);
+        break;
     case RANDOM:
         this->strategy = std::make_unique<RandomStrategy>(this->application, this->availableInterfaces);
+        break;
     case ROUND_ROBIN:
         this->strategy = std::make_unique<RoundRobinStrategy>(this->application, this->availableInterfaces);
+        break;
     case REACTIVE:
         this->strategy = std::make_unique<ReactiveStrategy>(this->application, this->availableInterfaces);
+        break;
     default:
         break;
     }
@@ -167,6 +166,11 @@ void SenderApplication::StartApplication() // Called at time specified by Start
     }
 
     this->ComputeStrategyAndContinue();
+}
+
+uint32_t SenderApplication::getNextInterfaceId(){
+    this->initialInterfaceId++;
+    return this->initialInterfaceId;
 }
 
 void SenderApplication::ComputeStrategyAndContinue()
@@ -199,7 +203,7 @@ void SenderApplication::InitSocket(
     {
         Ptr<Socket> maybeSocket = Socket::CreateSocket(GetNode(), TcpSocketFactory::GetTypeId());
 
-        uint32_t interfaceId = getNextInterfaceId();
+        uint32_t interfaceId = this->getNextInterfaceId();
         std::string interfaceName = "Interfaccia " + std::to_string(interfaceId);
         ISPInterface interface(interfaceId, interfaceName, device, from, maybeSocket, destinationAddress, errorModel, cost);
         // matchingInterface = std::make_shared<ISPInterface>(interface);

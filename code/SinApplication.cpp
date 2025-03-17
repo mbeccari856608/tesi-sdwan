@@ -1,6 +1,7 @@
 #include "SinApplication.h"
 #include "SinGenerator.h"
 #include "Utils.h"
+#include <iomanip>
 
 SinApplication::SinApplication() : SDWanApplication(), currentSample(0), allPacketsGenerated(false)
 {
@@ -10,17 +11,31 @@ SinApplication::SinApplication(
     uint32_t id,
     uint32_t requiredDelay,
     uint32_t errorRate,
-    double shift) : SDWanApplication(id, requiredDelay, errorRate),
-                    currentSample(0),
-                    allPacketsGenerated(false)
+    uint32_t shift,
+    uint32_t noise,
+    uint32_t horizontalShift) : SDWanApplication(id, requiredDelay, errorRate),
+                      currentSample(0),
+                      allPacketsGenerated(false), shift(shift), noise(noise)
 {
-    this->sinValues = generateValues(shift, 1);
+    this->sinValues = generateValues(shift, noise, horizontalShift);
 }
 
 void SinApplication::OnUpdate()
 {
     this->enqueuePacketsForCurrentSample();
 }
+
+uint32_t SinApplication::getTotalData(){
+    uint32_t totalResult = 0;
+    for (size_t i = 0; i < this->sinValues.size(); i++)
+    {
+        totalResult += std::get<1>(this->sinValues.at(i));
+    }
+
+    return totalResult;
+}
+
+
 
 ns3::DataRate SinApplication::getRequiredDataRate()
 {
@@ -40,7 +55,34 @@ bool SinApplication::getHasStoppedGeneratingData()
 
 void SinApplication::OnApplicationStart()
 {
+    // std::string applicationFileName =
+    //     "sin_application_" +
+    //     std::to_string(this->applicationId) +
+    //     "_noise_" +
+    //     std::to_string(this->noise) +
+    //     "_shift_" +
+    //     std::to_string(this->shift) + "_.csv";
+
+    // std::ofstream file(applicationFileName);
+
+    // // Check if the file is open
+    // if (!file.is_open())
+    // {
+    //     throw std::runtime_error("Error opening file");
+    // }
+
+    // // Write the header
+    // file << "x,y\n";
+
+    // for (const auto &[x, y] : this->sinValues)
+    // {
+    //     file << std::fixed << std::setprecision(6) << x << "," << y << "\n";
+    // }
+
     this->enqueuePacketsForCurrentSample();
+
+    // Close the file
+    // file.close();
 }
 
 void SinApplication::enqueuePacketsForCurrentSample()
