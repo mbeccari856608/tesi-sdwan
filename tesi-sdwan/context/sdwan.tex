@@ -1,6 +1,9 @@
-\documentclass{article}
-
-\usepackage[paper=a4paper,top=0.5in,bottom=1in,right=1in,left=1in]{geometry}
+\documentclass[12pt]{article}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{makecell}
+\usepackage[paper=a4paper]{geometry}
 \usepackage{layout}
 \usepackage{titlesec, blindtext, color}
 \usepackage[utf8]{inputenc}
@@ -23,7 +26,10 @@
 \usepackage{graphicx}
 \graphicspath{ {./images/} }
 \setcellgapes{3pt}
-
+\newcommand{\paperEntry}[2]{
+	\subsubsection{#1}
+	#2 \\
+}
 \usepackage{siunitx}
 \setlength{\cellspacetoplimit}{4pt}
 \setlength{\cellspacebottomlimit}{4pt}
@@ -36,7 +42,18 @@
 	colorlinks=true, % We want links to be colored instead of having a square around them.
 	urlcolor=blue, % We want blue links
 }
-
+\definecolor{bluekeywords}{rgb}{0.13,0.13,1}
+\definecolor{greencomments}{rgb}{0,0.5,0}
+\definecolor{redstrings}{rgb}{0.9,0,0}
+\lstset { %
+	language=C++,
+	commentstyle=\color{greencomments},
+	keywordstyle=\color{bluekeywords},
+	stringstyle=\color{redstrings},
+	basicstyle=\ttfamily
+}
+\usepackage{setspace}
+\doublespacing
 
 
 \begin{document}
@@ -48,11 +65,16 @@
 	\tableofcontents
 	\thispagestyle{empty}
 	\pagebreak
-	\setcounter{page}{1}
+	\input{introduction}
 	\input{intro}
+	\input{related_work}
+	\pagebreak
 	\input{load_balancing}
 	\input{implementation}
+	\pagebreak
 	\input{test_results}
+	\input{conclusion}
+
 	
 
 \bibliographystyle{unsrt}

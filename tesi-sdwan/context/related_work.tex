@@ -1,0 +1,36 @@
+\section{Related work}
+
+Traffic engineering in SD-WAN is a widely researched topic, due to its potential in reducing costs and improving traffic efficiency. \\
+These papers contain similar or alternative approaches to tackle some of the challenges in engineering traffic in SD-WAN. \\
+While some of the topics treated in these papers are not strictly related to our goals (reducing costs) they still offer some extremely valuable information in term of how to approach problems when designing traffic engineering solutions
+
+\subsection{Machine learning}
+
+\paperEntry 
+{On Deep Reinforcement Learning for Traffic Engineering in SD-WAN \cite{on_deep_reinforcement_learning} }
+{This paper compares three different deep Reinforcement Learning (deep-RL) algorithms to try to overcome the limitations of on traditional approaches (e.g algorithms based on QoS thresholds) when managing traffic in a SD-WAN context. Specifically, three kinds of deep-RL algorithms are tested, which are: policy gradient, TD- λ and deep Q-learning. Results show that a deep-RL algorithm with a well-designed reward function is capable of increasing the overall network availability.}
+
+\paperEntry
+{Load Balancing Optimization in Software-Defined Wide Area Networking (SD-WAN) using Deep Reinforcement Learning \cite{load_balancing_optimization}}
+{This paper tries using a gradient-based deep learning approach to improve load balancing under latency constraints. The balancing problem is formulated as a linear programming problem, where we want to minimize the load across the controllers and minimize the migration cost of CPEs to new controllers.}		   
+
+\subsection{Heuristics}
+
+\paperEntry
+{On the placement of controllers in software-Defined-WAN using meta-heuristic approach \cite{controller_placements} }
+{This paper explores an approach to the placing of nodes and controllers and how possible failures in links are handled in a SD-WAN context. The controller placement problem (CPP) is considered as a multi-objective combinatorial optimization problem and  it is solved using two population-based meta-heuristic techniques such as: Particle Swarm Optimization (PSO) and FireFly Algorithm (FFA). The performance of the algorithms is evaluated on a set of publicly available network topologies in order to obtain the optimum number of controllers, and controller positions. By comparing the performance of the presented scheme to a competing scheme, it was found that the proposed scheme effectively improves the survivability of the control path and the performance of the network as well.}
+
+\paperEntry
+{Multi-Controller Placement for
+	Load Balancing in SDWAN \cite{multiple_placements} }
+{This paper proposes a controller based algorithm called Simulated Annealing Partition-based K-Means (SAPKM). Two cost functions are used to assess the efficiency of the proposed algorithm from the perspective of topology structure and flow traffic distribution, respectively.
+	This paper uses real world networks to test the algorithm performance}	
+
+\subsection{Linear programming}
+
+\paperEntry
+{Research of Improved Traffic Engineering Fault-Tolerant Routing Mechanism in SD-WAN \cite{fault_tolerant}}
+{This paper introduces a mathematical model used to describe an SD-WAN data plane to address possible fault tolerance issues while routing traffic. This model allows each access network to be switched simultaneously not to one but several border routers, increasing fault tolerance.
+	The fault-tolerant routing problem is presented in
+	optimization form as a linear programming problem with an
+	optimality criterion and constraints}

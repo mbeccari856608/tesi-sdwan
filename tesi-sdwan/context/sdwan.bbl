@@ -1,9 +1,54 @@
-\begin{thebibliography}{1}
+\begin{thebibliography}{10}
+
+\bibitem{on_deep_reinforcement_learning}
+Sebastian Troia, Federico Sapienza, Leonardo Varé, and Guido Maier.
+\newblock On deep reinforcement learning for traffic engineering in sd-wan.
+\newblock {\em IEEE Journal on Selected Areas in Communications},
+  39(7):2198--2212, 2021.
+
+\bibitem{load_balancing_optimization}
+Mohamed~Amine Ouamri, Gordana Barb, Daljeet Singh, and Florin Alexa.
+\newblock Load balancing optimization in software-defined wide area networking
+  (sd-wan) using deep reinforcement learning, 2022.
+
+\bibitem{controller_placements}
+Kshira~Sagar Sahoo, Deepak Puthal, Mohammad~S. Obaidat, Anamay Sarkar,
+  Sambit~Kumar Mishra, and Bibhudatta Sahoo.
+\newblock On the placement of controllers in software-defined-wan using
+  meta-heuristic approach.
+\newblock {\em Journal of Systems and Software}, 145:180--194, 2018.
+
+\bibitem{multiple_placements}
+Kongzhe Yang, Daoxing Guo, Bangning Zhang, and Bing Zhao.
+\newblock Multi-controller placement for load balancing in sdwan.
+\newblock {\em IEEE Access}, 7:167278--167289, 2019.
+
+\bibitem{fault_tolerant}
+Oleksandr Lemeshko, Oleksandra Yeremenko, Maryna Yevdokymenko, Anna Zhuravlova,
+  Anastasiia Kruhlova, and Valentyn Lemeshko.
+\newblock Research of improved traffic engineering fault-tolerant routing
+  mechanism in sd-wan.
+\newblock pages 187--190, 2021.
+
+\bibitem{6834762}
+Wenfeng Xia, Yonggang Wen, Chuan~Heng Foh, Dusit Niyato, and Haiyong Xie.
+\newblock A survey on software-defined networking.
+\newblock {\em IEEE Communications Surveys and Tutorials}, 17(1):27--51, 2015.
+
+\bibitem{openflow}
+Tom Anderson, Hari Balakrishnan, Guru Parulkar, Larry Peterson, Jennifer
+  Rexford, Scott Shenker, and Jonathan Turner.
+\newblock Openflow: Enabling innovation in campus networks.
+\newblock {\em Computer Communication Review}, 38:69--74, 04 2008.
 
 \bibitem{intent_based_routing}
 Pham Tran Anh~Quang et~al.
 \newblock Intent-based routing policy optimization in sd-wan.
 \newblock 2022.
+
+\bibitem{thesis_source_code}
+Simulator source code.
+\newblock \url{thesis_source_code}, last accessed on 04/03/2025.
 
 \bibitem{ns3}
 Ns3.
@@ -30,5 +75,15 @@ Ns3 documentation.
 \bibitem{ubuntu}
 Ubuntu.
 \newblock \url{https://ubuntu.com/}, last accessed on 04/03/2025.
+
+\bibitem{default_random_engine}
+C++ documentation on default random engine.
+\newblock \url{https://cplusplus.com/reference/random/default_random_engine/},
+  last accessed on 04/03/2025.
+
+\bibitem{ml_traffic_predictions}
+R~Vinayakumar, K.~P. Soman, and Prabaharan Poornachandran.
+\newblock Applying deep learning approaches for network traffic prediction.
+\newblock pages 2353--2358, 2017.
 
 \end{thebibliography}

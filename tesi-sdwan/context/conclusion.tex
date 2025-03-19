@@ -1,0 +1,25 @@
+\section{Conclusion and future work}
+
+The tests results show how a reactive strategy can effectively route traffic coming from a variety of applications. \\
+Even when compared to an ideal strategy, the increase in costs in using are strategy sits at around 10\%.
+
+While the idea can seem promising, further work can be done in the analysis of the proposed strategy.
+
+\subsection{Performance analysis}
+Throughout our testing we considered a strategy that is executed without any time constraint: this is unrealistic.
+In practice a strategy that is too time expensive to compute could lead to increased delay just to determine where to send the incoming packets. \\
+In our tests we executed our strategy at a fixed time rate to compute the split ratio of the generated packets among all available links, a possible area of research could be keeping a given split ratio for a set amount of time and seeing how the quality of the overall transmission change.
+
+
+\subsection{Improving the delay function}
+As we discussed in section \ref{estimating_the_delay} the delay of sending a packet on a given link is computed with a fixed form function that is based on the previous usage of a given interface. \\
+Some other approaches can be tried to further improve the strategy, some possible advancement could include:
+\begin{itemize}
+	\item ML-Driven models: instead of basing the estimation of the delay on only the current run, with a wider collection of data it could be possible to implement an estimation based on a machine learning model \cite{ml_traffic_predictions}.
+\end{itemize}
+
+
+\subsection{Extending the available traffic models}
+The simulator easily allows to define arbitrary applications. \\
+This opens a wide variety of possiblity in testing different traffic models and how the efficency of different strategies changes. \\
+Real traffic data could be recorded, encoded and replayed to test how the strategy would behave in a real life scenario.
