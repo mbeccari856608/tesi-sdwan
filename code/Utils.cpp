@@ -99,7 +99,8 @@ void Utils::printResultsToFile(std::string fileName, std::vector<RunInfo> &resul
          << "Application1ErrorRate,Application2ErrorRate,Application3ErrorRate,"
          << "Application1Noise,Application2Noise,Application3Noise,"
          << "Application1Peak,Application2Peak,Application3Peak,"
-         << "Application1Shift,Application2Shift,Application3Shift"
+         << "Application1Shift,Application2Shift,Application3Shift,"
+         << "AveragePacketCost,TotalPackets,TotalCost,"
          << std::endl;
     for (size_t i = 0; i < results.size(); ++i)
     {
@@ -125,7 +126,11 @@ void Utils::printResultsToFile(std::string fileName, std::vector<RunInfo> &resul
 
              << result.parameters.applicationOneShift << ","
              << result.parameters.applicationTwoShift << ","
-             << result.parameters.applicationThreeShift
+             << result.parameters.applicationThreeShift << ","
+
+             << result.getAveragePacketCost() << ","
+             << result.totalAmountOfPackets << ","
+             << result.totalCost
 
              << std::endl;
     }

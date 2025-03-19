@@ -22,6 +22,9 @@
 #include "RunParameters.h"
 #include "RunInfo.h"
 #include <random>
+#include <ctime>
+#include <iomanip>
+#include <sstream>
 
 using namespace ns3;
 
@@ -31,6 +34,17 @@ RunInfo RunSimulation(const RunParameters &runParameters);
 
 int main(int argc, char *argv[])
 {
+    std::time_t now = std::time(nullptr);
+    std::tm localTime = *std::localtime(&now);
+
+    std::ostringstream oss;
+    oss << std::setw(2) << std::setfill('0') << localTime.tm_hour << "_"
+        << std::setw(2) << std::setfill('0') << localTime.tm_min;
+
+    std::string timestamp = oss.str();
+
+    std::cout << timestamp << std::endl;
+
     StrategyTypes strategies[] = {
         ROUND_ROBIN,
         RANDOM,
@@ -62,9 +76,9 @@ int main(int argc, char *argv[])
                     {
                         iteration++;
 
-
                         std::cout << "Progresso corrente: " << ((double)innerMost / totalCount) * 100 << "%" << std::endl;
-                        if (iteration < 0){
+                        if (iteration < 0)
+                        {
                             continue;
                         }
                         auto currentPeaks = peakCombinations->at(currentPeakCombination);
@@ -90,7 +104,7 @@ int main(int argc, char *argv[])
             }
         }
 
-        std::string strategyName = "runs_data_" + std::to_string(strategy) + ".csv";
+        std::string strategyName = "runs_data_" + std::to_string(strategy) + "_" + timestamp + ".csv";
         Utils::printResultsToFile(strategyName, results);
     }
 
