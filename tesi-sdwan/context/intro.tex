@@ -6,10 +6,10 @@ The types of internet connections can be usually divided in two main categories,
 
 \subsubsection{Generalized connectivity}
 
-The most popular kind of internet connection provided by an \textit{ISP} (\textit{Internet Service Provider}) , usually adopted by residential users. \\
-It is based on an hierarchical structure where a set of autonomous system (\textit{AS}) communicate between each other: any two user adopting this type of connection are able to communicate using different protocols (\textit{IGP} protocol if the users are in the same AS and  \textit{EGP} otherwise)
+The most popular kind of internet connection provided by an \textit{ISP} (\textit{Internet Service Provider}), usually adopted by residential users. \\
+It is based on an hierarchical structure where a set of autonomous system (\textit{AS}) communicate between each other: any two user adopting this type of connection are able to communicate using different protocols (\textit{IGP} protocol if the users are in the same AS and  \textit{EGP} otherwise).
 
-\subsubsection{Dedicated connectivity (WAN)}
+\subsubsection{Dedicated connectivity (WAN)} \label{wans}
 
 A specialized kind of connection, mainly used by businesses (i.e to connect the different points of sale of a large company or the different branches of a bank). \\
 
@@ -18,7 +18,7 @@ Organizations usually opt in into this kind of connection to ensure  higher stan
 Dedicated connectivity is still offered by internet service providers, but it is several orders of magnitude more expensive than generalized connectivity.
 
 A network adopting this approach is called a \textit{WAN} (Wide Area Network);
-A WAN is a network of LANs (Local Area Network, i.e the branches) where the distance between the LANs is usually in the tens or hundreds of kilometers range. \\
+a WAN is a network of LANs (Local Area Network, i.e the branches) where the distance between the LANs is usually in the tens or hundreds of kilometers range. \\
 By using a \textit{border router} in each LAN, it is possibile to communicate with the other LANs in the WAN.
 
 The LANs can be connected in different ways:
@@ -37,7 +37,28 @@ The LANs can be connected in different ways:
 	
 	\item \textit{SD-WAN}: this kind of WANs will be discussed in detail in the next section.
 	
+	
+	
 \end{enumerate}
+
+
+\begin{figure}[h!]
+	\includegraphics[width=\textwidth]{private_wan}
+	\caption{A sample network adopting a dedicated wan}	
+	\centering
+\end{figure}
+
+\begin{figure}[h!]
+	\includegraphics[width=\textwidth]{leased_lines}
+	\caption{A sample network using leased lines. The different colors show the different link between the branches}	
+	\centering
+\end{figure}
+
+\begin{figure}[h!]
+	\includegraphics[width=\textwidth]{mpls}
+	\caption{A sample network using MPLS}	
+	\centering
+\end{figure}
 
 \vspace{0.2cm}
 
@@ -57,10 +78,16 @@ The control plane is used to handle control messages from other devices in the n
 The messages from other devices may be  used to configure policies which are then applied by the data plane (e.g the control plane receives a policy that determines which packets should be filtered, while the data place does the actual filtering). \\
 Compared to the data plane, the control plane is used for more complex operations that usually require coordination along network devices.
 
+\vspace*{0.2cm}
+\begin{figure}[h!]
+	\includegraphics[width=0.75\textwidth]{control_and_data_plane}	
+	\centering
+\end{figure}
+
 
 
 \subsection{Definition}
-The idea behind software defined networking (SDN) is to de-couple the control plane from the data plane, not only on a logical level but also physically.
+The idea behind software defined networking (SDN) is to de-couple the control plane from the data plane, not only on a logical level but also physically \cite{6834762} .
 
 The control plane is no longer part of the network devices and is instead moved to a  centralized software component called a \textit{controller}.
 
@@ -93,10 +120,16 @@ Inside each switch there is a set of \textit{generic tables} (also called \texti
 
 The southbound interfaces can also be used in "reverse": the switches are able to communicate with the controller using a series of predefined messages.
 
+\begin{figure}[h!]
+	\includegraphics[width=\textwidth]{sdn}
+	\caption{The main components of SDN}	
+	\centering
+\end{figure}
+
 
 
 \subsection{Openflow}
-Despite being relatively new, software defined networking became a popular approach for organizing new networks (e.g in 5G networks)
+Despite being relatively new \cite{openflow} , software defined networking became a popular approach for organizing new networks (e.g in 5G networks).
 Compared to other widespread network technologies such as the TCP/IP stack, software defined networking is a relatively new approach: the first paper defining protocol for SDN (the \textit{Openflow Protocol}) was published in 2008.
 
 The OpenFlow protocol defines a sets of API for remote communication with network plane devices, i.e. a southbound interface.
@@ -140,14 +173,17 @@ Usually the preferred solution is based on an hybrid approach. \\
 A starting set of rules is used at the start up of the network, to cover the expected data flows in the network. \\
 For any unknown data flow that may arise during the lifespan of the network new routing rules will be issued by the controller.
 
-
+\begin{figure}[h!]
+	\includegraphics[width=\textwidth]{openflow}
+	\centering
+\end{figure}
 
 
 \subsection{SD-WAN}
 
 \subsubsection{SD-WAN}
 The principles of software defined networking can be applied when building a WAN;
-While SD-WAN were introduced recently (in 2014) their popularity increased due to the possible decrease in costs when compared to traditional WAN solutions.
+while SD-WAN were introduced recently (in 2014) their popularity increased due to the possible decrease in costs when compared to traditional WAN solutions.
 
 SD-WAN works by stipulating multiple contracts of generalized internet connections (e.g 4G, POM, fiber) and then combining the different networks to guarantee a certain quality of service level.
 

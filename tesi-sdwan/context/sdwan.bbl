@@ -30,6 +30,17 @@ Oleksandr Lemeshko, Oleksandra Yeremenko, Maryna Yevdokymenko, Anna Zhuravlova,
   mechanism in sd-wan.
 \newblock pages 187--190, 2021.
 
+\bibitem{6834762}
+Wenfeng Xia, Yonggang Wen, Chuan~Heng Foh, Dusit Niyato, and Haiyong Xie.
+\newblock A survey on software-defined networking.
+\newblock {\em IEEE Communications Surveys and Tutorials}, 17(1):27--51, 2015.
+
+\bibitem{openflow}
+Tom Anderson, Hari Balakrishnan, Guru Parulkar, Larry Peterson, Jennifer
+  Rexford, Scott Shenker, and Jonathan Turner.
+\newblock Openflow: Enabling innovation in campus networks.
+\newblock {\em Computer Communication Review}, 38:69--74, 04 2008.
+
 \bibitem{intent_based_routing}
 Pham Tran Anh~Quang et~al.
 \newblock Intent-based routing policy optimization in sd-wan.
@@ -69,5 +80,10 @@ Ubuntu.
 C++ documentation on default random engine.
 \newblock \url{https://cplusplus.com/reference/random/default_random_engine/},
   last accessed on 04/03/2025.
+
+\bibitem{ml_traffic_predictions}
+R~Vinayakumar, K.~P. Soman, and Prabaharan Poornachandran.
+\newblock Applying deep learning approaches for network traffic prediction.
+\newblock pages 2353--2358, 2017.
 
 \end{thebibliography}

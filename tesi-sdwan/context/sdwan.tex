@@ -1,8 +1,8 @@
-\documentclass{article}
+\documentclass[12pt]{article}
 \usepackage{listings}
 \usepackage{xcolor}
 \usepackage{float}
-
+\usepackage{makecell}
 \usepackage[paper=a4paper]{geometry}
 \usepackage{layout}
 \usepackage{titlesec, blindtext, color}
@@ -52,7 +52,8 @@
 	stringstyle=\color{redstrings},
 	basicstyle=\ttfamily
 }
-
+\usepackage{setspace}
+\doublespacing
 
 
 \begin{document}
@@ -64,14 +65,16 @@
 	\tableofcontents
 	\thispagestyle{empty}
 	\pagebreak
-	\setcounter{page}{1}
+	\input{introduction}
 	\input{intro}
+	\input{related_work}
 	\pagebreak
 	\input{load_balancing}
 	\input{implementation}
 	\pagebreak
 	\input{test_results}
-	\input{related_work}
+	\input{conclusion}
+
 	
 
 \bibliographystyle{unsrt}
